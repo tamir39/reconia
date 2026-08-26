@@ -17,23 +17,31 @@ Project: Invoice and Inventory Document Reconciliation System
 
 ## 2. Commit messages
 
-```
-<name>/<area>/<what you did>
-```
-
-- `<name>` — `tam` or `thinh`, lowercase, no diacritics
-- `<area>` — from the table in section 3
-- `<what you did>` — imperative mood, lowercase first letter, no trailing period
+Conventional Commits:
 
 ```
-tam/extraction/add XML e-invoice parser
-thinh/matching/add tier-0 explicit reference lookup
-tam/db/add direction column for inbound and outbound
-thinh/rules/add line arithmetic validation
+<type>(<scope>): <description>
 ```
 
-The name is in the message because **the contribution table in the report must match
-`git shortlog -sn`**, and GVPB questions each member individually at the defense.
+- `<type>` — `feat` `fix` `docs` `style` `refactor` `test` `chore`
+- `<scope>` — optional, from the area table in section 3. Omit for cross-cutting changes.
+- `<description>` — imperative mood, lowercase first letter, no trailing period, under ~50 chars
+
+```
+feat(extraction): add XML e-invoice parser
+feat(matching): add tier-0 explicit reference lookup
+fix(rules): handle zero quantity in line arithmetic
+refactor(db): add direction column for inbound and outbound
+docs: add team policy
+```
+
+Commit at meaningful units of work, not per file. Each commit should build and run.
+
+### Attribution
+
+There is no name in the commit message — **attribution comes entirely from the git author.**
+That makes the identity setup below mandatory, not optional: the contribution table in the
+report must match `git shortlog -sn`, and GVPB questions each member individually.
 
 > **Do this on both machines now** (cannot be fixed retroactively):
 > ```
@@ -41,12 +49,17 @@ The name is in the message because **the contribution table in the report must m
 > git config user.email "<your email>"
 > ```
 > Any email works — the faculty does not require a specific one. What matters is that
-> **each person uses one fixed email on every machine**, because `git shortlog -sn` groups
-> by name + email. Two different emails make one person show up as two rows.
+> **each person uses one fixed name and email on every machine**, because `git shortlog -sn`
+> groups by name + email. Two different emails make one person show up as two rows.
+
+Check it any time with:
+```
+git shortlog -sn
+```
 
 ## 3. Areas
 
-| Area | Maps to |
+| Scope | Maps to |
 |---|---|
 | `intake` | Module 1 — ingestion, classification, preprocessing |
 | `extraction` | Module 2 — extraction, normalization |
