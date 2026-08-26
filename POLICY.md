@@ -142,13 +142,3 @@ completion percentage in the plan sheet.
 
 Real data stays **outside the repo**. Only synthetic data and the data generator get committed.
 Always run `git status` and read the diff before committing.
-
-## 8. Weekly rhythm
-
-1. During the week: small frequent commits, push at end of day.
-2. End of week: get open PRs reviewed and merged into `dev`, verify the system still runs.
-3. **Send the weekly report email to thầy** — subject
-   `[BC-DACNTT/KLTN/DATN-261] - 52300155 - 52300159`, replying into the existing thread,
-   never a new email.
-   Two consecutive weeks without a report and thầy may stop supervising the group.
-4. Every two weeks: Google Meet, Saturday afternoon after 13h30.
