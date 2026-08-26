@@ -1,29 +1,29 @@
 # POLICY — Reconia (ĐA161)
 
-Nhóm: Phí Vương Tường Tâm (52300155) · Vũ Hưng Thịnh (52300159)
-Đề tài: Xây dựng hệ thống đối soát hóa đơn và chứng từ nhập xuất
+Team: Phí Vương Tường Tâm (52300155) · Vũ Hưng Thịnh (52300159)
+Project: Invoice and Inventory Document Reconciliation System
 
 ---
 
-## 1. Nhánh
+## 1. Branches
 
-| Nhánh | Dùng để |
+| Branch | Purpose |
 |---|---|
-| `main` | Bản nộp. Chỉ merge ở mốc **giữa kỳ** và **cuối kỳ**. Không commit trực tiếp. |
-| `dev` | Nhánh làm việc chính. Mọi thứ vào đây. |
-| `feature/<tên>/<phần>` | Chỉ tạo khi làm việc lớn hoặc dễ vỡ. Việc nhỏ commit thẳng `dev`. |
+| `main` | Submission builds only. Merged twice: midterm and final. Never commit directly. |
+| `dev` | Main working branch. Everything lands here. |
+| `feature/<name>/<area>` | Only for large or risky work. Small changes go straight to `dev`. |
 
-`main` cũ hơn `dev` là chuyện bình thường, không phải lỗi.
+`main` being behind `dev` is normal, not a problem to fix.
 
-## 2. Commit message
+## 2. Commit messages
 
 ```
-<tên>/<phần>/<việc đã làm>
+<name>/<area>/<what you did>
 ```
 
-- `<tên>` — `tam` hoặc `thinh`, viết thường không dấu
-- `<phần>` — lấy trong bảng mục 3
-- `<việc đã làm>` — tiếng Anh, thể mệnh lệnh, không viết hoa đầu, không chấm cuối
+- `<name>` — `tam` or `thinh`, lowercase, no diacritics
+- `<area>` — from the table in section 3
+- `<what you did>` — imperative mood, lowercase first letter, no trailing period
 
 ```
 tam/extraction/add XML e-invoice parser
@@ -32,83 +32,86 @@ tam/db/add direction column for inbound and outbound
 thinh/rules/add line arithmetic validation
 ```
 
-Có tên người trong commit vì **bảng phân công trong báo cáo phải khớp `git shortlog -sn`**,
-và GVPB hỏi chéo từng người khi bảo vệ.
+The name is in the message because **the contribution table in the report must match
+`git shortlog -sn`**, and GVPB questions each member individually at the defense.
 
-> **Làm ngay trên cả hai máy** (không sửa được về sau):
+> **Do this on both machines now** (cannot be fixed retroactively):
 > ```
 > git config user.name "Phi Vuong Tuong Tam"
-> git config user.email "<email của bạn>"
+> git config user.email "<your email>"
 > ```
-> Email nào cũng được — Khoa không quy định. Chỉ cần **mỗi người dùng đúng một
-> email cố định trên mọi máy**, vì `git shortlog -sn` gộp theo tên + email.
-> Dùng 2 email khác nhau thì một người sẽ hiện thành 2 dòng, bảng phân công trông sai.
+> Any email works — the faculty does not require a specific one. What matters is that
+> **each person uses one fixed email on every machine**, because `git shortlog -sn` groups
+> by name + email. Two different emails make one person show up as two rows.
 
-## 3. Danh sách `<phần>`
+## 3. Areas
 
-| Phần | Tương ứng |
+| Area | Maps to |
 |---|---|
-| `intake` | Module 1 — tiếp nhận, phân loại, tiền xử lý |
-| `extraction` | Module 2 — trích xuất, chuẩn hóa |
-| `matching` | Module 3 — đối soát, ghép nối |
-| `rules` | Module 4 — ràng buộc, phát hiện bất thường |
-| `agent` | Module 5 — Agent điều phối, HITL |
-| `audit` | Module 6 — nhật ký, bộ nhớ hiệu chỉnh |
-| `ui` | Giao diện, màn hình rà soát, báo cáo |
-| `db` | Lược đồ CSDL, migration |
-| `infra` | Docker, cấu hình |
-| `eval` | Dữ liệu mẫu, đo đạc, so sánh mô hình |
-| `docs` | Tài liệu, báo cáo |
+| `intake` | Module 1 — ingestion, classification, preprocessing |
+| `extraction` | Module 2 — extraction, normalization |
+| `matching` | Module 3 — reconciliation, pairing |
+| `rules` | Module 4 — constraints, anomaly detection |
+| `agent` | Module 5 — agent orchestration, human review |
+| `audit` | Module 6 — audit log, correction memory |
+| `ui` | Screens, review UI, reports |
+| `db` | Schema, migrations |
+| `infra` | Docker, configuration |
+| `eval` | Test data, measurement, model comparison |
+| `docs` | Documentation, report |
 
-Thư mục code chia theo đúng danh sách này.
+Source directories follow this same list.
 
 ## 4. Push & merge
 
-- Push nhánh của mình **cuối mỗi ngày làm việc**, kể cả chưa xong. Máy hỏng là mất trắng,
-  và `git log --since="1 week ago"` chính là nội dung email báo cáo tuần.
-- **Không bao giờ** `git push --force` lên `main` hoặc `dev`.
-- Merge vào `dev`: **nhắn cho người kia trước**, không cần PR. Nhưng bắt buộc phải nhắn —
-  hai người sẽ đụng cùng file.
-- Merge vào `main`: **chỉ 2 lần** — nộp giữa kỳ, nộp cuối kỳ. Cả hai cùng đồng ý.
+- Push your branch **at the end of every working day**, even if unfinished. A dead laptop
+  loses everything, and `git log --since="1 week ago"` is basically your weekly report to thầy.
+- **Never** `git push --force` to `main` or `dev`.
+- Merging into `dev`: **message the other person first.** No PR needed, but the message is
+  mandatory — you will both touch the same files.
+- Merging into `main`: **twice only** — midterm submission and final submission, both agreeing.
 
-## 5. Quy ước code
+## 5. Code conventions
 
-- **Tiền luôn dùng `Decimal`, tuyệt đối không dùng `float`.** Cột CSDL dùng `NUMERIC`.
-  Sai chỗ này thì mọi kết quả đối soát đều không tin được.
-- Mã số thuế là khóa định danh đối tác. **Không bao giờ so khớp theo địa chỉ.**
-- Không chạy OCR khi chứng từ đã có XML hoặc đã có lớp văn bản.
-- Tên bảng và cột: `snake_case`, tiếng Anh, số ít (`invoice`, `stock_document`, `product_alias`).
-- Code và comment tiếng Anh. Nội dung hiển thị cho người dùng tiếng Việt.
-- Mỗi quy tắc kiểm tra là **một hàm thuần**, ghi kết quả vào bảng `finding`.
+- **Money is always `Decimal`, never `float`.** Database columns use `NUMERIC`.
+  Get this wrong and every reconciliation result becomes untrustworthy.
+- Tax code (MST) is the party identity key. **Never match on address.**
+- Never run OCR on a document that already has XML or a usable text layer.
+- Table and column names: `snake_case`, English, singular (`invoice`, `stock_document`,
+  `product_alias`).
+- Code and comments in English. User-facing text in Vietnamese.
+- Each validation rule is **one pure function** writing into the `finding` table.
 
-## 6. Một task coi là XONG khi
+## 6. Definition of done
 
-1. Chạy được trên máy người làm, không lỗi.
-2. Có ít nhất 1 test cho phần logic (quy tắc, chuẩn hóa, ghép nối).
-3. Đã commit đúng format và push lên remote.
-4. Đã nhắn cho người kia biết.
-5. Không để lại `TODO`, code chết, hay hàm rỗng.
+1. Runs on the author's machine without errors.
+2. At least one test for any logic (rules, normalization, matching).
+3. Committed in the correct format and pushed to remote.
+4. The other person has been told.
+5. No leftover `TODO`s, dead code, or empty functions.
 
-Chưa đủ 5 mục thì vẫn là **đang làm**, không được tính vào % tiến độ trong sheet kế hoạch.
+Anything short of all five is still **in progress** and does not count toward the
+completion percentage in the plan sheet.
 
-## 7. TUYỆT ĐỐI KHÔNG COMMIT
+## 7. Never commit
 
-| Không commit | Lý do |
+| Never commit | Why |
 |---|---|
-| Hóa đơn/chứng từ **thật** chưa ẩn danh | Chứa MST, giá, tên đối tác của doanh nghiệp |
-| `.env`, khóa API, token (kể cả khóa Gemini) | Lộ khóa là phải thu hồi ngay |
-| Trọng số mô hình OCR, tệp nhị phân lớn | Phình repo, tải lại được |
-| File `.xlsx` kế hoạch và danh sách của Khoa | Có thông tin cá nhân, một file ghi *lưu hành nội bộ* |
-| `CLAUDE.md`, `QUY_DINH_DU_AN.md` | Tài liệu cá nhân, chỉ để ở máy |
+| **Real** invoices or stock documents before anonymization | Contains MST, prices, counterparty names |
+| `.env`, API keys, tokens (including the Gemini key) | A leaked key must be rotated immediately |
+| OCR model weights, large binaries | Bloats the repo, re-downloadable |
+| Faculty `.xlsx` plan and student roster files | Personal data; one is marked *lưu hành nội bộ* |
+| `CLAUDE.md`, `QUY_DINH_DU_AN.md` | Personal notes, local only |
 
-Dữ liệu thật để **ngoài repo**. Chỉ commit dữ liệu tổng hợp và bộ sinh dữ liệu.
-Luôn `git status` và đọc lại diff trước khi commit.
+Real data stays **outside the repo**. Only synthetic data and the data generator get committed.
+Always run `git status` and read the diff before committing.
 
-## 8. Nhịp tuần
+## 8. Weekly rhythm
 
-1. Trong tuần: commit nhỏ, thường xuyên, push cuối ngày.
-2. Cuối tuần: merge vào `dev`, kiểm tra hệ thống chạy được.
-3. **Gửi email báo cáo cho thầy** — tiêu đề `[BC-DACNTT/KLTN/DATN-261] - 52300155 - 52300159`,
-   reply vào đúng thread cũ, không tạo mail mới.
-   Hai tuần liên tiếp không báo cáo ⇒ thầy có quyền từ chối hướng dẫn tiếp.
-4. Hai tuần một lần: họp Google Meet chiều thứ Bảy sau 13h30.
+1. During the week: small frequent commits, push at end of day.
+2. End of week: merge into `dev`, verify the system still runs.
+3. **Send the weekly report email to thầy** — subject
+   `[BC-DACNTT/KLTN/DATN-261] - 52300155 - 52300159`, replying into the existing thread,
+   never a new email.
+   Two consecutive weeks without a report and thầy may stop supervising the group.
+4. Every two weeks: Google Meet, Saturday afternoon after 13h30.
