@@ -49,23 +49,17 @@ Commit at meaningful units of work, not per file. Each commit should build and r
 
 ### Attribution
 
-There is no name in the commit message — **attribution comes entirely from the git author.**
-That makes the identity setup below mandatory, not optional: the contribution table in the
-report must match `git shortlog -sn`, and GVPB questions each member individually.
+Commit messages carry no name — **attribution comes from the git author.** Each person keeps
+one fixed name + email on every machine they work from; `git shortlog -sn` groups by name +
+email, so using two emails makes one person appear as two contributors. The contribution table
+in the report must match this output:
 
-> **Do this on both machines now** (cannot be fixed retroactively):
-> ```
-> git config user.name "Phi Vuong Tuong Tam"
-> git config user.email "<your email>"
-> ```
-> Any email works — the faculty does not require a specific one. What matters is that
-> **each person uses one fixed name and email on every machine**, because `git shortlog -sn`
-> groups by name + email. Two different emails make one person show up as two rows.
-
-Check it any time with:
 ```
 git shortlog -sn
 ```
+
+Tâm's identity is already set globally. Thịnh: set yours before your first commit — it cannot
+be corrected afterwards.
 
 ## 3. Areas
 
