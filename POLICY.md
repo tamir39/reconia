@@ -139,8 +139,6 @@ completion percentage in the plan sheet.
 | **Real** invoices or stock documents before anonymization | Contains MST, prices, counterparty names |
 | `.env`, API keys, tokens (including the Gemini key) | A leaked key must be rotated immediately |
 | OCR model weights, large binaries | Bloats the repo, re-downloadable |
-| Faculty `.xlsx` plan and student roster files | Personal data; one is marked *lưu hành nội bộ* |
-| `CLAUDE.md`, `QUY_DINH_DU_AN.md` | Personal notes, local only |
 
 Real data stays **outside the repo**. Only synthetic data and the data generator get committed.
 Always run `git status` and read the diff before committing.
