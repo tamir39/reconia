@@ -9,9 +9,19 @@ Project: Invoice and Inventory Document Reconciliation System
 
 | Branch | Purpose |
 |---|---|
-| `main` | Submission builds only. Merged twice: midterm and final. Never commit directly. |
-| `dev` | Main working branch. Everything lands here. |
-| `feature/<name>/<area>` | Only for large or risky work. Small changes go straight to `dev`. |
+| `main` | Submission builds only. Merged twice: midterm and final. **Never commit directly.** |
+| `dev` | Integration branch. **Only ever receives merged PRs. Never commit directly.** |
+| `<type>/<scope>-<description>` | Where all work happens. One branch per piece of work. |
+
+Branch naming uses the same types and scopes as commit messages:
+
+```
+feat/extraction-xml-parser
+feat/matching-tier0-reference
+fix/rules-zero-quantity
+docs/policy-pr-workflow
+chore/infra-docker-compose
+```
 
 `main` being behind `dev` is normal, not a problem to fix.
 
@@ -75,14 +85,36 @@ git shortlog -sn
 
 Source directories follow this same list.
 
-## 4. Push & merge
+## 4. Workflow
 
-- Push your branch **at the end of every working day**, even if unfinished. A dead laptop
-  loses everything, and `git log --since="1 week ago"` is basically your weekly report to thầy.
+**Nothing is ever committed straight to `dev`.** Every piece of work — a feature, a fix, even a
+docs change — starts as a branch and reaches `dev` through a reviewed pull request.
+
+1. Branch off the latest `dev`:
+   ```
+   git checkout dev && git pull
+   git checkout -b feat/extraction-xml-parser
+   ```
+2. Work. Commit in meaningful units. **Push at the end of every working day**, even unfinished —
+   a dead laptop loses everything, and `git log --since="1 week ago"` is basically your weekly
+   report to thầy.
+3. When done (see section 6), open a PR into `dev`:
+   ```
+   gh pr create --base dev --title "feat(extraction): add XML e-invoice parser" --assignee @me
+   ```
+4. **Assign the other person as reviewer.** They read it and either approve or request changes.
+5. Merge only after approval. Delete the branch afterwards.
+
+### Rules
+
+- **Never merge your own PR without the other person approving it.** The review is the point —
+  it is also how each of you can answer questions about the other's code at the defense.
 - **Never** `git push --force` to `main` or `dev`.
-- Merging into `dev`: **message the other person first.** No PR needed, but the message is
-  mandatory — you will both touch the same files.
-- Merging into `main`: **twice only** — midterm submission and final submission, both agreeing.
+- `main` is merged **twice only** — midterm submission and final submission, both agreeing.
+- A PR that sits unreviewed for more than a day: ping them. Do not merge around it.
+
+> Both members need write access to `github.com/tamir39/reconia` for this to work.
+> Add Vũ Hưng Thịnh as a collaborator before the first PR.
 
 ## 5. Code conventions
 
@@ -99,8 +131,8 @@ Source directories follow this same list.
 
 1. Runs on the author's machine without errors.
 2. At least one test for any logic (rules, normalization, matching).
-3. Committed in the correct format and pushed to remote.
-4. The other person has been told.
+3. Committed in the correct format and pushed to the branch.
+4. **PR opened into `dev`, reviewed and approved by the other person, and merged.**
 5. No leftover `TODO`s, dead code, or empty functions.
 
 Anything short of all five is still **in progress** and does not count toward the
@@ -122,7 +154,7 @@ Always run `git status` and read the diff before committing.
 ## 8. Weekly rhythm
 
 1. During the week: small frequent commits, push at end of day.
-2. End of week: merge into `dev`, verify the system still runs.
+2. End of week: get open PRs reviewed and merged into `dev`, verify the system still runs.
 3. **Send the weekly report email to thầy** — subject
    `[BC-DACNTT/KLTN/DATN-261] - 52300155 - 52300159`, replying into the existing thread,
    never a new email.
