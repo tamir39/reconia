@@ -58,9 +58,6 @@ in the report must match this output:
 git shortlog -sn
 ```
 
-Tâm's identity is already set globally. Thịnh: set yours before your first commit — it cannot
-be corrected afterwards.
-
 ## 3. Areas
 
 | Scope | Maps to |
