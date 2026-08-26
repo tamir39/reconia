@@ -38,8 +38,11 @@ và GVPB hỏi chéo từng người khi bảo vệ.
 > **Làm ngay trên cả hai máy** (không sửa được về sau):
 > ```
 > git config user.name "Phi Vuong Tuong Tam"
-> git config user.email "52300155@student.tdtu.edu.vn"
+> git config user.email "<email của bạn>"
 > ```
+> Email nào cũng được — Khoa không quy định. Chỉ cần **mỗi người dùng đúng một
+> email cố định trên mọi máy**, vì `git shortlog -sn` gộp theo tên + email.
+> Dùng 2 email khác nhau thì một người sẽ hiện thành 2 dòng, bảng phân công trông sai.
 
 ## 3. Danh sách `<phần>`
 
