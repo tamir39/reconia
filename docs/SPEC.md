@@ -1,6 +1,6 @@
 # SPEC — Reconia (ĐA161)
 
-Đặc tả rút gọn. Bám sát mô tả đề tài đã đăng ký trên ELIT.
+Đặc tả rút gọn. Bám sát mô tả đề tài đã đăng ký trên ELIT và định hướng của GVHD.
 
 ---
 
@@ -19,7 +19,23 @@
 
 Chênh lệch giữa ba con số này là nơi phát sinh thất thoát.
 
-## 2. Năm kết quả đối soát
+## 2. Sáu module
+
+Giữ nguyên pipeline theo định hướng của GVHD. Mỗi module tương ứng một thư mục mã nguồn
+và một phạm vi (scope) trong quy ước commit.
+
+| # | Module | Thư mục | Nhiệm vụ | Tuần |
+|---|---|---|---|---|
+| 1 | Tiếp nhận, phân loại và tiền xử lý | `app/intake/` | Nhận PDF/ảnh/XML, kiểm tra chất lượng, nhận diện loại chứng từ, xoay và khử nhiễu, phát hiện tệp trùng | 2 |
+| 2 | Trích xuất theo lược đồ và chuẩn hóa | `app/extraction/` | Trích xuất theo lược đồ dữ liệu, lưu bằng chứng từng trường, chuẩn hóa ngày/tiền/thuế/ĐVT/tên sản phẩm | 3 |
+| 3 | Đối soát và ghép nối | `app/matching/` | Ghép Hóa đơn – Phiếu kho – Đơn đặt hàng qua ba tầng, trả về điểm tin cậy và lý do | 4 |
+| 4 | Kiểm tra ràng buộc và phát hiện bất thường | `app/rules/` | 12 quy tắc ràng buộc, phân loại 5 nhóm kết quả, phát hiện trùng lặp và biến động giá | 5 |
+| 5 | Agent điều phối và rà soát của con người | `app/agent/` | Điều phối pipeline theo trạng thái, định tuyến theo độ tin cậy, tạm dừng chờ người duyệt | 6, 8 |
+| 6 | Nhật ký, bộ nhớ hiệu chỉnh và giám sát | `app/audit/` | Ghi vết mọi quyết định, truy hồi các hiệu chỉnh đã xác nhận | 11 |
+
+Chi tiết kiến trúc Module 5 xem [AGENT.md](AGENT.md).
+
+## 3. Năm kết quả đối soát
 
 Cố định theo mô tả đề tài, không được đổi tên.
 
@@ -40,7 +56,7 @@ Cố định theo mô tả đề tài, không được đổi tên.
 > **Chiều lệch quyết định PARTIAL hay MISMATCH.** Sai chỗ này thì mọi lần giao thiếu
 > đều bị báo như gian lận.
 
-## 3. Bốn đường trích xuất
+## 4. Bốn đường trích xuất
 
 Xếp theo mức độ tin cậy. **Không bao giờ chạy OCR với chứng từ đã có XML hoặc đã có lớp văn bản.**
 
@@ -57,7 +73,7 @@ nên đó mới là chỗ thật sự cần OCR.
 
 > Các văn bản pháp lý trên phải **kiểm tra lại hiệu lực** trước khi trích dẫn vào báo cáo.
 
-## 4. Ghép nối ba tầng
+## 5. Ghép nối ba tầng
 
 | Tầng | Cách làm | Độ tin cậy |
 |---|---|---|
@@ -71,7 +87,7 @@ giữa hai con số tổng hợp, không cần thuật toán gán tối ưu.
 **Đo và ghi vào báo cáo tỷ lệ cặp được giải quyết ngay ở tầng 0** — hầu hết nhóm bỏ qua
 tầng này rồi mất nhiều tuần cho khớp gần đúng.
 
-## 5. Định danh
+## 6. Định danh
 
 - **Đối tác: chỉ dùng mã số thuế.** Không bao giờ so khớp theo địa chỉ — Việt Nam đổi sang
   mô hình hành chính hai cấp từ 01/07/2025, nên cùng một nhà cung cấp có hai địa chỉ khác
@@ -87,7 +103,7 @@ tầng này rồi mất nhiều tuần cho khớp gần đúng.
 > Cổng thuộc tính là bắt buộc: *"Bia Sài Gòn 330ml"* và *"Bia Sài Gòn 500ml"* gần như
 > giống hệt nhau về mặt chữ nhưng là hai mặt hàng khác nhau. **Con số quyết định, không phải ngữ nghĩa.**
 
-## 6. Phát hiện trùng lặp — ba lớp
+## 7. Phát hiện trùng lặp — ba lớp
 
 | Lớp | Cách phát hiện |
 |---|---|
@@ -97,18 +113,42 @@ tầng này rồi mất nhiều tuần cho khớp gần đúng.
 
 L2 chính là ca *"cùng một hóa đơn scan hai lần, sai một chữ số"*.
 
-## 7. Dung sai
+## 8. Mười hai quy tắc kiểm tra
+
+Mỗi quy tắc là **một hàm thuần** trong `app/rules/`, ghi kết quả vào bảng `finding`
+với `rule_code` tương ứng. Cột *Kết quả* cho biết quy tắc đó góp phần tạo ra nhóm nào.
+
+| # | `rule_code` | Kiểm tra | Mức | Kết quả |
+|---|---|---|---|---|
+| 1 | `LINE_ARITHMETIC` | Số lượng × đơn giá = thành tiền | ERROR | MISMATCH |
+| 2 | `SUBTOTAL_SUM` | Tổng tiền hàng = Σ thành tiền các dòng | ERROR | MISMATCH |
+| 3 | `TAX_AMOUNT` | Tiền thuế = tiền hàng × thuế suất | ERROR | MISMATCH |
+| 4 | `TOTAL_SUM` | Tổng thanh toán = tiền hàng + tiền thuế | ERROR | MISMATCH |
+| 5 | `TAX_RATE_VALID` | Thuế suất thuộc {0%, 5%, 8%, 10%} | WARNING | — |
+| 6 | `TAX_CODE_FORMAT` | Mã số thuế đúng cấu trúc 10 hoặc 13 chữ số | WARNING | — |
+| 7 | `QTY_VARIANCE` | Chênh lệch số lượng giữa các chứng từ vượt dung sai | ERROR | PARTIAL / MISMATCH |
+| 8 | `PRICE_VARIANCE` | Chênh lệch đơn giá vượt dung sai | ERROR | MISMATCH |
+| 9 | `QTY_OVER_ORDER` | Số lượng nhận hoặc xuất hóa đơn vượt số lượng đã đặt | ERROR | MISMATCH |
+| 10 | `MISSING_COUNTERPART` | Thiếu chứng từ đối ứng trong kỳ | ERROR | MISSING |
+| 11 | `DUPLICATE_DOC` | Trùng chứng từ theo ba lớp ở mục 7 | ERROR | DUPLICATE |
+| 12 | `PERIOD_MISMATCH` | Ngày hóa đơn và ngày phiếu kho lệch kỳ kế toán | WARNING | — |
+
+> Quy tắc 1 vừa là kiểm tra nghiệp vụ vừa là **phép tự kiểm bộ phân tích số**: lệch khoảng
+> 1000 lần nghĩa là đã đọc nhầm `1.234.567,89` thành `1,234,567.89`.
+
+Phát hiện bất thường bằng thống kê (biến động đơn giá, số lượng) nằm ngoài 12 quy tắc này,
+dùng độ lệch tuyệt đối trung vị trên các giao dịch gần nhất của cùng cặp `(đối tác, sản phẩm)`.
+
+## 9. Dung sai
 
 Hai mức, chỉnh được từ giao diện: mức **cảnh báo** và mức **vi phạm**.
 Áp dụng cho số lượng, đơn giá và tổng tiền. Không có dung sai thì làm tròn sẽ tạo ra
 hàng loạt sai lệch giả.
 
-## 8. Quy ước kỹ thuật bắt buộc
+## 10. Quy ước kỹ thuật bắt buộc
 
 - Tiền và số lượng dùng `Decimal` / `NUMERIC`. **Không bao giờ dùng `float`.**
 - Lưu tọa độ vùng chữ ngay từ lần trích xuất đầu tiên.
-- Kiểm tra `số lượng × đơn giá = thành tiền` vừa là quy tắc nghiệp vụ vừa là **phép tự kiểm
-  bộ phân tích số**: lệch khoảng 1000 lần nghĩa là đọc nhầm `1.234.567,89` thành `1,234,567.89`.
 - Độ tin cậy được **suy ra**, không tự khai báo: bộ trích xuất bằng luật và bộ bằng mô hình
   có đồng ý nhau không, phép số học có đúng không, bộ nhận dạng trả về bao nhiêu.
 - Độ tin cậy chỉ dùng để **đưa vào hàng đợi rà soát**. Nó **không bao giờ** gán kết quả đối soát.
