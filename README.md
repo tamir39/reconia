@@ -9,14 +9,25 @@ GVHD: Dung Cẩm Quang
 
 ## Chạy thử
 
-Một lệnh duy nhất, dựng cả cơ sở dữ liệu lẫn ứng dụng và tự chạy migration:
+Trên Windows, chạy tệp `run.bat`. Tệp này kiểm tra Docker, kiểm tra xung đột cổng, dựng
+cơ sở dữ liệu và ứng dụng, chạy migration, nạp dữ liệu minh họa và in ra các địa chỉ truy cập.
+
+```
+run.bat
+```
+
+Hoặc chạy trực tiếp bằng Docker Compose:
 
 ```bash
 cp .env.example .env
 docker compose -p reconia up -d --build
+docker compose -p reconia exec app python -m app.seed
 ```
 
-Mở http://localhost:8000
+Mở http://localhost:8010
+
+**Cổng sử dụng:** ứng dụng dùng cổng `8010`, PostgreSQL dùng cổng `5437`. Các cổng này được
+chọn để tránh xung đột với những dự án khác trên cùng máy. Sửa trong `run.bat` nếu cần.
 
 Dừng: `docker compose -p reconia down` (thêm `-v` để xóa luôn dữ liệu).
 
@@ -52,6 +63,8 @@ app/
   agent/        Module 5 — Agent điều phối, rà soát của con người
   audit/        Module 6 — nhật ký, bộ nhớ hiệu chỉnh
   ui/           Giao diện (Jinja2 + HTMX)
+run.bat         Khởi chạy toàn hệ thống trên Windows
+run-local.ps1   Kịch bản khởi chạy được run.bat gọi
 docs/
   SPEC.md       Đặc tả: 6 module, 5 nhóm kết quả, 12 quy tắc
   AGENT.md      Kiến trúc Agent điều phối (Module 5)

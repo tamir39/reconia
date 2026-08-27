@@ -1,0 +1,9 @@
+# Shell scripts and the Docker entrypoint must keep LF endings: they run inside
+# Linux containers, where a CRLF shebang line fails with "no such file or directory".
+*.sh text eol=lf
+entrypoint.sh text eol=lf
+Dockerfile text eol=lf
+
+# Windows-only scripts keep CRLF.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
