@@ -9,16 +9,28 @@ GVHD: Dung Cẩm Quang
 
 ## Chạy thử
 
+Một lệnh duy nhất, dựng cả cơ sở dữ liệu lẫn ứng dụng và tự chạy migration:
+
 ```bash
 cp .env.example .env
-docker compose -p reconia up -d          # PostgreSQL
-python -m venv .venv
-./.venv/Scripts/python.exe -m pip install -r requirements.txt   # Windows
-alembic upgrade head
-uvicorn app.main:app --reload
+docker compose -p reconia up -d --build
 ```
 
 Mở http://localhost:8000
+
+Dừng: `docker compose -p reconia down` (thêm `-v` để xóa luôn dữ liệu).
+
+<details>
+<summary>Chạy trực tiếp không qua Docker (khi phát triển)</summary>
+
+```bash
+docker compose -p reconia up -d db
+python -m venv .venv
+./.venv/Scripts/python.exe -m pip install -r requirements.txt
+./.venv/Scripts/python.exe -m alembic upgrade head
+./.venv/Scripts/python.exe -m uvicorn app.main:app --reload
+```
+</details>
 
 ## Kiểm thử
 
@@ -26,7 +38,7 @@ Mở http://localhost:8000
 ./.venv/Scripts/python.exe -m pytest -q
 ```
 
-Bộ kiểm thử **không cần Docker** — dùng SQLite trong bộ nhớ.
+Bộ kiểm thử không yêu cầu Docker; các kiểm thử sử dụng SQLite trong bộ nhớ.
 
 ## Cấu trúc
 
@@ -41,7 +53,8 @@ app/
   audit/        Module 6 — nhật ký, bộ nhớ hiệu chỉnh
   ui/           Giao diện (Jinja2 + HTMX)
 docs/
-  SPEC.md       Đặc tả
+  SPEC.md       Đặc tả: 6 module, 5 nhóm kết quả, 12 quy tắc
+  AGENT.md      Kiến trúc Agent điều phối (Module 5)
   ERD.md        Sơ đồ quan hệ
 ```
 
@@ -49,4 +62,5 @@ docs/
 
 - [POLICY.md](POLICY.md) — quy ước nhánh, commit, PR, code
 - [docs/SPEC.md](docs/SPEC.md) — đặc tả nghiệp vụ
+- [docs/AGENT.md](docs/AGENT.md) — kiến trúc Agent
 - [docs/ERD.md](docs/ERD.md) — lược đồ dữ liệu

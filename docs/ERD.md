@@ -1,6 +1,9 @@
-# ERD — Reconia
+# LƯỢC ĐỒ QUAN HỆ DỮ LIỆU
 
-11 bảng. Nguồn sự thật là `app/models/`; sơ đồ này để đọc và để đưa vào báo cáo.
+**Đề tài:** Xây dựng hệ thống đối soát hóa đơn và chứng từ nhập xuất (ĐA161)
+
+Lược đồ gồm mười một bảng. Định nghĩa chính thức nằm trong `app/models/`; sơ đồ dưới đây
+biểu diễn lại cấu trúc đó phục vụ việc đọc hiểu và trình bày trong báo cáo.
 
 ```mermaid
 erDiagram
@@ -26,7 +29,7 @@ erDiagram
         string tax_code UK "MST — khóa định danh duy nhất"
         string name
         string name_norm
-        string address "chỉ để hiển thị, KHÔNG dùng để khớp"
+        string address "chỉ hiển thị, không dùng so khớp"
     }
     PRODUCT {
         int id PK
@@ -42,12 +45,12 @@ erDiagram
         int id PK
         int party_id FK
         int product_id FK
-        string alias_norm "UNIQUE(party_id, alias_norm)"
-        string confirmed_by "bộ nhớ hiệu chỉnh"
+        string alias_norm "duy nhất theo party_id"
+        string confirmed_by "người xác nhận"
     }
     UOM_CONVERSION {
         int id PK
-        int product_id FK "NULL = quy tắc chung"
+        int product_id FK "rỗng: quy tắc chung"
         string from_uom
         string to_uom
         numeric factor
@@ -61,21 +64,21 @@ erDiagram
         string doc_serial "ký hiệu"
         date doc_date
         enum source "XML|PDF_TEXT|OCR|MANUAL"
-        string file_sha256 "trùng lặp L0"
-        numeric total "NUMERIC, không bao giờ float"
+        string file_sha256 "phát hiện trùng lớp L0"
+        numeric total "kiểu NUMERIC"
         enum status
-        string ref_doc_no "ghép nối tầng 0"
+        string ref_doc_no "tham chiếu tầng 0"
         date ref_doc_date
     }
     DOCUMENT_LINE {
         int id PK
         int document_id FK
         int line_no
-        string raw_name "giữ nguyên văn"
-        string supplier_item_code "khóa khớp tốt nhất"
-        int product_id FK "NULL = chưa phân giải"
+        string raw_name "giữ nguyên văn bản gốc"
+        string supplier_item_code "mã hàng nhà cung cấp"
+        int product_id FK "rỗng: chưa phân giải"
         numeric quantity
-        numeric base_quantity "đã quy đổi"
+        numeric base_quantity "quy đổi về đơn vị cơ sở"
         numeric unit_price
         numeric line_amount
         numeric tax_rate
@@ -88,7 +91,7 @@ erDiagram
         string raw_value
         numeric confidence
         int page
-        numeric bbox_x0 "lưu từ đầu — về sau rất đắt"
+        numeric bbox_x0 "tọa độ vùng văn bản"
     }
     RECONCILIATION_BATCH {
         int id PK
@@ -104,13 +107,13 @@ erDiagram
         int stock_doc_id FK
         int po_id FK
         int product_id FK
-        numeric qty_ordered "đã đặt"
-        numeric qty_moved "thực nhận/xuất"
-        numeric qty_invoiced "xuất hóa đơn"
-        enum outcome "5 nhóm kết quả"
+        numeric qty_ordered "số lượng đặt"
+        numeric qty_moved "số lượng thực nhận hoặc xuất"
+        numeric qty_invoiced "số lượng xuất hóa đơn"
+        enum outcome "năm nhóm kết quả"
         enum match_tier "0|1|2"
-        string reason "lý do đọc được"
-        enum reviewed_outcome "người ghi đè"
+        string reason "căn cứ kết luận"
+        enum reviewed_outcome "kết quả người dùng ghi đè"
     }
     FINDING {
         int id PK
@@ -118,7 +121,7 @@ erDiagram
         int result_id FK
         string rule_code
         enum severity
-        string message "tiếng Việt"
+        string message "nội dung hiển thị"
         json details
     }
     AUDIT_EVENT {
@@ -126,21 +129,22 @@ erDiagram
         string entity_type
         int entity_id
         string action
-        string actor "người dùng, hoặc 'agent'"
-        string tool_name "Agent đã gọi công cụ nào"
+        string actor "người dùng hoặc agent"
+        string tool_name "công cụ được gọi"
         numeric confidence
         string reason
     }
 ```
 
-## Ba quyết định thiết kế đáng chú ý
+## Các quyết định thiết kế chính
 
-**Một bảng `document` cho cả bốn loại.** `doc_type` nói nó là gì, `direction` nói hàng đi
-chiều nào. Nhờ vậy engine đối soát chạy **không đổi một dòng** cho cả chiều nhập lẫn chiều
-xuất — đó chính là điều làm *"chứng từ nhập xuất"* thành một engine chứ không phải hai.
+**Sử dụng một bảng `DOCUMENT` cho cả bốn loại chứng từ.** Trường `doc_type` xác định loại chứng
+từ, trường `direction` xác định chiều luân chuyển hàng hóa. Nhờ đó thành phần đối soát vận hành
+không thay đổi đối với cả chiều nhập và chiều xuất, thay vì phải xây dựng hai thành phần riêng biệt.
 
-**`RECONCILIATION_RESULT` giữ cả ba số lượng.** Đặt, thực nhận, xuất hóa đơn nằm trên cùng
-một dòng nên chênh lệch ba chiều nhìn thấy ngay, không cần join lại.
+**Bảng `RECONCILIATION_RESULT` lưu đồng thời ba đại lượng số lượng.** Số lượng đặt, số lượng thực
+nhận hoặc xuất, và số lượng xuất hóa đơn cùng nằm trên một bản ghi, cho phép xác định chênh lệch
+ba chiều mà không cần thực hiện phép kết nối bổ sung.
 
-**`FIELD_EVIDENCE` có tọa độ ngay từ đầu.** Màn hình đối chiếu song song tốn 1 ngày nếu đã
-có tọa độ, tốn hơn một tuần nếu phải làm lại từ đầu.
+**Bảng `FIELD_EVIDENCE` lưu tọa độ vùng văn bản ngay từ lần trích xuất đầu tiên.** Việc bổ sung
+tọa độ sau khi dữ liệu đã được trích xuất đòi hỏi xử lý lại toàn bộ tập chứng từ.

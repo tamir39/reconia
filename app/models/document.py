@@ -1,13 +1,13 @@
 """Documents and their line items.
 
-One table serves all four document kinds. `doc_type` says what it is and `direction` says
-which way goods flow, so the matching engine runs unchanged over inbound and outbound —
-that is what makes "chứng từ nhập xuất" one engine rather than two.
+A single table serves all four document kinds. `doc_type` identifies the kind and
+`direction` identifies the flow of goods, allowing the matching component to operate
+unchanged over both inbound and outbound documents.
 
 Duplicate detection (lặp chứng từ) is layered:
-  L0  file_sha256          — the same file uploaded twice
-  L1  business key         — UNIQUE(party, serial, number) enforced by the database
-  L2  near-duplicate       — same party/date/total, different number (a misread digit);
+  L0  file_sha256          the same file uploaded twice
+  L1  business key         UNIQUE(party, serial, number) enforced by the database
+  L2  near-duplicate       same party/date/total, different number (a misread digit);
                              detected in the rules engine, not by a constraint
 """
 
@@ -113,10 +113,10 @@ class DocumentLine(Base):
 
 
 class FieldEvidence(Base):
-    """Per-field provenance, including the page region it was read from.
+    """Per-field provenance, including the page region the value was read from.
 
-    Stored from the very first extraction commit on purpose: the side-by-side highlight
-    view is a day's work if the boxes exist and a week if they have to be backfilled.
+    Bounding boxes are recorded from the first extraction onward. Adding them later would
+    require reprocessing every previously ingested document.
     """
 
     __tablename__ = "field_evidence"

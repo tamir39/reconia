@@ -117,7 +117,7 @@ def test_search_by_doc_no(client, seeded):
 
 
 def test_money_columns_are_decimal_not_float(client, seeded, session):
-    """POLICY.md §5 — money must never round-trip through float."""
+    """POLICY.md section 5: money must not round-trip through float."""
     doc = session.query(Document).filter_by(doc_no="00012345").one()
     assert isinstance(doc.total, Decimal)
     assert doc.total == Decimal("1080000.00")
