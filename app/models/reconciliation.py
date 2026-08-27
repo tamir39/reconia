@@ -1,9 +1,9 @@
 """Reconciliation batches, results, rule findings, and the audit trail.
 
-A result row is the unit the user sees. It records three quantities for the same product —
-ordered, physically moved, invoiced — and the outcome computed from the deltas between
-them. The `reason` string is what makes a flagged invoice actionable for an accountant;
-a bare confidence score is not.
+A result row is the unit presented to the user. It records three quantities for the same
+product - ordered, physically moved, and invoiced - together with the outcome derived from
+the differences between them. The `reason` field records the justification for that outcome,
+which is required for the result to be actionable in an accounting context.
 """
 
 from datetime import date, datetime
@@ -52,7 +52,7 @@ class ReconciliationResult(Base):
         ForeignKey("reconciliation_batch.id", ondelete="CASCADE"), index=True
     )
 
-    # Any of these may be NULL — a NULL counterpart is exactly what MISSING means.
+    # Any of these may be NULL; a NULL counterpart is what MISSING represents.
     invoice_id: Mapped[int | None] = mapped_column(ForeignKey("document.id"), index=True)
     stock_doc_id: Mapped[int | None] = mapped_column(ForeignKey("document.id"), index=True)
     po_id: Mapped[int | None] = mapped_column(ForeignKey("document.id"), index=True)
@@ -69,7 +69,7 @@ class ReconciliationResult(Base):
     confidence: Mapped[Decimal | None] = mapped_column(Rate)
 
     # Human-readable justification, e.g.
-    # "Hóa đơn ghi 120, phiếu nhập ghi 100 — thừa 20 (vượt dung sai 2%)".
+    # "Hóa đơn ghi 120, phiếu nhập ghi 100, thừa 20 (vượt dung sai 2%)".
     reason: Mapped[str | None] = mapped_column(Text)
 
     # Set when a reviewer overrides the computed outcome. The original is never destroyed.

@@ -86,9 +86,9 @@ docs change — starts as a branch and reaches `dev` through a reviewed pull req
    git checkout dev && git pull
    git checkout -b feat/extraction-xml-parser
    ```
-2. Work. Commit in meaningful units. **Push at the end of every working day**, even unfinished —
-   a dead laptop loses everything, and `git log --since="1 week ago"` is basically your weekly
-   report to thầy.
+2. Work. Commit in meaningful units. **Push at the end of every working day**, including
+   unfinished work. This protects against local machine failure, and `git log --since="1 week ago"`
+   provides the basis for the weekly progress report.
 3. When done (see section 6), open a PR into `dev`:
    ```
    gh pr create --base dev --title "feat(extraction): add XML e-invoice parser" --assignee @me
@@ -110,7 +110,7 @@ docs change — starts as a branch and reaches `dev` through a reviewed pull req
 ## 5. Code conventions
 
 - **Money is always `Decimal`, never `float`.** Database columns use `NUMERIC`.
-  Get this wrong and every reconciliation result becomes untrustworthy.
+  Floating point rounding produces differences the reconciliation logic would report as genuine.
 - Tax code (MST) is the party identity key. **Never match on address.**
 - Never run OCR on a document that already has XML or a usable text layer.
 - Table and column names: `snake_case`, English, singular (`invoice`, `stock_document`,

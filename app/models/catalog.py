@@ -1,9 +1,9 @@
 """Reference data: trading parties, the product catalogue, aliases, and UoM conversion.
 
-Party identity is the tax code (MST) and only the tax code. Addresses are stored for
-display but never used for matching: Vietnam moved to a two-tier administrative structure
-on 01/07/2025, so the same supplier legitimately carries different addresses on documents
-issued before and after that date.
+Party identity is established by tax code (MST) alone. Addresses are stored for display
+but excluded from matching: Vietnam adopted a two-tier administrative structure on
+01/07/2025, so the same supplier may carry different yet equally valid addresses on
+documents issued before and after that date.
 """
 
 from decimal import Decimal
@@ -29,7 +29,7 @@ class Party(Base, TimestampMixin):
 
 
 class Product(Base, TimestampMixin):
-    """Internal product catalogue entry — the canonical item."""
+    """Internal product catalogue entry: the canonical item."""
 
     __tablename__ = "product"
 
@@ -51,7 +51,7 @@ class ProductAlias(Base, TimestampMixin):
     """Correction memory: a supplier's own wording mapped to our catalogue.
 
     Written back every time a human confirms a mapping in the review screen. This is
-    retrieval, not machine learning — no model is retrained.
+    retrieval, not machine learning; no model is retrained.
     """
 
     __tablename__ = "product_alias"

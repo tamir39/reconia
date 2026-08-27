@@ -38,7 +38,7 @@ python -m venv .venv
 ./.venv/Scripts/python.exe -m pytest -q
 ```
 
-Bộ kiểm thử **không cần Docker** — dùng SQLite trong bộ nhớ.
+Bộ kiểm thử không yêu cầu Docker; các kiểm thử sử dụng SQLite trong bộ nhớ.
 
 ## Cấu trúc
 

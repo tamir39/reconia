@@ -23,19 +23,20 @@ class Direction(str, Enum):
     A single matching engine serves both; only this field differs.
     """
 
-    IN = "IN"  # nhập — mua vào
-    OUT = "OUT"  # xuất — bán ra
+    IN = "IN"  # nhập: mua vào
+    OUT = "OUT"  # xuất: bán ra
 
 
 class SourceType(str, Enum):
     """How a document's data was obtained.
 
-    Ordered by trust. Never run OCR on a document that has XML or a usable text layer.
+    Ordered by decreasing reliability. OCR is not applied to documents that have an XML
+    counterpart or a usable text layer.
     """
 
-    XML = "XML"  # hóa đơn điện tử — exact
-    PDF_TEXT = "PDF_TEXT"  # PDF text layer — exact characters
-    OCR = "OCR"  # scanned image — lossy
+    XML = "XML"  # hóa đơn điện tử
+    PDF_TEXT = "PDF_TEXT"  # PDF text layer, exact characters
+    OCR = "OCR"  # scanned image, lossy
     MANUAL = "MANUAL"  # typed by a human
 
 
@@ -49,14 +50,14 @@ class DocStatus(str, Enum):
 class Outcome(str, Enum):
     """The five reconciliation outcomes required by the project description.
 
-    Computed from deltas and coverage — never from a similarity score. Similarity decides
-    whether two lines are comparable; deltas decide the verdict.
+    Derived from quantity differences and coverage, not from similarity scores. Similarity
+    determines whether two lines refer to the same item; the differences determine the outcome.
     """
 
     MATCHED = "MATCHED"  # trùng khớp
-    PARTIAL = "PARTIAL"  # trùng khớp một phần — under-delivery / under-invoicing
-    MISMATCH = "MISMATCH"  # sai hoàn toàn — over-invoicing, price violation, arithmetic failure
-    MISSING = "MISSING"  # thiếu chứng từ — no counterpart document
+    PARTIAL = "PARTIAL"  # trùng khớp một phần: under-delivery or under-invoicing
+    MISMATCH = "MISMATCH"  # sai hoàn toàn: over-invoicing, price violation, arithmetic failure
+    MISSING = "MISSING"  # thiếu chứng từ: no counterpart document
     DUPLICATE = "DUPLICATE"  # lặp chứng từ
 
 

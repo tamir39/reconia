@@ -1,8 +1,8 @@
 """SQLAlchemy declarative base and shared column types.
 
-Money rule (POLICY.md §5): every monetary or quantity column is NUMERIC, never float.
-Rounding drift of 0.01 makes reconciliation results untrustworthy, which defeats the
-entire purpose of the system.
+Monetary and quantity columns use NUMERIC, never floating point (POLICY.md section 5).
+Floating point rounding introduces discrepancies that the reconciliation logic would
+report as genuine differences.
 """
 
 from datetime import datetime
