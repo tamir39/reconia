@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Env & secrets
+.env
+*.key
+
+# Real data — NEVER commit (see POLICY.md §7)
+data/real/
+data/private/
+*.xlsx
+!docs/**/*.xlsx
+
+# OCR model weights (repo root only — must not match app/models/)
+/models/
+*.pth
+*.onnx
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+~$*
