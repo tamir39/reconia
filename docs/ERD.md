@@ -5,6 +5,10 @@
 Lược đồ gồm mười một bảng. Định nghĩa chính thức nằm trong `app/models/`; sơ đồ dưới đây
 biểu diễn lại cấu trúc đó phục vụ việc đọc hiểu và trình bày trong báo cáo.
 
+Lược đồ hiện tại phục vụ **lớp ứng dụng đối soát**. Các bảng lưu đồ thị tài liệu, kết quả dự đoán
+của mô hình và nhật ký can thiệp của Agent sẽ được bổ sung ở tuần 3 và tuần 9, sau khi cấu trúc
+đồ thị được chốt. Tài liệu này được cập nhật cùng thời điểm đó.
+
 ```mermaid
 erDiagram
     PARTY ||--o{ DOCUMENT : "phát hành"

@@ -53,14 +53,16 @@ app/
   audit/        Module 6 — nhật ký, bộ nhớ hiệu chỉnh
   ui/           Giao diện (Jinja2 + HTMX)
 docs/
-  SPEC.md       Đặc tả: 6 module, 5 nhóm kết quả, 12 quy tắc
-  AGENT.md      Kiến trúc Agent điều phối (Module 5)
-  ERD.md        Sơ đồ quan hệ
+  SPEC.md          Đặc tả: bài toán, dữ liệu, biểu diễn đồ thị, đánh giá
+  AGENT.md         Kiến trúc Agent kiểm chứng
+  RELATED_WORK.md  Tổng quan công trình liên quan
+  ERD.md           Sơ đồ quan hệ dữ liệu
 ```
 
 ## Tài liệu
 
 - [POLICY.md](POLICY.md) — quy ước nhánh, commit, PR, code
-- [docs/SPEC.md](docs/SPEC.md) — đặc tả nghiệp vụ
-- [docs/AGENT.md](docs/AGENT.md) — kiến trúc Agent
+- [docs/SPEC.md](docs/SPEC.md) — đặc tả hệ thống
+- [docs/AGENT.md](docs/AGENT.md) — kiến trúc Agent kiểm chứng
+- [docs/RELATED_WORK.md](docs/RELATED_WORK.md) — tổng quan công trình liên quan
 - [docs/ERD.md](docs/ERD.md) — lược đồ dữ liệu
