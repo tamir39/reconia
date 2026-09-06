@@ -37,14 +37,30 @@ liệu, cách tiền xử lý và cách tính chỉ số. Đề tài đưa các 
 
 ### 1.1. Các mô hình dự kiến so sánh
 
-| Nhóm phương pháp | Mô hình | Ghi chú |
+| Nhóm phương pháp | Mô hình | Nơi huấn luyện |
 |---|---|---|
-| Đồ thị | Mạng tích chập đồ thị do nhóm hiện thực | Nhẹ, chạy được trên GPU 4 GB |
-| Ngôn ngữ | RoBERTa kết hợp thông tin bố cục | Mô hình nền công bố kèm DocILE |
-| Đa phương thức | LayoutLMv3 | Mô hình nền công bố kèm DocILE |
-| Đa phương thức nhẹ | LiLT | Phương án dự phòng khi tài nguyên hạn chế |
+| Đồ thị | Mạng tích chập đồ thị do nhóm hiện thực | Máy cá nhân |
+| Ngôn ngữ | RoBERTa kết hợp thông tin bố cục | Kaggle |
+| Đa phương thức | LayoutLMv3 | Kaggle |
+| Đa phương thức nhẹ | LiLT | Kaggle |
 
 *Danh sách chờ giảng viên hướng dẫn xác nhận về số lượng và thành phần mô hình.*
+
+### 1.2. Môi trường huấn luyện
+
+Các mô hình Transformer được huấn luyện trên **Kaggle**, nơi cung cấp GPU có dung lượng bộ nhớ
+đủ lớn. Máy cá nhân chỉ dùng cho mô hình đồ thị và cho khung đánh giá.
+
+Cách bố trí này đặt ra ba yêu cầu kỹ thuật:
+
+1. Bộ dữ liệu phải được tải lên Kaggle dưới dạng dataset dùng chung cho mọi lần chạy.
+2. Quy trình huấn luyện phải **lưu điểm kiểm tra định kỳ**, do mỗi phiên làm việc trên Kaggle có
+   giới hạn thời gian.
+3. Khung đánh giá phải chạy được ở cả hai nơi, trên cùng một định dạng kết quả dự đoán, để kết
+   quả của các mô hình so sánh được với nhau.
+
+Phần cứng của từng lần chạy được ghi lại trong kết quả thực nghiệm, vì thời gian huấn luyện và
+bộ nhớ yêu cầu là một trong các tiêu chí so sánh.
 
 ## 2. Dữ liệu
 
