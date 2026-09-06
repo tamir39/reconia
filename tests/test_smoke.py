@@ -17,7 +17,7 @@ def test_health_ok():
 def test_index_renders():
     response = client.get("/")
     assert response.status_code == 200
-    assert "đối soát" in response.text
+    assert "trích xuất thông tin" in response.text
 
 
 def test_all_five_outcomes_have_vietnamese_labels():
