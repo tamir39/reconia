@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(
     title="Reconia",
-    description="Hệ thống đối soát hóa đơn và chứng từ nhập xuất",
+    description="Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin từ hóa đơn",
     version="0.1.0",
     debug=get_settings().app_debug,
 )
