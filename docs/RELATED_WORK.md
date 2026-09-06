@@ -1,9 +1,10 @@
 # TỔNG QUAN CÔNG TRÌNH LIÊN QUAN
 
-**Đề tài:** Xây dựng hệ thống đối soát hóa đơn và chứng từ nhập xuất (ĐA161)
+**Đề tài:** Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin
+từ hóa đơn (ĐA161)
 
-Tài liệu tổng hợp các công trình liên quan đến trích xuất thông tin từ tài liệu nghiệp vụ, tập
-trung vào hướng biểu diễn tài liệu bằng đồ thị.
+Tài liệu tổng hợp các công trình liên quan đến trích xuất thông tin từ tài liệu nghiệp vụ, phục
+vụ việc lựa chọn các mô hình đưa vào so sánh.
 
 > **Lưu ý:** trước khi trích dẫn vào báo cáo, cần kiểm tra lại thông tin xuất bản của từng công
 > trình từ nguồn gốc. Danh mục này phục vụ định hướng đọc, chưa phải danh mục tài liệu tham khảo
@@ -26,7 +27,7 @@ Ba hướng tiếp cận chính đã hình thành:
 | Theo đồ thị | Biểu diễn trang thành đồ thị, học trên cấu trúc | Liu và cộng sự (2019), PICK, Doc2Graph |
 | Tiền huấn luyện đa phương thức | Huấn luyện trước trên khối lượng lớn tài liệu, kết hợp văn bản, bố cục và hình ảnh | Họ mô hình LayoutLM |
 
-Đề tài này theo **hướng đồ thị**.
+Đề tài lựa chọn mô hình từ cả ba hướng trên để so sánh, thay vì tập trung vào một hướng duy nhất.
 
 ## 2. Các công trình theo hướng đồ thị
 
@@ -74,16 +75,17 @@ từ và các mô hình nền để so sánh, gồm RoBERTa, LayoutLMv3 và DETR
 
 ## 5. Vị trí của đề tài
 
-Đề tài kế thừa hướng đồ thị của Liu và cộng sự và PICK, thực hiện trên bộ dữ liệu DocILE, với
-hai điểm khác biệt so với các công trình đã khảo sát:
+Đề tài không đề xuất kiến trúc mới. Đề tài thực hiện **đánh giá và so sánh** các phương pháp đã
+công bố dưới một điều kiện thực nghiệm thống nhất, với hai điểm cần nhấn mạnh:
 
-1. **Đo trần lý thuyết của phương pháp trước khi xây dựng mô hình.** Khảo sát cho thấy chỉ 95,64%
-   số trường chú giải khớp được với từ do OCR trả về. Đây là giới hạn trên của mọi mô hình phân
-   loại nút trên đồ thị từ, và là con số các công trình đã khảo sát không báo cáo.
+1. **Kết quả công bố giữa các công trình thường không so sánh trực tiếp được với nhau.** Các
+   công trình khác nhau về cách chia tập dữ liệu, chất lượng OCR đầu vào và cách tính chỉ số.
+   Việc đưa các mô hình về cùng một điều kiện đo là nội dung chính của đề tài.
 
-2. **Bổ sung lớp kiểm chứng ở mức toàn tài liệu.** Các công trình theo hướng đồ thị dừng ở kết
-   quả phân loại nút. Đề tài bổ sung một lớp suy luận kiểm tra tính nhất quán giữa các trường
-   đã trích xuất, hiệu chỉnh mâu thuẫn, và đo riêng phần đóng góp của lớp này.
+2. **Đo trần lý thuyết của nhóm phương pháp gán nhãn theo từ.** Khảo sát cho thấy chỉ 95,64% số
+   trường chú giải khớp được với từ do OCR trả về. Đây là giới hạn trên của mọi mô hình gán nhãn
+   ở mức từ. Con số này cần được nêu khi so sánh nhóm phương pháp gán nhãn theo từ với nhóm
+   phương pháp sinh văn bản trực tiếp, vì hai nhóm không chịu chung giới hạn này.
 
 ## 6. Cần đọc thêm
 

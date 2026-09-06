@@ -1,27 +1,50 @@
 # ĐẶC TẢ HỆ THỐNG
 
-**Đề tài:** Xây dựng hệ thống đối soát hóa đơn và chứng từ nhập xuất (ĐA161)
+**Đề tài:** Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin
+từ hóa đơn (ĐA161)
 
-Tài liệu này đặc tả phạm vi chức năng, phương pháp và các quy tắc nghiệp vụ của hệ thống,
-theo định hướng đã thống nhất với giảng viên hướng dẫn tại buổi họp ngày 29/08/2026.
+*Evaluation and Comparison of Deep Learning Methods for Invoice Information Extraction*
+
+Tài liệu này đặc tả phạm vi và phương pháp thực hiện, theo tên và mô tả đề tài đã được giảng
+viên hướng dẫn cập nhật trên hệ thống ELIT.
+
+> **Trạng thái:** đề tài chưa được duyệt. Một số nội dung còn chờ xác nhận của giảng viên
+> hướng dẫn, đã ghi rõ tại từng mục.
 
 ---
 
 ## 1. Bài toán
 
-Hệ thống thực hiện **trích xuất thông tin có cấu trúc từ tài liệu nghiệp vụ** bằng phương pháp
-biểu diễn tài liệu dưới dạng đồ thị và học máy trên đồ thị. Kết quả trích xuất được sử dụng cho
-lớp ứng dụng **đối soát chứng từ**.
+Đề tài thực hiện **đánh giá và so sánh các phương pháp học sâu** cho bài toán trích xuất thông
+tin từ hóa đơn, theo yêu cầu tại mô tả đề tài:
 
-Hai bài toán con theo chuẩn của bộ dữ liệu DocILE:
+1. Khảo sát và lựa chọn từ ba đến năm mô hình học sâu.
+2. Thực nghiệm trên một số bộ dữ liệu hóa đơn.
+3. Cài đặt hoặc chạy lại các mô hình dưới **điều kiện thực nghiệm thống nhất**.
+4. Đánh giá bằng Precision, Recall và F1-score.
+5. So sánh và phân tích ưu điểm, hạn chế của từng phương pháp.
+
+Bài toán trích xuất được xét theo chuẩn của bộ dữ liệu DocILE:
 
 | Bài toán | Nội dung |
 |---|---|
 | **KILE** | Xác định vị trí và phân loại các trường thông tin trên tài liệu |
 | **LIR** | Gom các trường thông tin thành từng dòng hàng |
 
-Lớp ứng dụng đối soát sử dụng các trường đã trích xuất để đối chiếu hóa đơn với chứng từ nhập
-xuất và đơn đặt hàng, phát hiện dữ liệu không nhất quán, sai lệch hoặc bất thường.
+**Đóng góp chính của đề tài là khung thực nghiệm thống nhất.** Kết quả công bố trong các công
+trình khác nhau thường không so sánh trực tiếp được với nhau do khác biệt về cách chia tập dữ
+liệu, cách tiền xử lý và cách tính chỉ số. Đề tài đưa các mô hình về cùng một điều kiện đo.
+
+### 1.1. Các mô hình dự kiến so sánh
+
+| Nhóm phương pháp | Mô hình | Ghi chú |
+|---|---|---|
+| Đồ thị | Mạng tích chập đồ thị do nhóm hiện thực | Nhẹ, chạy được trên GPU 4 GB |
+| Ngôn ngữ | RoBERTa kết hợp thông tin bố cục | Mô hình nền công bố kèm DocILE |
+| Đa phương thức | LayoutLMv3 | Mô hình nền công bố kèm DocILE |
+| Đa phương thức nhẹ | LiLT | Phương án dự phòng khi tài nguyên hạn chế |
+
+*Danh sách chờ giảng viên hướng dẫn xác nhận về số lượng và thành phần mô hình.*
 
 ## 2. Dữ liệu
 
@@ -97,10 +120,12 @@ toàn tài liệu. Lớp Agent xử lý đúng nhóm sai sót này.
 Mọi can thiệp của Agent được ghi vào bảng nhật ký kèm căn cứ. Kiến trúc chi tiết trình bày trong
 tài liệu [AGENT.md](AGENT.md).
 
-## 6. Lớp ứng dụng đối soát
+## 6. Lớp ứng dụng minh họa
 
-Các trường đã trích xuất được đưa vào lớp đối soát, đối chiếu hóa đơn với chứng từ nhập xuất và
-đơn đặt hàng trên bộ dữ liệu tổng hợp do hệ thống tự sinh.
+Phần đối soát chứng từ **không còn nằm trong phạm vi chính** của đề tài sau khi tên đề tài được
+cập nhật. Phần này được giữ lại ở mức ứng dụng minh họa, sử dụng kết quả trích xuất để đối chiếu
+chứng từ trên bộ dữ liệu tổng hợp, cho thấy kết quả trích xuất dùng được trong một quy trình
+nghiệp vụ thực tế.
 
 Năm nhóm kết quả đối soát:
 
@@ -114,21 +139,28 @@ Năm nhóm kết quả đối soát:
 
 Kết quả đối soát được tính từ chênh lệch định lượng và độ phủ, không tính từ điểm tương đồng.
 
-## 7. Phương pháp đánh giá
+## 7. Khung thực nghiệm thống nhất
 
-**Trích xuất.** Đánh giá trên tập kiểm định theo đúng chuẩn của DocILE: AP, F1, độ chính xác và
-độ bao phủ, tính trung bình trên toàn bộ trường và loại trường. Báo cáo song song macro-F1 để
-phản ánh các loại trường hiếm.
+Đây là nội dung trọng tâm của đề tài. Mọi mô hình được đo dưới cùng một điều kiện:
 
-**Đóng góp của từng thành phần.** Ba cấu hình được đo trên cùng một tập kiểm định:
-
-| Cấu hình | Mục đích đo |
+| Yếu tố | Quy định thống nhất |
 |---|---|
-| Đồ thị với đặc trưng văn bản và tọa độ | Kết quả cơ sở |
-| Bổ sung đặc trưng thị giác | Mức đóng góp của thành phần thị giác |
-| Bổ sung lớp Agent kiểm chứng | Mức đóng góp của thành phần suy luận |
+| Dữ liệu | Cùng bộ dữ liệu, cùng định dạng trung gian |
+| Cách chia tập | Cùng tập huấn luyện và tập kiểm định |
+| Chỉ số | Precision, Recall, F1 tính theo cùng một cách |
+| Tiền xử lý | Cùng kết quả OCR đầu vào |
+| Phần cứng | Ghi rõ phần cứng của từng lần chạy |
 
-**So sánh với công trình đã công bố.** Đối chiếu với các mô hình nền công bố kèm bộ dữ liệu.
+Khung đánh giá được thiết kế **độc lập với kiến trúc mô hình**: bổ sung một mô hình mới chỉ yêu
+cầu cung cấp đầu ra theo định dạng chung, không sửa phần đánh giá.
+
+Nội dung báo cáo kết quả:
+
+1. Bảng so sánh các mô hình trên từng bộ dữ liệu.
+2. Kết quả theo từng loại trường, kèm macro-F1 để phản ánh các loại trường hiếm.
+3. Chi phí thực nghiệm: thời gian huấn luyện và bộ nhớ GPU yêu cầu.
+4. Phân tích ưu điểm và hạn chế của từng phương pháp.
+5. Phân tích các trường hợp lỗi điển hình.
 
 ## 8. Quy ước kỹ thuật bắt buộc
 

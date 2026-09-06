@@ -1,7 +1,7 @@
 # Reconia
 
-Hệ thống đối soát hóa đơn và chứng từ nhập xuất
-*Development of an Invoice and Inventory Document Reconciliation System*
+Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin từ hóa đơn
+*Evaluation and Comparison of Deep Learning Methods for Invoice Information Extraction*
 
 Đồ án môn Dự án CNTT — ĐA161 — HK1/2026-2027
 Nhóm Best Stuffs: Phí Vương Tường Tâm (52300155) · Vũ Hưng Thịnh (52300159)

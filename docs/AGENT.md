@@ -1,9 +1,15 @@
 # KIẾN TRÚC AGENT KIỂM CHỨNG
 
-**Đề tài:** Xây dựng hệ thống đối soát hóa đơn và chứng từ nhập xuất (ĐA161)
+**Đề tài:** Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin
+từ hóa đơn (ĐA161)
 
-Tài liệu này mô tả kiến trúc thành phần Agent trong hệ thống. Phần hiện thực được thực hiện ở
-tuần 9 theo kế hoạch.
+> **Trạng thái: chờ xác nhận.** Mô tả đề tài đã cập nhật trên hệ thống ELIT không nhắc tới
+> thành phần Agent. Tại buổi họp trước đó, giảng viên hướng dẫn có nêu phần Agent chiếm khoảng
+> 60% khối lượng đề tài, nhưng đó là dưới tên đề tài cũ. Nhóm đã gửi câu hỏi xác nhận. Tài liệu
+> này được giữ lại để bảo toàn phần thiết kế đã thực hiện; nếu thành phần Agent được xác nhận
+> nằm trong phạm vi, nội dung dưới đây là cơ sở hiện thực.
+
+Tài liệu này mô tả kiến trúc thành phần Agent trong hệ thống.
 
 Agent không thay thế mô hình đồ thị và không tham gia vào quá trình trích xuất ban đầu. Agent
 tiếp nhận kết quả đầu ra của mô hình và thực hiện kiểm chứng, hiệu chỉnh ở mức toàn tài liệu.
