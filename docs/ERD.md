@@ -1,9 +1,14 @@
 # LƯỢC ĐỒ QUAN HỆ DỮ LIỆU
 
-**Đề tài:** Xây dựng hệ thống đối soát hóa đơn và chứng từ nhập xuất (ĐA161)
+**Đề tài:** Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin
+từ hóa đơn (ĐA161)
 
 Lược đồ gồm mười một bảng. Định nghĩa chính thức nằm trong `app/models/`; sơ đồ dưới đây
 biểu diễn lại cấu trúc đó phục vụ việc đọc hiểu và trình bày trong báo cáo.
+
+Lược đồ hiện tại phục vụ **lớp ứng dụng minh họa**, phần đối soát chứng từ. Sau khi tên đề tài
+được cập nhật, trọng tâm chuyển sang so sánh các mô hình trích xuất; các bảng lưu kết quả dự đoán
+của từng mô hình và kết quả đánh giá sẽ được bổ sung khi khung thực nghiệm được chốt ở tuần 5.
 
 ```mermaid
 erDiagram

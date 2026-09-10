@@ -1,171 +1,189 @@
 # ĐẶC TẢ HỆ THỐNG
 
-**Đề tài:** Xây dựng hệ thống đối soát hóa đơn và chứng từ nhập xuất (ĐA161)
+**Đề tài:** Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin
+từ hóa đơn (ĐA161)
 
-Tài liệu này đặc tả phạm vi chức năng, cấu trúc pipeline và các quy tắc nghiệp vụ của hệ thống.
-Nội dung bám sát mô tả đề tài đã đăng ký và định hướng của giảng viên hướng dẫn.
+*Evaluation and Comparison of Deep Learning Methods for Invoice Information Extraction*
+
+Tài liệu này đặc tả phạm vi và phương pháp thực hiện, theo tên và mô tả đề tài đã được giảng
+viên hướng dẫn cập nhật trên hệ thống ELIT.
+
+> **Trạng thái:** đề tài chưa được duyệt. Một số nội dung còn chờ xác nhận của giảng viên
+> hướng dẫn, đã ghi rõ tại từng mục.
 
 ---
 
 ## 1. Bài toán
 
-Hệ thống thực hiện đối soát **hóa đơn** với **chứng từ nhập xuất** (phiếu nhập kho, phiếu xuất
-kho) và **đơn đặt hàng**, nhằm phát hiện các trường hợp dữ liệu không nhất quán, sai lệch hoặc
-bất thường.
+Đề tài thực hiện **đánh giá và so sánh các phương pháp học sâu** cho bài toán trích xuất thông
+tin từ hóa đơn, theo yêu cầu tại mô tả đề tài:
 
-Quá trình đối soát được thực hiện trên ba nguồn chứng từ:
+1. Khảo sát và lựa chọn từ ba đến năm mô hình học sâu.
+2. Thực nghiệm trên một số bộ dữ liệu hóa đơn.
+3. Cài đặt hoặc chạy lại các mô hình dưới **điều kiện thực nghiệm thống nhất**.
+4. Đánh giá bằng Precision, Recall và F1-score.
+5. So sánh và phân tích ưu điểm, hạn chế của từng phương pháp.
 
-| Chứng từ | Đại lượng xác định |
+Bài toán trích xuất được xét theo chuẩn của bộ dữ liệu DocILE:
+
+| Bài toán | Nội dung |
 |---|---|
-| Đơn đặt hàng | Số lượng đã đặt |
-| Phiếu nhập kho / phiếu xuất kho | Số lượng thực nhận hoặc thực xuất |
-| Hóa đơn | Số lượng và giá trị được tính tiền |
+| **KILE** | Xác định vị trí và phân loại các trường thông tin trên tài liệu |
+| **LIR** | Gom các trường thông tin thành từng dòng hàng |
 
-Chênh lệch giữa ba đại lượng này là căn cứ để xác định các sai lệch trong quy trình mua hàng
-và quản lý kho.
+**Đóng góp chính của đề tài là khung thực nghiệm thống nhất.** Kết quả công bố trong các công
+trình khác nhau thường không so sánh trực tiếp được với nhau do khác biệt về cách chia tập dữ
+liệu, cách tiền xử lý và cách tính chỉ số. Đề tài đưa các mô hình về cùng một điều kiện đo.
 
-## 2. Cấu trúc sáu module
+### 1.1. Các mô hình dự kiến so sánh
 
-Hệ thống được tổ chức thành sáu module, mỗi module tương ứng với một thư mục mã nguồn và một
-phạm vi trong quy ước quản lý phiên bản.
+| Nhóm phương pháp | Mô hình | Nơi huấn luyện |
+|---|---|---|
+| Đồ thị | Mạng tích chập đồ thị do nhóm hiện thực | Máy cá nhân |
+| Ngôn ngữ | RoBERTa kết hợp thông tin bố cục | Kaggle |
+| Đa phương thức | LayoutLMv3 | Kaggle |
+| Đa phương thức nhẹ | LiLT | Kaggle |
 
-| # | Module | Thư mục | Chức năng | Tuần |
-|---|---|---|---|---|
-| 1 | Tiếp nhận, phân loại và tiền xử lý | `app/intake/` | Tiếp nhận tệp PDF, ảnh và XML; kiểm tra chất lượng; nhận diện loại chứng từ; hiệu chỉnh và khử nhiễu ảnh; phát hiện tệp trùng lặp | 2 |
-| 2 | Trích xuất theo lược đồ và chuẩn hóa | `app/extraction/` | Trích xuất dữ liệu theo lược đồ; lưu bằng chứng theo từng trường; chuẩn hóa ngày tháng, số tiền, thuế suất, đơn vị tính và tên sản phẩm | 3 |
-| 3 | Đối soát và ghép nối | `app/matching/` | Ghép nối hóa đơn, phiếu kho và đơn đặt hàng theo ba tầng; trả về điểm tin cậy và căn cứ ghép nối | 4 |
-| 4 | Kiểm tra ràng buộc và phát hiện bất thường | `app/rules/` | Áp dụng mười hai quy tắc ràng buộc; phân loại năm nhóm kết quả; phát hiện trùng lặp và biến động giá | 5 |
-| 5 | Agent điều phối và rà soát của người dùng | `app/agent/` | Điều phối pipeline theo trạng thái; định tuyến theo độ tin cậy; tạm dừng chờ người dùng phê duyệt | 6, 8 |
-| 6 | Nhật ký, bộ nhớ hiệu chỉnh và giám sát | `app/audit/` | Ghi nhận toàn bộ quyết định; truy hồi các hiệu chỉnh đã được xác nhận | 11 |
+*Danh sách chờ giảng viên hướng dẫn xác nhận về số lượng và thành phần mô hình.*
 
-Kiến trúc chi tiết của Module 5 được trình bày trong tài liệu [AGENT.md](AGENT.md).
+### 1.2. Môi trường huấn luyện
 
-## 3. Năm nhóm kết quả đối soát
+Các mô hình Transformer được huấn luyện trên **Kaggle**, nơi cung cấp GPU có dung lượng bộ nhớ
+đủ lớn. Máy cá nhân chỉ dùng cho mô hình đồ thị và cho khung đánh giá.
 
-Tập giá trị kết quả được xác định theo mô tả đề tài đã đăng ký.
+Cách bố trí này đặt ra ba yêu cầu kỹ thuật:
+
+1. Bộ dữ liệu phải được tải lên Kaggle dưới dạng dataset dùng chung cho mọi lần chạy.
+2. Quy trình huấn luyện phải **lưu điểm kiểm tra định kỳ**, do mỗi phiên làm việc trên Kaggle có
+   giới hạn thời gian.
+3. Khung đánh giá phải chạy được ở cả hai nơi, trên cùng một định dạng kết quả dự đoán, để kết
+   quả của các mô hình so sánh được với nhau.
+
+Phần cứng của từng lần chạy được ghi lại trong kết quả thực nghiệm, vì thời gian huấn luyện và
+bộ nhớ yêu cầu là một trong các tiêu chí so sánh.
+
+## 2. Dữ liệu
+
+Bộ dữ liệu **DocILE**, phần `annotated-trainval`.
+
+| Chỉ tiêu | Giá trị |
+|---|---|
+| Tổng số tài liệu | 5.680 (huấn luyện 5.180, kiểm định 500) |
+| Số trang mỗi tài liệu | 1 trang 77%, 2 trang 19%, 3 trang 4% |
+| Số từ mỗi trang | trung bình 225, lớn nhất 1.906 |
+| Số trường KILE mỗi tài liệu | trung bình 12,7 |
+| Số dòng hàng mỗi tài liệu | trung bình 6,8 |
+| Số loại trường | KILE 36 loại, LIR 18 loại |
+
+Mỗi tài liệu gồm ba thành phần: tệp PDF gốc, kết quả OCR có sẵn kèm tọa độ từng từ, và phần
+chú giải xác định vị trí cùng loại của từng trường thông tin.
+
+### 2.1. Kết quả khảo sát dữ liệu
+
+Ba kết quả khảo sát có ảnh hưởng trực tiếp đến thiết kế:
+
+**Mức độ khớp giữa trường chú giải và từ OCR: 95,64%.** Trong 24.223 trường được khảo sát,
+23.168 trường khớp được với ít nhất một từ do OCR trả về; 1.055 trường không khớp được từ nào.
+Đây là **trần lý thuyết** của phương pháp phân loại nút trên đồ thị từ: không mô hình nào thuộc
+nhóm này vượt được ngưỡng đó, vì phần còn lại không có nút nào biểu diễn được.
+
+**26% số trường trải trên nhiều từ.** Phân bố số từ tạo nên một trường: 1 từ chiếm 73,7%,
+2 từ 7,1%, 3 từ 6,0%, 4 từ 3,0%, 5 từ 2,0%, từ 6 từ trở lên 8,2%. Do đó nhãn của nút phải theo
+lược đồ BIO để khôi phục được ranh giới trường, thay vì phân loại từng nút độc lập.
+
+**Phân bố nhãn mất cân bằng nghiêm trọng.** Mười loại trường phổ biến nhất chiếm khoảng 79%
+tổng số trường, trong khi nhiều loại chỉ xuất hiện dưới 0,1%. Quá trình huấn luyện phải áp dụng
+trọng số theo lớp; kết quả phải báo cáo cả macro-F1 lẫn micro-F1.
+
+## 3. Biểu diễn đồ thị
+
+| Thành phần | Định nghĩa |
+|---|---|
+| Nút | Một từ do OCR trả về |
+| Đặc trưng nút | Biểu diễn văn bản, tọa độ chuẩn hóa, kích thước hộp bao, độ tin cậy OCR |
+| Cạnh | Quan hệ không gian giữa các từ: k láng giềng gần nhất, cùng dòng, trên và dưới |
+| Nhãn nút | Loại trường theo lược đồ BIO, suy ra bằng cách đối chiếu hộp bao của từ với chú giải |
+
+Ở giai đoạn mở rộng, đặc trưng nút được bổ sung **đặc trưng thị giác trích bằng mạng tích chập**
+từ vùng ảnh tương ứng với từ đó.
+
+## 4. Mô hình
+
+**Bài toán chính:** phân loại nút bằng mạng tích chập đồ thị, đầu ra là nhãn BIO cho từng từ.
+Các từ liền kề cùng nhãn được gộp lại thành một trường hoàn chỉnh.
+
+**Bài toán mở rộng:** dự đoán cạnh giữa các trường để gom thành dòng hàng, phục vụ LIR.
+
+Tiến trình thực hiện chia làm ba bước, mỗi bước là một kết quả đo được độc lập:
+
+1. Đồ thị với đặc trưng văn bản và tọa độ
+2. Bổ sung đặc trưng thị giác từ mạng tích chập
+3. Bổ sung dự đoán cạnh cho bài toán gom dòng hàng
+
+## 5. Lớp Agent kiểm chứng
+
+Mô hình đồ thị phân loại từng nút một cách cục bộ và không có khái niệm về tính nhất quán ở mức
+toàn tài liệu. Lớp Agent xử lý đúng nhóm sai sót này.
+
+| Sai sót của mô hình | Xử lý của Agent |
+|---|---|
+| Hai nút cùng được gán một loại trường chỉ xuất hiện một lần | Chọn phương án đúng dựa trên ngữ cảnh |
+| Tổng tiền không khớp tổng các dòng | Phát hiện mâu thuẫn, đọc lại và hiệu chỉnh |
+| Thiếu trường bắt buộc, không nút nào đạt ngưỡng | Tìm bổ sung bằng suy luận trên văn bản gốc |
+| Giá trị hợp lệ về hình thức nhưng bất khả thi về nghiệp vụ | Từ chối và trích xuất lại |
+| Dòng hàng bị gom sai | Gom lại theo bố cục và ngữ nghĩa |
+
+Mọi can thiệp của Agent được ghi vào bảng nhật ký kèm căn cứ. Kiến trúc chi tiết trình bày trong
+tài liệu [AGENT.md](AGENT.md).
+
+## 6. Lớp ứng dụng minh họa
+
+Phần đối soát chứng từ **không còn nằm trong phạm vi chính** của đề tài sau khi tên đề tài được
+cập nhật. Phần này được giữ lại ở mức ứng dụng minh họa, sử dụng kết quả trích xuất để đối chiếu
+chứng từ trên bộ dữ liệu tổng hợp, cho thấy kết quả trích xuất dùng được trong một quy trình
+nghiệp vụ thực tế.
+
+Năm nhóm kết quả đối soát:
 
 | Mã | Nhãn | Điều kiện |
 |---|---|---|
 | `MATCHED` | Trùng khớp | Mọi chênh lệch nằm trong ngưỡng dung sai |
-| `PARTIAL` | Trùng khớp một phần | Chênh lệch theo hướng thiếu: giao thiếu hoặc xuất hóa đơn thiếu so với thực nhận |
-| `MISMATCH` | Sai hoàn toàn | Chênh lệch theo hướng thừa, sai lệch đơn giá, hoặc vi phạm ràng buộc số học |
-| `MISSING` | Thiếu chứng từ | Không xác định được chứng từ đối ứng trong kỳ |
-| `DUPLICATE` | Lặp chứng từ | Trùng lặp theo một trong ba lớp phát hiện tại mục 7 |
+| `PARTIAL` | Trùng khớp một phần | Chênh lệch theo hướng thiếu |
+| `MISMATCH` | Sai hoàn toàn | Chênh lệch theo hướng thừa hoặc vi phạm ràng buộc số học |
+| `MISSING` | Thiếu chứng từ | Không xác định được chứng từ đối ứng |
+| `DUPLICATE` | Lặp chứng từ | Trùng theo mã băm tệp hoặc khóa nghiệp vụ |
 
-**Nguyên tắc phân loại.** Kết quả đối soát được tính từ **chênh lệch định lượng và độ phủ**,
-không tính từ điểm tương đồng. Điểm tương đồng chỉ xác định hai dòng chứng từ có thuộc cùng
-một mặt hàng để so sánh hay không; giá trị chênh lệch mới xác định kết luận. Việc ánh xạ trực
-tiếp ngưỡng tương đồng thành kết luận sẽ dẫn đến phân loại sai đối với các chứng từ hợp lệ có
-tên hàng khác thường.
+Kết quả đối soát được tính từ chênh lệch định lượng và độ phủ, không tính từ điểm tương đồng.
 
-**Nguyên tắc xác định chiều lệch.** Chênh lệch thiếu được phân loại là `PARTIAL`, chênh lệch
-thừa được phân loại là `MISMATCH`. Giao hàng thiếu là tình huống nghiệp vụ thông thường, trong
-khi xuất hóa đơn vượt số lượng thực nhận là mâu thuẫn cần xử lý.
+## 7. Khung thực nghiệm thống nhất
 
-## 4. Bốn đường trích xuất
+Đây là nội dung trọng tâm của đề tài. Mọi mô hình được đo dưới cùng một điều kiện:
 
-Các đường trích xuất được xếp theo mức độ tin cậy giảm dần.
-
-| # | Đường trích xuất | Công cụ | Độ tin cậy |
-|---|---|---|---|
-| 1 | Hóa đơn điện tử định dạng XML | lxml | Chính xác tuyệt đối |
-| 2 | Tệp PDF có lớp văn bản | pdfplumber | Chính xác đến từng ký tự, kèm tọa độ |
-| 3 | Ảnh hoặc PDF dạng quét | PaddleOCR kết hợp VietOCR, chạy cục bộ trên CPU | Có sai số |
-| 4 | Nhập liệu thủ công | Người dùng | Chính xác, có ghi nhật ký |
-
-**Ràng buộc bắt buộc:** hệ thống không thực hiện nhận dạng ký tự quang học đối với chứng từ đã
-có tệp XML kèm theo hoặc đã có sẵn lớp văn bản.
-
-Theo Nghị định 123/2020/NĐ-CP và Thông tư 78/2021/TT-BTC, hóa đơn điện tử có bản gốc là tệp
-XML; bản PDF chỉ là bản thể hiện. Phiếu nhập kho và phiếu xuất kho theo Thông tư 200/2014/TT-BTC
-hoặc Thông tư 133/2016/TT-BTC không có định dạng XML chuẩn, do đó đây là nhóm chứng từ cần đến
-nhận dạng ký tự quang học.
-
-*Hiệu lực của các văn bản pháp lý nêu trên cần được kiểm tra lại trước khi trích dẫn trong báo cáo.*
-
-## 5. Cơ chế ghép nối ba tầng
-
-| Tầng | Phương pháp | Độ tin cậy |
-|---|---|---|
-| 0 | Đọc tham chiếu tường minh in trên phiếu kho theo định dạng "theo hóa đơn số ... ngày ..." | Tuyệt đối, không sử dụng khớp gần đúng |
-| 1 | Chặn tập ứng viên theo mã số thuế và khoảng lệch ngày cho phép | — |
-| 2 | Tổng hợp theo cặp `(mã sản phẩm, đơn vị cơ sở)`, sau đó ghép dòng theo thứ tự tham lam | Có điểm tin cậy |
-
-Tầng 2 xử lý trường hợp một hóa đơn tương ứng với nhiều phiếu kho bằng cách quy bài toán ghép
-cặp nhiều–nhiều về phép so sánh giữa hai đại lượng tổng hợp, do đó không cần thuật toán gán tối ưu.
-
-Tỷ lệ cặp chứng từ được giải quyết tại tầng 0 được đo và ghi nhận trong kết quả thực nghiệm.
-
-## 6. Cơ chế định danh
-
-**Định danh đối tác.** Hệ thống sử dụng mã số thuế làm khóa định danh duy nhất. Địa chỉ được lưu
-để hiển thị nhưng không tham gia vào quá trình so khớp, do Việt Nam chuyển sang mô hình hành
-chính hai cấp từ ngày 01/07/2025, dẫn đến cùng một đối tác có thể mang hai địa chỉ khác nhau và
-cả hai đều hợp lệ.
-
-**Định danh sản phẩm.** Quá trình phân giải dừng tại bước đầu tiên cho kết quả:
-
-1. Mã hàng của nhà cung cấp, lấy từ tệp XML
-2. Tên sản phẩm đã chuẩn hóa, sau khi chuẩn hóa Unicode dạng NFC
-3. Bảng bí danh theo cặp `(đối tác, tên đã chuẩn hóa)`
-4. Cổng thuộc tính: dung tích và quy cách đóng gói phải trùng khớp tuyệt đối
-5. Khớp gần đúng bằng RapidFuzz
-6. Người dùng xác nhận, kết quả được ghi ngược vào bảng bí danh
-
-Cổng thuộc tính tại bước 4 là bắt buộc. Các tên sản phẩm chỉ khác nhau ở thông số định lượng có
-mức tương đồng văn bản rất cao nhưng tương ứng với các mặt hàng khác nhau, do đó thuộc tính định
-lượng giữ vai trò quyết định thay vì mức tương đồng ngữ nghĩa.
-
-## 7. Phát hiện trùng lặp
-
-| Lớp | Phương pháp |
+| Yếu tố | Quy định thống nhất |
 |---|---|
-| L0 | So sánh mã băm SHA-256 của tệp, phát hiện trường hợp tải lên cùng một tệp nhiều lần |
-| L1 | Khóa nghiệp vụ `(mã số thuế, ký hiệu, số hóa đơn)` với ràng buộc duy nhất ở mức cơ sở dữ liệu |
-| L2 | Cùng đối tác, cùng ngày, tổng tiền nằm trong dung sai nhưng khác số hóa đơn, xác định là nghi ngờ trùng lặp |
+| Dữ liệu | Cùng bộ dữ liệu, cùng định dạng trung gian |
+| Cách chia tập | Cùng tập huấn luyện và tập kiểm định |
+| Chỉ số | Precision, Recall, F1 tính theo cùng một cách |
+| Tiền xử lý | Cùng kết quả OCR đầu vào |
+| Phần cứng | Ghi rõ phần cứng của từng lần chạy |
 
-Lớp L2 xử lý trường hợp cùng một chứng từ được quét nhiều lần và có ký tự bị nhận dạng sai.
+Khung đánh giá được thiết kế **độc lập với kiến trúc mô hình**: bổ sung một mô hình mới chỉ yêu
+cầu cung cấp đầu ra theo định dạng chung, không sửa phần đánh giá.
 
-## 8. Mười hai quy tắc kiểm tra ràng buộc
+Nội dung báo cáo kết quả:
 
-Mỗi quy tắc được hiện thực dưới dạng một hàm thuần trong `app/rules/`, ghi kết quả vào bảng
-`finding` với mã quy tắc tương ứng.
+1. Bảng so sánh các mô hình trên từng bộ dữ liệu.
+2. Kết quả theo từng loại trường, kèm macro-F1 để phản ánh các loại trường hiếm.
+3. Chi phí thực nghiệm: thời gian huấn luyện và bộ nhớ GPU yêu cầu.
+4. Phân tích ưu điểm và hạn chế của từng phương pháp.
+5. Phân tích các trường hợp lỗi điển hình.
 
-| # | Mã quy tắc | Nội dung kiểm tra | Mức | Kết quả liên quan |
-|---|---|---|---|---|
-| 1 | `LINE_ARITHMETIC` | Số lượng nhân đơn giá bằng thành tiền | ERROR | MISMATCH |
-| 2 | `SUBTOTAL_SUM` | Tổng tiền hàng bằng tổng thành tiền các dòng | ERROR | MISMATCH |
-| 3 | `TAX_AMOUNT` | Tiền thuế bằng tiền hàng nhân thuế suất | ERROR | MISMATCH |
-| 4 | `TOTAL_SUM` | Tổng thanh toán bằng tiền hàng cộng tiền thuế | ERROR | MISMATCH |
-| 5 | `TAX_RATE_VALID` | Thuế suất thuộc tập giá trị hợp lệ {0%, 5%, 8%, 10%} | WARNING | — |
-| 6 | `TAX_CODE_FORMAT` | Mã số thuế đúng cấu trúc 10 hoặc 13 chữ số | WARNING | — |
-| 7 | `QTY_VARIANCE` | Chênh lệch số lượng giữa các chứng từ vượt dung sai | ERROR | PARTIAL / MISMATCH |
-| 8 | `PRICE_VARIANCE` | Chênh lệch đơn giá vượt dung sai | ERROR | MISMATCH |
-| 9 | `QTY_OVER_ORDER` | Số lượng thực nhận hoặc xuất hóa đơn vượt số lượng đã đặt | ERROR | MISMATCH |
-| 10 | `MISSING_COUNTERPART` | Không có chứng từ đối ứng trong kỳ | ERROR | MISSING |
-| 11 | `DUPLICATE_DOC` | Trùng lặp chứng từ theo ba lớp tại mục 7 | ERROR | DUPLICATE |
-| 12 | `PERIOD_MISMATCH` | Ngày hóa đơn và ngày phiếu kho thuộc hai kỳ kế toán khác nhau | WARNING | — |
-
-Quy tắc số 1 đồng thời giữ vai trò kiểm chứng bộ phân tích số: sai lệch theo bậc nghìn cho thấy
-hệ thống đã diễn giải sai quy ước dấu phân cách thập phân và dấu phân cách nghìn.
-
-Phát hiện bất thường bằng phương pháp thống kê đối với đơn giá và số lượng nằm ngoài phạm vi mười
-hai quy tắc nêu trên, sử dụng độ lệch tuyệt đối trung vị trên các giao dịch gần nhất của cùng cặp
-`(đối tác, sản phẩm)`.
-
-## 9. Dung sai
-
-Hệ thống áp dụng hai mức dung sai có thể cấu hình từ giao diện: mức cảnh báo và mức vi phạm.
-Dung sai được áp dụng cho số lượng, đơn giá và tổng tiền nhằm loại trừ các sai lệch phát sinh
-do làm tròn.
-
-## 10. Quy ước kỹ thuật bắt buộc
+## 8. Quy ước kỹ thuật bắt buộc
 
 1. Giá trị tiền tệ và số lượng sử dụng kiểu `Decimal` trong mã nguồn và `NUMERIC` trong cơ sở
    dữ liệu. Không sử dụng kiểu dấu chấm động.
-2. Tọa độ vùng văn bản được lưu ngay từ lần trích xuất đầu tiên.
-3. Độ tin cậy được suy ra từ các tín hiệu kiểm chứng độc lập: mức đồng thuận giữa bộ trích xuất
-   theo luật và bộ trích xuất theo mô hình, tính đúng đắn của các phép kiểm tra số học, và độ tin
-   cậy do bộ nhận dạng trả về. Hệ thống không sử dụng giá trị độ tin cậy do mô hình tự khai báo.
-4. Độ tin cậy chỉ được dùng để định tuyến chứng từ vào hàng đợi rà soát, không được dùng để gán
-   kết quả đối soát.
+2. Tọa độ vùng văn bản được lưu cùng mọi giá trị trích xuất.
+3. Cấu hình huấn luyện, phiên bản mô hình và hạt giống ngẫu nhiên được ghi lại đầy đủ để bảo
+   đảm kết quả tái lập được.
+4. Bộ dữ liệu đặt ngoài kho mã nguồn, truy cập qua biến môi trường `DOCILE_DIR`.
+5. Độ tin cậy chỉ được dùng để định tuyến sang bước kiểm chứng, không dùng để gán kết quả.
