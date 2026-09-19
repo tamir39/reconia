@@ -3,12 +3,12 @@
 **Đề tài:** Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin
 từ hóa đơn (ĐA161)
 
-Lược đồ gồm mười một bảng. Định nghĩa chính thức nằm trong `app/models/`; sơ đồ dưới đây
-biểu diễn lại cấu trúc đó phục vụ việc đọc hiểu và trình bày trong báo cáo.
+> [!NOTE]
+> **Trạng thái: Lớp ứng dụng mở rộng (Frozen Demo Layer).**
+> Lược đồ cơ sở dữ liệu dưới đây phục vụ cho lớp ứng dụng đối soát 3 chiều và lưu vết thực thể (ERP 3-way matching demo layer) trong `app/models/`. Lớp ứng dụng này đã được đóng băng để tập trung vào mục tiêu nghiên cứu học thuật của đề tài: so sánh và đánh giá 4 mô hình Deep Learning trên 3 bộ dữ liệu hóa đơn.
 
-Lược đồ hiện tại phục vụ **lớp ứng dụng minh họa**, phần đối soát chứng từ. Sau khi tên đề tài
-được cập nhật, trọng tâm chuyển sang so sánh các mô hình trích xuất; các bảng lưu kết quả dự đoán
-của từng mô hình và kết quả đánh giá sẽ được bổ sung khi khung thực nghiệm được chốt ở tuần 5.
+Lược đồ gồm mười một bảng. Định nghĩa chính thức nằm trong `app/models/`; sơ đồ dưới đây
+biểu diễn lại cấu trúc đó phục vụ việc đọc hiểu và tham khảo:
 
 ```mermaid
 erDiagram

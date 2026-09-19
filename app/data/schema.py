@@ -145,3 +145,7 @@ class DatasetAdapter(Protocol):
 
     def iter_documents(self, split: str, limit: int | None = None) -> Iterator[Document]:
         ...
+
+    def get_image(self, doc_id: str, page: int = 0) -> Any:
+        """Return PIL Image for the specified document page (needed for multimodal models)."""
+        ...

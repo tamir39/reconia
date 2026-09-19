@@ -53,24 +53,24 @@ thông điệp giữa các nút, đánh giá trên FUNSD, SROIE và RVL-CDIP.
 ## 3. Hướng tiền huấn luyện đa phương thức
 
 **LayoutLMv3 (Huang và cộng sự, 2022), *Pre-training for Document AI with Unified Text and Image
-Masking*.** Sử dụng nhúng theo mảng ảnh thay cho mạng tích chập làm khung xương, huấn luyện trước
-với ba mục tiêu kết hợp văn bản và hình ảnh.
+Masking*.** ACM Multimedia 2022. Sử dụng nhúng theo mảng ảnh (patch embeddings) thay cho mạng tích chập làm khung xương thị giác, kết hợp đồng thời văn bản, bố cục 2D và hình ảnh dưới một cơ chế Attention chung.
 
-Hướng này cho kết quả cao nhưng chi phí huấn luyện lớn. Trong phạm vi đề tài, LayoutLMv3 được sử
-dụng làm **mốc so sánh** thông qua kết quả đã công bố kèm bộ dữ liệu DocILE, không huấn luyện lại.
+**LiLT (Wang và cộng sự, 2022), *LiLT: A Language-Independent Layout Transformer for Structured Document Information Extraction*.** ACL 2022. Đề xuất kiến trúc tách biệt luồng xử lý ngôn ngữ và bố cục, cho phép tận dụng bố cục độc lập với ngôn ngữ văn bản và giảm nhẹ đáng kể chi phí tính toán so với LayoutLMv3.
+
+Trong phạm vi đề tài, các mô hình Transformer tiền huấn luyện (RoBERTa, LayoutLMv3, LiLT) được fine-tune trực tiếp trên Kaggle GPU trên cùng các tập dữ liệu, sau đó được đối chiếu trực tiếp với mô hình Đồ thị (GNN) trên cùng một khung đo lường thống nhất.
 
 ## 4. Bộ dữ liệu và mốc đánh giá
 
-| Bộ dữ liệu | Quy mô | Đặc điểm |
-|---|---|---|
-| **DocILE** | 6.680 tài liệu có chú giải, 100.000 tài liệu tổng hợp | Hóa đơn và đơn hàng, 55 loại trường, hai bài toán KILE và LIR |
-| FUNSD | 199 biểu mẫu | Biểu mẫu quét nhiễu, nhãn tổng quát |
-| SROIE | Hóa đơn bán lẻ | Bốn trường thông tin |
-| CORD | Hóa đơn bán lẻ | Nhiều trường hơn SROIE |
-| RVL-CDIP | Phân loại tài liệu | Không phải bài toán trích xuất |
+| Bộ dữ liệu | Quy mô | Đặc điểm | Vai trò trong đề tài |
+|---|---|---|---|
+| **DocILE** | 5.680 tài liệu train/val | Hóa đơn & đơn hàng B2B thực tế, đa trang, 55 loại trường | Bộ dữ liệu chính (thực nghiệm KILE & LIR) |
+| **CORD-v2** | 1.000 biên lai | Biên lai ẩm thực & dịch vụ, 30 loại nhãn phân cấp | Bộ dữ liệu mở rộng (thực nghiệm KILE) |
+| **SROIE** | 987 biên lai | Biên lai in nhiệt thực tế, 4 trường chính (company, date, address, total) | Bộ dữ liệu mở rộng (thực nghiệm KILE) |
+| FUNSD | 199 biểu mẫu | Biểu mẫu quét nhiễu, nhãn tổng quát | Tham khảo |
+| RVL-CDIP | 400.000 tài liệu | Phân loại tài liệu | Tiền huấn luyện (tham khảo) |
 
 **Šimša và cộng sự (2023), *DocILE Benchmark for Document Information Localization and
-Extraction*.** ICDAR 2023. Bộ dữ liệu chính của đề tài. Cung cấp sẵn kết quả OCR kèm tọa độ từng
+Extraction*.** ICDAR 2023. Bộ dữ liệu trung tâm của đề tài. Cung cấp sẵn kết quả OCR kèm tọa độ từng
 từ và các mô hình nền để so sánh, gồm RoBERTa, LayoutLMv3 và DETR.
 
 ## 5. Vị trí của đề tài

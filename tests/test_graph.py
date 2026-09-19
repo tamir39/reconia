@@ -189,6 +189,25 @@ def test_words_on_different_pages_are_not_connected():
     ]
     assert same_line_edges(words) == []
     assert vertical_edges(words) == []
+    assert knn_edges(words) == []
+
+
+def test_spatial_edge_features_and_undirected(invoice):
+    from app.graph.edges import compute_spatial_edge_features
+
+    vocab = build_label_vocabulary(collect_fieldtypes([invoice]))
+    graph = build_graph(invoice, vocab)
+
+    # 1. to_undirected
+    u_idx, u_types = graph.to_undirected()
+    assert u_idx.shape == (2, 2 * graph.num_edges)
+    assert u_types.shape == (2 * graph.num_edges,)
+
+    # 2. spatial edge features
+    spatial_attrs = compute_spatial_edge_features(graph.features, graph.edge_index)
+    assert spatial_attrs.shape == (graph.num_edges, 6)
+    assert spatial_attrs.dtype == np.float32
+    assert np.all(spatial_attrs[:, 5] >= 0)  # Euclidean distance non-negative
 
 
 # ---------------------------------------------------------------- graph

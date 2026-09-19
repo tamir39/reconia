@@ -1,3 +1,4 @@
+# --- Framework Nền tảng & Ứng dụng Minh họa ---
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 jinja2==3.1.5
@@ -8,5 +9,21 @@ psycopg[binary]==3.2.3
 pydantic==2.10.4
 pydantic-settings==2.7.0
 python-dotenv==1.0.1
-pytest==8.3.4
 httpx==0.28.1
+
+# --- Kiểm thử Tự động ---
+pytest==8.3.4
+
+# --- Xử lý Dữ liệu & Đọc Tài liệu (DocILE, CORD, SROIE) ---
+numpy>=1.26.0
+pillow>=10.0.0
+pypdf>=4.0.0
+datasets>=2.18.0
+tabulate>=0.9.0
+tqdm>=4.66.0
+matplotlib>=3.8.0
+
+# --- Khung Học sâu (Deep Learning Framework) ---
+# Lưu ý: Trên Windows có GPU NVIDIA (GTX 1650 Ti), khuyến nghị cài PyTorch hỗ trợ CUDA:
+# pip install torch --index-url https://download.pytorch.org/whl/cu124
+torch>=2.0.0

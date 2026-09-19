@@ -1,7 +1,8 @@
 # POLICY — Reconia (ĐA161)
 
 Team: Phí Vương Tường Tâm (52300155) · Vũ Hưng Thịnh (52300159)
-Project: Invoice and Inventory Document Reconciliation System
+Project: Evaluation and Comparison of Deep Learning Methods for Invoice Information Extraction
+(Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin từ hóa đơn)
 
 ---
 
@@ -16,11 +17,12 @@ Project: Invoice and Inventory Document Reconciliation System
 Branch naming uses the same types and scopes as commit messages:
 
 ```
-feat/extraction-xml-parser
-feat/matching-tier0-reference
-fix/rules-zero-quantity
-docs/policy-pr-workflow
-chore/infra-docker-compose
+feat/data-cord-adapter
+feat/graph-spatial-edges
+feat/model-gnn-rgcn
+feat/train-pipeline
+feat/eval-docile-metrics
+docs/update-spec
 ```
 
 `main` being behind `dev` is normal, not a problem to fix.
@@ -38,11 +40,13 @@ Conventional Commits:
 - `<description>` — imperative mood, lowercase first letter, no trailing period, under ~50 chars
 
 ```
-feat(extraction): add XML e-invoice parser
-feat(matching): add tier-0 explicit reference lookup
-fix(rules): handle zero quantity in line arithmetic
-refactor(db): add direction column for inbound and outbound
-docs: add team policy
+feat(data): add CORD-v2 dataset adapter
+feat(graph): compute spatial edge relation features
+feat(model): implement Relational GCN for KILE
+feat(train): add learning rate scheduler with warmup
+fix(data): resolve SROIE multi-line bounding box bleeding
+test(graph): add unit test for undirected edge conversion
+docs: update benchmark specification
 ```
 
 Commit at meaningful units of work, not per file. Each commit should build and run.
@@ -62,17 +66,15 @@ git shortlog -sn
 
 | Scope | Maps to |
 |---|---|
-| `intake` | Module 1 — ingestion, classification, preprocessing |
-| `extraction` | Module 2 — extraction, normalization |
-| `matching` | Module 3 — reconciliation, pairing |
-| `rules` | Module 4 — constraints, anomaly detection |
-| `agent` | Module 5 — agent orchestration, human review |
-| `audit` | Module 6 — audit log, correction memory |
-| `ui` | Screens, review UI, reports |
-| `db` | Schema, migrations |
-| `infra` | Docker, configuration |
-| `eval` | Test data, measurement, model comparison |
-| `docs` | Documentation, report |
+| `data` | Dataset adapters (DocILE, SROIE, CORD-v2), OCR loaders, normalization, paths |
+| `graph` | Document graph builders, nodes, spatial edges, feature extraction |
+| `model` | Deep Learning models (GNN, RoBERTa, LayoutLMv3, LiLT) |
+| `train` | Training loop, loss functions, optimizers, checkpointing |
+| `eval` | Unified evaluation framework (KILE/LIR metrics, entity-level P/R/F1) |
+| `demo` | Legacy ERP reconciliation & verification demo (`app/ui/`, `app/models/`, `app/matching/`) |
+| `db` | Database schema, migrations (demo layer) |
+| `infra` | Docker, environment, dependencies, GPU configuration |
+| `docs` | Documentation, specs, progress reports |
 
 Source directories follow this same list.
 
@@ -109,22 +111,26 @@ docs change — starts as a branch and reaches `dev` through a reviewed pull req
 
 ## 5. Code conventions
 
+### Deep Learning & Benchmark Rules
+- **Reproducibility first:** All training and splitting scripts must explicitly fix random seeds (default `42`).
+- **Portability:** Never hardcode absolute file paths (e.g. `D:/...`). Always resolve dataset directories dynamically using `app.data.paths` or environment variables (`DOCILE_DIR`, `SROIE_DIR`, `CORD_DIR`).
+- **Device independence:** PyTorch tensors and models must support agnostic device dispatch via `.to(device)` (`cuda` if available, otherwise `cpu`).
+- **Strictly unified evaluation:** Metrics (Precision, Recall, F1) must be computed using identical evaluation logic and format matching the DocILE benchmark standards (evaluating at the entity level with exact/overlap matching).
+- **Documentation:** Code and comments in English. Technical documentation and research reports in Vietnamese.
+
+### Legacy ERP Demo Rules
 - **Money is always `Decimal`, never `float`.** Database columns use `NUMERIC`.
-  Floating point rounding produces differences the reconciliation logic would report as genuine.
 - Tax code (MST) is the party identity key. **Never match on address.**
-- Never run OCR on a document that already has XML or a usable text layer.
-- Table and column names: `snake_case`, English, singular (`invoice`, `stock_document`,
-  `product_alias`).
-- Code and comments in English. User-facing text in Vietnamese.
+- Table and column names: `snake_case`, English, singular (`invoice`, `stock_document`, `product_alias`).
 - Each validation rule is **one pure function** writing into the `finding` table.
 
 ## 6. Definition of done
 
-1. Runs on the author's machine without errors.
-2. At least one test for any logic (rules, normalization, matching).
-3. Committed in the correct format and pushed to the branch.
-4. **PR opened into `dev`, reviewed and approved by the other person, and merged.**
-5. No leftover `TODO`s, dead code, or empty functions.
+1. Runs on the author's machine without errors (or on Kaggle for GPU Transformer training).
+2. All unit tests pass (`pytest tests/`).
+3. Committed in conventional commit format (`<type>(<scope>): <description>`).
+4. **PR opened into `dev`, reviewed and approved by the peer reviewer, and merged.**
+5. No leftover `TODO`s, dead code, or hardcoded personal machine paths.
 
 Anything short of all five is still **in progress** and does not count toward the
 completion percentage in the plan sheet.
@@ -133,9 +139,10 @@ completion percentage in the plan sheet.
 
 | Never commit | Why |
 |---|---|
-| **Real** invoices or stock documents before anonymization | Contains MST, prices, counterparty names |
-| `.env`, API keys, tokens (including the Gemini key) | A leaked key must be rotated immediately |
-| OCR model weights, large binaries | Bloats the repo, re-downloadable |
+| Large raw datasets (`docile/`, `sroie/`, `cord/`) | Very large size; datasets are managed externally |
+| Model weights (`*.pt`, `*.pth`, `*.bin`, `*.safetensors`, checkpoints) | Bloats git history; weights belong on Kaggle/HuggingFace |
+| **Real** invoices or stock documents before anonymization | Contains MST, prices, counterparty confidential data |
+| `.env`, API keys, tokens (e.g. Kaggle keys, Gemini keys) | Security violation; leaked keys must be rotated immediately |
 
-Real data stays **outside the repo**. Only synthetic data and the data generator get committed.
+Raw datasets and trained weights stay **outside the git repo**.
 Always run `git status` and read the diff before committing.

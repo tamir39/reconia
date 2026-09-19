@@ -20,9 +20,8 @@ import os
 from pathlib import Path
 from typing import Iterator
 
+from app.data.paths import REPO_ROOT, WORKSPACE_ROOT, resolve_dataset_path
 from app.data.schema import BBox, Document, Field, Word
-
-DEFAULT_DIR = "D:/Data/docile/data/annotated-trainval"
 
 
 def _bbox(pair: list[list[float]]) -> BBox:
@@ -36,55 +35,100 @@ def _bbox_from_flat(values: list[float]) -> BBox:
 
 
 def _iter_ocr_words(payload: dict) -> Iterator[tuple[int, str, BBox, float | None]]:
-    """Walk the nested OCR structure and yield every word.
-
-    The nesting depth varies (pages -> blocks -> lines -> words), so the structure is
-    traversed generically rather than by fixed key path.
-    """
+    """Walk the nested OCR structure in natural forward reading order (top to bottom, line by line)."""
     for page in payload.get("pages", []):
         page_idx = page.get("page_idx", 0)
-        stack: list = [page.get("blocks", [])]
-        while stack:
-            node = stack.pop()
-            if isinstance(node, dict):
-                if "value" in node and "geometry" in node:
-                    geometry = node.get("snapped_geometry") or node["geometry"]
-                    text = str(node["value"])
-                    if text.strip():
-                        yield page_idx, text, _bbox(geometry), node.get("confidence")
-                else:
-                    stack.extend(v for v in node.values() if isinstance(v, (dict, list)))
-            elif isinstance(node, list):
-                stack.extend(node)
+        for block in page.get("blocks", []):
+            for line in block.get("lines", []):
+                for word in line.get("words", []):
+                    if "value" in word and "geometry" in word:
+                        geometry = word.get("snapped_geometry") or word["geometry"]
+                        text = str(word["value"]).strip()
+                        if text:
+                            yield page_idx, text, _bbox(geometry), word.get("confidence")
 
 
 class DocileAdapter:
-    """Reads DocILE into the intermediate representation."""
+    """Reads DocILE into the intermediate representation.
+
+    Supports multi-root resolution: reads train/val from annotated-trainval and test from
+    docile/data/test when downloaded later, without code modifications.
+    """
 
     name = "docile"
 
-    def __init__(self, root: str | os.PathLike[str] | None = None) -> None:
-        self.root = Path(root or os.environ.get("DOCILE_DIR", DEFAULT_DIR))
-        if not self.root.is_dir():
-            raise FileNotFoundError(
-                f"DocILE directory not found: {self.root}. "
-                "Set DOCILE_DIR to the annotated-trainval directory."
-            )
+    def __init__(
+        self,
+        root: str | os.PathLike[str] | None = None,
+        test_root: str | os.PathLike[str] | None = None,
+    ) -> None:
+        candidates = [
+            WORKSPACE_ROOT / "docile" / "data" / "annotated-trainval",
+            WORKSPACE_ROOT / "docile" / "data",
+            REPO_ROOT / "data" / "docile" / "annotated-trainval",
+            REPO_ROOT / "data" / "docile",
+        ]
+        self.root = resolve_dataset_path(
+            env_var_name="DOCILE_DIR",
+            relative_candidates=candidates,
+            dataset_name="DocILE",
+            explicit_path=root,
+        )
+
+        if test_root:
+            self.test_root: Path | None = Path(test_root)
+        else:
+            test_candidates = [
+                WORKSPACE_ROOT / "docile" / "data" / "test",
+                self.root.parent / "test",
+                self.root / "test",
+            ]
+            self.test_root = next((c for c in test_candidates if c.is_dir()), None)
+
+    def _split_path(self, split: str) -> Path | None:
+        """Find the split json file in root or test_root."""
+        primary = self.root / f"{split}.json"
+        if primary.is_file():
+            return primary
+        if self.test_root:
+            secondary = self.test_root / f"{split}.json"
+            if secondary.is_file():
+                return secondary
+        return None
 
     def splits(self) -> list[str]:
-        return [s for s in ("train", "val") if (self.root / f"{s}.json").is_file()]
+        """Dynamically detect available splits (train, val, and test if present)."""
+        detected: list[str] = []
+        for s in ("train", "val", "test"):
+            if self._split_path(s) is not None:
+                detected.append(s)
+        return detected
 
     def document_ids(self, split: str) -> list[str]:
-        path = self.root / f"{split}.json"
-        if not path.is_file():
+        path = self._split_path(split)
+        if path is None:
             raise ValueError(f"unknown split {split!r}; available: {self.splits()}")
         with path.open(encoding="utf-8") as fh:
             return json.load(fh)
 
+    def _find_file(self, subdir: str, filename: str) -> Path:
+        """Locate an annotation, ocr, or pdf file across root and test_root."""
+        primary = self.root / subdir / filename
+        if primary.is_file():
+            return primary
+        if self.test_root:
+            secondary = self.test_root / subdir / filename
+            if secondary.is_file():
+                return secondary
+        raise FileNotFoundError(f"Could not find {filename} in {self.root / subdir}")
+
     def load(self, doc_id: str) -> Document:
-        with (self.root / "annotations" / f"{doc_id}.json").open(encoding="utf-8") as fh:
+        ann_path = self._find_file("annotations", f"{doc_id}.json")
+        ocr_path = self._find_file("ocr", f"{doc_id}.json")
+
+        with ann_path.open(encoding="utf-8") as fh:
             annotation = json.load(fh)
-        with (self.root / "ocr" / f"{doc_id}.json").open(encoding="utf-8") as fh:
+        with ocr_path.open(encoding="utf-8") as fh:
             ocr = json.load(fh)
 
         words = [
@@ -130,4 +174,17 @@ class DocileAdapter:
 
     def pdf_path(self, doc_id: str) -> Path:
         """Location of the source PDF, needed for visual features later."""
-        return self.root / "pdfs" / f"{doc_id}.pdf"
+        return self._find_file("pdfs", f"{doc_id}.pdf")
+
+    def get_image(self, doc_id: str, page: int = 0):
+        """Extract or render the page image from the source PDF."""
+        import pypdf
+        from PIL import Image
+
+        pdf_p = self.pdf_path(doc_id)
+        reader = pypdf.PdfReader(str(pdf_p))
+        if page < len(reader.pages):
+            p = reader.pages[page]
+            if p.images:
+                return p.images[0].image.convert("RGB")
+        return Image.new("RGB", (1000, 1000), color=(255, 255, 255))

@@ -16,14 +16,18 @@ import sys
 import time
 from pathlib import Path
 
-from app.data.docile import DocileAdapter
+from app.data import CordAdapter, DocileAdapter, SroieAdapter
 from app.data.schema import DatasetAdapter
 from app.graph.cache import BuildConfig, GraphCache, build_vocabulary, save_vocabulary
 from app.graph.labels import LabelStats
 
-DEFAULT_CACHE = Path("D:/Data/reconia-cache")
+DEFAULT_CACHE = Path(__file__).resolve().parents[2] / ".cache"
 
-ADAPTERS: dict[str, type] = {"docile": DocileAdapter}
+ADAPTERS: dict[str, type] = {
+    "docile": DocileAdapter,
+    "cord": CordAdapter,
+    "sroie": SroieAdapter,
+}
 
 
 def get_adapter(name: str, root: str | None) -> DatasetAdapter:

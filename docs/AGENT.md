@@ -3,11 +3,10 @@
 **Đề tài:** Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin
 từ hóa đơn (ĐA161)
 
-> **Trạng thái: chờ xác nhận.** Mô tả đề tài đã cập nhật trên hệ thống ELIT không nhắc tới
-> thành phần Agent. Tại buổi họp trước đó, giảng viên hướng dẫn có nêu phần Agent chiếm khoảng
-> 60% khối lượng đề tài, nhưng đó là dưới tên đề tài cũ. Nhóm đã gửi câu hỏi xác nhận. Tài liệu
-> này được giữ lại để bảo toàn phần thiết kế đã thực hiện; nếu thành phần Agent được xác nhận
-> nằm trong phạm vi, nội dung dưới đây là cơ sở hiện thực.
+> [!NOTE]
+> **Trạng thái: Lớp ứng dụng mở rộng (Frozen Demo Layer).**
+> Trọng tâm cốt lõi của đề tài ĐA161 là **đánh giá và so sánh thực nghiệm 4 mô hình học sâu** (GNN, RoBERTa, LayoutLMv3, LiLT) trên 3 bộ dữ liệu chuẩn (DocILE, CORD-v2, SROIE) dưới khung đo lường thống nhất.
+> Tài liệu này mô tả thiết kế tầng Agent kiểm chứng tài liệu sau trích xuất thuộc hệ thống demo trước đây. Toàn bộ tầng này hiện được đóng băng (frozen) để bảo toàn thiết kế kỹ thuật phục vụ tích hợp ứng dụng nghiệp vụ về sau.
 
 Tài liệu này mô tả kiến trúc thành phần Agent trong hệ thống.
 

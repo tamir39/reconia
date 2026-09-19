@@ -56,6 +56,14 @@ class DocumentGraph:
             return np.zeros((2, 0), dtype=np.int64)
         return np.concatenate([self.edge_index, self.edge_index[::-1]], axis=1)
 
+    def to_undirected(self) -> tuple[np.ndarray, np.ndarray]:
+        """Edges and edge types duplicated symmetrically in both directions."""
+        if self.num_edges == 0:
+            return np.zeros((2, 0), dtype=np.int64), np.zeros((0,), dtype=np.int64)
+        u_edge_index = np.concatenate([self.edge_index, self.edge_index[::-1]], axis=1)
+        u_edge_type = np.concatenate([self.edge_type, self.edge_type], axis=0)
+        return u_edge_index, u_edge_type
+
 
 def word_features(word: Word) -> list[float]:
     box, text = word.bbox, word.text

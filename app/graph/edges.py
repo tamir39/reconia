@@ -14,6 +14,8 @@ from __future__ import annotations
 import math
 from typing import Iterable
 
+import numpy as np
+
 from app.data.schema import Word
 
 # Edge type ids, stored per edge so a model can treat relations differently.
@@ -29,29 +31,38 @@ def _centers(words: list[Word]) -> list[tuple[float, float]]:
 
 
 def knn_edges(words: list[Word], k: int = 6) -> list[tuple[int, int]]:
-    """Connect each word to its `k` nearest neighbours by box centre distance.
+    """Connect each word to its `k` nearest neighbours on the same page.
 
-    Provides baseline connectivity so no node is isolated. Distance is computed on
+    Provides baseline connectivity so no node is isolated on its page. Distance is computed on
     normalised coordinates, so it is resolution independent.
     """
     n = len(words)
     if n < 2:
         return []
 
+    by_page: dict[int, list[int]] = {}
+    for i, w in enumerate(words):
+        by_page.setdefault(w.page, []).append(i)
+
     centers = _centers(words)
     edges: set[tuple[int, int]] = set()
-    for i in range(n):
-        xi, yi = centers[i]
-        distances = sorted(
-            (
-                (math.hypot(xi - centers[j][0], yi - centers[j][1]), j)
-                for j in range(n)
-                if j != i
-            ),
-            key=lambda pair: pair[0],
-        )
-        for _, j in distances[:k]:
-            edges.add((i, j) if i < j else (j, i))
+    for indices in by_page.values():
+        m = len(indices)
+        if m < 2:
+            continue
+        page_k = min(k, m - 1)
+        for i in indices:
+            xi, yi = centers[i]
+            distances = sorted(
+                (
+                    (math.hypot(xi - centers[j][0], yi - centers[j][1]), j)
+                    for j in indices
+                    if j != i
+                ),
+                key=lambda pair: pair[0],
+            )
+            for _, j in distances[:page_k]:
+                edges.add((i, j) if i < j else (j, i))
     return sorted(edges)
 
 
@@ -158,3 +169,33 @@ def build_edges(
 
     pairs = sorted(typed)
     return pairs, [typed[p] for p in pairs]
+
+
+def compute_spatial_edge_features(
+    node_features: np.ndarray, edge_index: np.ndarray
+) -> np.ndarray:
+    """Compute continuous spatial relations r_ij between connected nodes.
+
+    Follows Liu et al. (2019) & PICK (2020):
+    r_ij = [dx, dy, w_i/h_i, h_j/h_i, w_j/h_i, dist_ij]
+    where node_features contains [x0, y0, x1, y1, w, h, center_x, center_y, ...].
+    """
+    if edge_index.shape[1] == 0:
+        return np.zeros((0, 6), dtype=np.float32)
+
+    src, dst = edge_index[0], edge_index[1]
+    # Indices from FEATURE_NAMES in builder.py:
+    # 4: width, 5: height, 6: center_x, 7: center_y
+    dx = node_features[dst, 6] - node_features[src, 6]
+    dy = node_features[dst, 7] - node_features[src, 7]
+    wi = node_features[src, 4]
+    hi = np.maximum(node_features[src, 5], 1e-4)
+    wj = node_features[dst, 4]
+    hj = node_features[dst, 5]
+
+    aspect_i = wi / hi
+    rel_h = hj / hi
+    rel_w = wj / hi
+    dist = np.sqrt(dx * dx + dy * dy)
+
+    return np.stack([dx, dy, aspect_i, rel_h, rel_w, dist], axis=1).astype(np.float32)

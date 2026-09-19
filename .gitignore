@@ -4,8 +4,11 @@ __pycache__/
 .venv/
 venv/
 *.egg-info/
+# Caches & temporary files
 .pytest_cache/
 .ruff_cache/
+.cache/
+*.cache
 
 # Env & secrets
 .env
@@ -17,9 +20,12 @@ data/private/
 *.xlsx
 !docs/**/*.xlsx
 
-# OCR model weights (repo root only — must not match app/models/)
+# DL Model weights & artifacts (repo root only — must not match app/models/)
 /models/
+*.pt
 *.pth
+*.bin
+*.safetensors
 *.onnx
 
 # OS / editor
