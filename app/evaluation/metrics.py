@@ -1,9 +1,5 @@
-"""Unified evaluation metrics for invoice and document information extraction.
-
-Provides:
-  1. Token-level classification metrics (Micro/Macro F1, Precision, Recall, Support).
-  2. Entity-level NER metrics (Exact span matching and text matching).
-  3. Resource and latency profiler (Peak GPU VRAM, latency per document, throughput).
+"""Evaluation metrics for invoice and document information extraction.
+Provides precision, recall, f1, and inference latency/VRAM profiling.
 """
 
 from __future__ import annotations
@@ -132,13 +128,13 @@ def compute_token_metrics(
     *,
     ignore_labels: set[str] | None = None,
 ) -> dict[str, Any]:
-    """Compute token-level classification metrics: Micro-F1, Macro-F1, and per-class stats.
+    """Compute token-level classification metrics: accuracy, precision, recall, f1, and per-class stats.
 
     Args:
         y_true: 1D array of ground truth label IDs.
         y_pred: 1D array of predicted label IDs.
         label_names: Mapping from integer ID to string tag name (e.g. ['O', 'B-total', ...]).
-        ignore_labels: Tags to exclude from macro/micro F1 calculation (defaults to {'O'}).
+        ignore_labels: Tags to exclude from F1 calculation (defaults to {'O'}).
     """
     if ignore_labels is None:
         ignore_labels = {"O"}
@@ -185,34 +181,21 @@ def compute_token_metrics(
             "support": int(support),
         }
 
-        if name not in ignore_labels and support > 0:
+        if name not in ignore_labels:
             total_tp += tp
             total_fp += fp
             total_fn += fn
-            f1_list.append(f1)
-            prec_list.append(prec)
-            rec_list.append(rec)
 
-    # Micro averages (excluding ignored labels like 'O')
-    micro_prec = total_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0.0
-    micro_rec = total_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 0.0
-    micro_f1 = (2 * micro_prec * micro_rec) / (micro_prec + micro_rec) if (micro_prec + micro_rec) > 0 else 0.0
-
-    # Macro averages (unweighted average over active non-O classes)
-    macro_prec = float(np.mean(prec_list)) if prec_list else 0.0
-    macro_rec = float(np.mean(rec_list)) if rec_list else 0.0
-    macro_f1 = float(np.mean(f1_list)) if f1_list else 0.0
-
+    precision = float(total_tp / (total_tp + total_fp)) if (total_tp + total_fp) > 0 else 0.0
+    recall = float(total_tp / (total_tp + total_fn)) if (total_tp + total_fn) > 0 else 0.0
+    f1 = float((2 * precision * recall) / (precision + recall)) if (precision + recall) > 0 else 0.0
     overall_accuracy = float(np.mean(y_t == y_p)) if len(y_t) > 0 else 0.0
 
     return {
         "accuracy": overall_accuracy,
-        "micro_precision": float(micro_prec),
-        "micro_recall": float(micro_rec),
-        "micro_f1": float(micro_f1),
-        "macro_precision": float(macro_prec),
-        "macro_recall": float(macro_rec),
-        "macro_f1": float(macro_f1),
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
         "num_tokens": int(len(y_t)),
         "per_class": per_class_stats,
     }
@@ -280,12 +263,11 @@ def compute_entity_metrics(
                 total_fn += 1
                 per_type_fn[t_type] = per_type_fn.get(t_type, 0) + 1
 
-    micro_prec = total_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0.0
-    micro_rec = total_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 0.0
-    micro_f1 = (2 * micro_prec * micro_rec) / (micro_prec + micro_rec) if (micro_prec + micro_rec) > 0 else 0.0
+    precision = total_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0.0
+    recall = total_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 0.0
+    f1 = (2 * precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
 
     per_type_metrics: dict[str, dict[str, float]] = {}
-    f1_list: list[float] = []
 
     for ent_type in sorted(all_types):
         tp = per_type_tp.get(ent_type, 0)
@@ -293,23 +275,18 @@ def compute_entity_metrics(
         fn = per_type_fn.get(ent_type, 0)
         p = tp / (tp + fp) if (tp + fp) > 0 else 0.0
         r = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-        f = (2 * p * r) / (p + r) if (p + r) > 0 else 0.0
+        score = (2 * p * r) / (p + r) if (p + r) > 0 else 0.0
         per_type_metrics[ent_type] = {
             "precision": float(p),
             "recall": float(r),
-            "f1": float(f),
+            "f1": float(score),
             "support": int(tp + fn),
         }
-        if (tp + fn) > 0:
-            f1_list.append(f)
-
-    macro_f1 = float(np.mean(f1_list)) if f1_list else 0.0
 
     return {
-        "precision": float(micro_prec),
-        "recall": float(micro_rec),
-        "f1": float(micro_f1),
-        "macro_f1": float(macro_f1),
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1": float(f1),
         "total_true_entities": total_tp + total_fn,
         "total_pred_entities": total_tp + total_fp,
         "per_type": per_type_metrics,

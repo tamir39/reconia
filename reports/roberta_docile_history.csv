@@ -1,2 +1,0 @@
-epoch,train_loss,val_loss,tok_micro_f1,tok_macro_f1,ent_micro_f1,ent_macro_f1,latency_ms,peak_vram_mb
-1,4.184405183792114,2.6937124729156494,0.0,0.0,0.0,0.0,61.98257999985799,1548.29736328125

@@ -4,7 +4,7 @@ Supports all 3 benchmark datasets (SROIE, CORD-v2, DocILE).
 Profiles GPU VRAM, inference latency, token metrics, and entity metrics.
 
 Usage:
-    python -m app.training.train_gnn --dataset sroie --epochs 10 --device cuda
+    python -m app.training.train_gnn --dataset sroie --epochs 20 --device cuda
 """
 
 from __future__ import annotations
@@ -186,8 +186,11 @@ def evaluate_model(
 
     return {
         "val_loss": avg_loss,
-        "token_metrics": token_metrics,
+        "precision": float(entity_metrics["precision"]),
+        "recall": float(entity_metrics["recall"]),
+        "f1": float(entity_metrics["f1"]),
         "entity_metrics": entity_metrics,
+        "token_metrics": token_metrics,
         "perf": perf_stats,
     }
 
@@ -249,17 +252,22 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", default="sroie", choices=sorted(ADAPTERS), help="Dataset to train on (sroie, cord, docile)")
-    parser.add_argument("--epochs", type=int, default=10, help="Maximum number of training epochs")
+    parser.add_argument("--epochs", type=int, default=20, help="Maximum number of training epochs")
     parser.add_argument("--lr", type=float, default=1e-3, help="Peak learning rate for AdamW")
     parser.add_argument("--weight-decay", type=float, default=1e-4, help="Weight decay for AdamW regularizer")
     parser.add_argument("--hidden-dim", type=int, default=128, help="Hidden dimension of GNN node representations")
     parser.add_argument("--num-layers", type=int, default=2, help="Number of Spatial GNN convolution layers")
     parser.add_argument("--dropout", type=float, default=0.2, help="Dropout probability for GNN layers")
-    parser.add_argument("--batch-accum", type=int, default=8, help="Gradient accumulation steps (effective batch size = batch_accum)")
+    parser.add_argument("--batch-accum", type=int, default=16, help="Gradient accumulation steps (effective batch size = 16)")
     parser.add_argument("--clip-grad-norm", type=float, default=1.0, help="Maximum gradient norm for clipping (<= 0 to disable)")
-    parser.add_argument("--patience", "--early-stopping", dest="patience", type=int, default=5, help="Early stopping patience in epochs (0 to disable)")
+    parser.add_argument("--patience", type=int, default=5, help="Early stopping patience in epochs (0 to disable)")
     parser.add_argument("--resume", type=Path, default=None, help="Path to checkpoint .pt to resume training from")
-    parser.add_argument("--monitor-metric", default="tok_macro", choices=["tok_macro", "ent_f1", "val_loss"], help="Metric to monitor for best checkpoint and early stopping")
+    parser.add_argument(
+        "--monitor-metric",
+        default="f1",
+        choices=["f1", "val_loss"],
+        help="Metric to monitor for best checkpoint and early stopping: 'f1' (default) or 'val_loss'",
+    )
     parser.add_argument("--no-weighted-loss", action="store_true", help="Disable class weighting in CrossEntropyLoss")
     parser.add_argument("--device", default="auto", help="Execution device: 'cuda', 'cpu', or 'auto'")
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE, help="Path to precomputed feature/graph cache")
@@ -355,6 +363,7 @@ def main(argv: list[str] | None = None) -> int:
     latest_checkpoint_path = args.save_dir / f"gnn_{args.dataset}_latest.pt"
 
     start_epoch = 1
+    best_epoch = 1
     best_score = float("inf") if args.monitor_metric == "val_loss" else -1.0
     best_val_metrics: dict[str, Any] = {}
     history: list[dict[str, Any]] = []
@@ -368,16 +377,16 @@ def main(argv: list[str] | None = None) -> int:
         model.load_state_dict(checkpoint["model_state_dict"])
         if "optimizer_state_dict" in checkpoint:
             optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        if "scheduler_state_dict" in checkpoint:
+            scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
         start_epoch = checkpoint.get("epoch", 0) + 1
         history = checkpoint.get("history", [])
         if "best_score" in checkpoint:
             best_score = checkpoint["best_score"]
         elif "metrics" in checkpoint:
             best_val_metrics = checkpoint["metrics"]
-            if args.monitor_metric == "tok_macro":
-                best_score = best_val_metrics.get("token_metrics", {}).get("macro_f1", -1.0)
-            elif args.monitor_metric == "ent_f1":
-                best_score = best_val_metrics.get("entity_metrics", {}).get("f1", -1.0)
+            if args.monitor_metric == "f1":
+                best_score = best_val_metrics.get("f1", best_val_metrics.get("entity_metrics", {}).get("f1", -1.0))
             elif args.monitor_metric == "val_loss":
                 best_score = best_val_metrics.get("val_loss", float("inf"))
         print(f"Successfully resumed at epoch {start_epoch}. Prior best {args.monitor_metric}: {best_score:.4f}")
@@ -398,10 +407,10 @@ def main(argv: list[str] | None = None) -> int:
 
     patience_counter = 0
 
-    print("\n" + "=" * 95)
-    header = f"{'Epoch':<6} | {'TrainLoss':<10} | {'ValLoss':<10} | {'TokMicroF1':<11} | {'TokMacroF1':<11} | {'EntMicroF1':<11} | {'Lat(ms)':<8} | {'VRAM(MB)':<8}"
+    print("\n" + "=" * 80)
+    header = f"{'Epoch':<6} | {'TrainLoss':<10} | {'ValLoss':<10} | {'Precision':<10} | {'Recall':<10} | {'F1':<10} | {'Latency(ms)':<11}"
     print(header)
-    print("=" * 95)
+    print("=" * 80)
 
     for epoch in range(start_epoch, args.epochs + 1):
         t0 = time.time()
@@ -419,10 +428,9 @@ def main(argv: list[str] | None = None) -> int:
 
         val_metrics = evaluate_model(model, cache, val_docs, criterion, device, vocabulary)
         val_loss = val_metrics["val_loss"]
-        tok_micro = val_metrics["token_metrics"]["micro_f1"]
-        tok_macro = val_metrics["token_metrics"]["macro_f1"]
-        ent_micro = val_metrics["entity_metrics"]["f1"]
-        ent_macro = val_metrics["entity_metrics"].get("macro_f1", 0.0)
+        precision = val_metrics["precision"]
+        recall = val_metrics["recall"]
+        f1 = val_metrics["f1"]
         lat = val_metrics["perf"]["latency_ms_per_doc"]
         vram = val_metrics["perf"]["peak_vram_mb"]
 
@@ -430,35 +438,32 @@ def main(argv: list[str] | None = None) -> int:
             "epoch": epoch,
             "train_loss": float(train_loss),
             "val_loss": float(val_loss),
-            "tok_micro_f1": float(tok_micro),
-            "tok_macro_f1": float(tok_macro),
-            "ent_micro_f1": float(ent_micro),
-            "ent_macro_f1": float(ent_macro),
+            "precision": float(precision),
+            "recall": float(recall),
+            "f1": float(f1),
             "latency_ms": float(lat),
             "peak_vram_mb": float(vram),
         })
 
         print(
-            f"{epoch:<6} | {train_loss:<10.4f} | {val_loss:<10.4f} | {tok_micro:<11.4f} | "
-            f"{tok_macro:<11.4f} | {ent_micro:<11.4f} | {lat:<8.1f} | {vram:<8.1f}"
+            f"{epoch:<6} | {train_loss:<10.4f} | {val_loss:<10.4f} | {precision:<10.4f} | "
+            f"{recall:<10.4f} | {f1:<10.4f} | {lat:<11.1f}"
         )
 
-        current_score = (
-            tok_macro if args.monitor_metric == "tok_macro"
-            else ent_micro if args.monitor_metric == "ent_f1"
-            else val_loss
-        )
+        current_score = f1 if args.monitor_metric == "f1" else val_loss
 
         improved = (
-            (current_score < best_score - 1e-4)
+            (current_score < best_score)
             if args.monitor_metric == "val_loss"
-            else (current_score > best_score + 1e-4)
+            else (current_score > best_score)
         )
 
         checkpoint_state = {
             "epoch": epoch,
+            "best_epoch": best_epoch,
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
+            "scheduler_state_dict": scheduler.state_dict(),
             "config": gnn_config,
             "vocabulary": vocabulary,
             "fieldtypes": fieldtypes,
@@ -470,6 +475,8 @@ def main(argv: list[str] | None = None) -> int:
 
         if improved:
             best_score = current_score
+            best_epoch = epoch
+            checkpoint_state["best_epoch"] = best_epoch
             best_val_metrics = val_metrics
             patience_counter = 0
             checkpoint_state["best_score"] = best_score
@@ -484,8 +491,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"\n[Early Stopping] No improvement in '{args.monitor_metric}' for {args.patience} consecutive epochs. Stopping at epoch {epoch}.")
             break
 
-    print("=" * 95)
-    print(f"\nTraining completed. Best {args.monitor_metric}: {best_score:.4f}")
+    print("=" * 87)
+    print(f"\nTraining completed. Best {args.monitor_metric}: {best_score:.4f} (at Epoch {best_epoch})")
     print(f"Best model checkpoint saved to: {best_checkpoint_path}")
     print(f"Latest checkpoint saved to:       {latest_checkpoint_path}")
 
@@ -494,6 +501,12 @@ def main(argv: list[str] | None = None) -> int:
         "device": str(device),
         "gpu_name": torch.cuda.get_device_name(0) if device.type == "cuda" else "CPU",
         "total_params": total_params,
+        "trainable_params": total_params,
+        "epochs_trained": len(history),
+        "best_epoch": best_epoch,
+        "batch_accum": args.batch_accum,
+        "effective_batch_size": args.batch_accum,
+        "lr": args.lr,
         "patience": args.patience,
         "monitor_metric": args.monitor_metric,
         "clip_grad_norm": args.clip_grad_norm,
@@ -506,8 +519,6 @@ def main(argv: list[str] | None = None) -> int:
             "num_classes": gnn_config.num_classes,
             "dropout": gnn_config.dropout,
         },
-        "batch_accum": args.batch_accum,
-        "lr": args.lr,
         "seed": args.seed,
     }
 

@@ -19,10 +19,10 @@ Mục tiêu chính của đề tài là **thiết lập một khung thực nghi�
 2. **LIR (Line Item Recognition)**: Trích xuất và gom nhóm các trường chi tiết thành từng dòng hàng hoàn chỉnh trong bảng sản phẩm.
 
 ### Bốn mô hình học sâu đại diện cho 4 hướng tiếp cận:
-1. **Mô hình Đồ thị (Graph-based)**: Mạng tích chập đồ thị quan hệ không gian (*Spatial Relational GCN*) tự hiện thực bằng PyTorch thuần, kết hợp Text Semantics + 17 đặc trưng hình học và vector quan hệ không gian cạnh (dựa trên [Liu et al., NAACL 2019](file:///d:/Thinh/tdt/Y4/DACNTT/papers/files/205) và [PICK, ICPR 2020](file:///d:/Thinh/tdt/Y4/DACNTT/papers/files/209)). Huấn luyện trên GPU cá nhân (GTX 1650 Ti 4GB).
-2. **Mô hình Ngôn ngữ tuần tự 1D (Text-only Sequence LM)**: RoBERTa token classification (chuẩn baseline của [DocILE Benchmark, ICDAR 2023](file:///d:/Thinh/tdt/Y4/DACNTT/papers/files/199)).
-3. **Mô hình Đa phương thức 2D (Multimodal 2D Transformer)**: LayoutLMv3 kết hợp đồng thời Text Tokens + 2D Bounding Boxes + Image Patches ([Huang et al., ACM MM 2022](file:///d:/Thinh/tdt/Y4/DACNTT/papers/files/218)).
-4. **Mô hình Bố cục tách rời (Decoupled Layout Transformer)**: LiLT tách riêng nhánh ngôn ngữ và nhánh bố cục 2D độc lập ([Wang et al., ACL 2022](file:///d:/Thinh/tdt/Y4/DACNTT/papers/files/220)).
+1. **Mô hình Đồ thị (Graph-based)**: Mạng tích chập đồ thị quan hệ không gian (*Spatial Relational GCN*) tự hiện thực bằng PyTorch thuần, kết hợp Text Semantics + 17 đặc trưng hình học và vector quan hệ không gian cạnh (dựa trên [Liu et al., NAACL 2019](https://aclanthology.org/N19-1138/) và [PICK, ICPR 2020](https://arxiv.org/abs/2004.07464)). Huấn luyện trên GPU cá nhân (GTX 1650 Ti 4GB).
+2. **Mô hình Ngôn ngữ tuần tự 1D (Text-only Sequence LM)**: RoBERTa token classification (chuẩn baseline của [DocILE Benchmark, ICDAR 2023](https://arxiv.org/abs/2302.05658)).
+3. **Mô hình Đa phương thức 2D (Multimodal 2D Transformer)**: LayoutLMv3 kết hợp đồng thời Text Tokens + 2D Bounding Boxes + Image Patches ([Huang et al., ACM MM 2022](https://arxiv.org/abs/2204.08387)).
+4. **Mô hình Bố cục tách rời (Decoupled Layout Transformer)**: LiLT tách riêng nhánh ngôn ngữ và nhánh bố cục 2D độc lập ([Wang et al., ACL 2022](https://arxiv.org/abs/2202.13669)).
 
 ### Ba bộ dữ liệu thực nghiệm thống nhất:
 * **DocILE**: 5.680 hóa đơn doanh nghiệp thực tế, đa trang (1-3 trang), 55 loại trường (KILE 36 loại, LIR 18 loại).
@@ -41,10 +41,11 @@ reconia/
 │   │   ├── docile.py         # DocileAdapter (tự động phân giải train, val, và test sau này)
 │   │   ├── cord.py           # CordAdapter (chuẩn hóa 30 thực thể và line_item_id)
 │   │   ├── sroie.py          # SroieAdapter (khớp nhãn token/line không tràn, seed=42)
+│   │   ├── roberta_dataset.py# PyTorch Dataset chuẩn hóa BBox 2D và căn gióng nhãn sub-word cho RoBERTa
 │   │   ├── paths.py          # Cơ chế tự động dò tìm đường dẫn dữ liệu di động
 │   │   └── sroie_splits.json # Phân chia ngẫu nhiên 500/63/63 tái lập được của SROIE
 │   │
-│   ├── graph/                # Tầng xây dựng đồ thị tài liệu (Document Graph)
+│   ├── graph/                # Tầng xây dựng đồ thị tài liệu (Document Graph cho GNN)
 │   │   ├── builder.py        # Dựng DocumentGraph, trích xuất 17 đặc trưng hình học nút
 │   │   ├── edges.py          # Nối cạnh không gian (kNN theo trang, cùng dòng, cùng cột) & vector r_ij
 │   │   ├── labels.py         # Gán nhãn BIO, tính thống kê độ phủ (ceiling) và giải mã thực thể
@@ -52,29 +53,37 @@ reconia/
 │   │   └── prepare.py        # CLI tiền xử lý và sinh cache đồ thị cho các bộ dữ liệu
 │   │
 │   ├── models_dl/            # Các kiến trúc mô hình học sâu
-│   │   └── gnn.py            # Mô hình 1: Spatial Relational GNN
+│   │   ├── gnn.py            # Mô hình 1: Spatial Relational GNN (Node + Edge Conv)
+│   │   └── roberta.py        # Mô hình 2: RoBERTa + 2D Layout Positional Embedding
+│   │
 │   ├── training/             # Vòng lặp huấn luyện, checkpointing, profiling tài nguyên
-│   │   └── train_gnn.py      # Pipeline huấn luyện GNN trên SROIE, CORD, DocILE
-│   ├── evaluation/           # Khung đo đạc Token/Entity F1, Resource Profiler & Trực quan hóa
-│   │   ├── metrics.py        # Token Macro/Micro-F1, Entity Micro-F1, Latency & Peak VRAM Profiler
-│   │   └── report.py         # Kết xuất báo cáo Markdown, CSV, JSON, Biểu đồ PNG & So sánh chéo
+│   │   ├── train_gnn.py      # Pipeline huấn luyện GNN trên SROIE, CORD, DocILE
+│   │   ├── train_roberta.py  # Pipeline huấn luyện RoBERTa trên SROIE, CORD, DocILE
+│   │   └── run_benchmark.py  # Bộ điều phối tự động chạy suite so sánh đối đầu đa mô hình
+│   │
+│   ├── evaluation/           # Đo đạc hiệu năng: Precision, Recall, F1, Latency & VRAM
+│   │   ├── metrics.py        # Tính Precision, Recall, F1 và profiler tài nguyên phần cứng
+│   │   └── report.py         # Xuất báo cáo Markdown, CSV, JSON và vẽ biểu đồ so sánh
 │   │
 │   ├── models/               # [Đóng băng] Lược đồ CSDL PostgreSQL cho web demo
+│   │   └── entities.py       # SQLAlchemy ORM models (Invoice, LineItem, PO, GoodsReceipt)
 │   ├── ui/                   # [Đóng băng] Giao diện web đối soát demo (Jinja2 + HTMX)
 │   └── main.py               # [Đóng băng] FastAPI app cho web demo
 │
-├── reports/                  # Báo cáo thực nghiệm đọc được & Biểu đồ trực quan hóa
-│   ├── figures/              # Thư mục chứa biểu đồ huấn luyện và so sánh chéo (.png 300 DPI)
-│   ├── benchmark_summary.md  # Bảng tổng hợp so sánh toàn diện tất cả mô hình trên các dataset
-│   └── *_report.md           # Báo cáo chi tiết từng mô hình (kèm bảng per-class breakdown)
-│
+├── reports/                  # Kết quả thực nghiệm và biểu đồ
+│   ├── figures/              # Biểu đồ huấn luyện và so sánh mô hình
+│   ├── benchmark_summary.md  # Bảng tổng hợp so sánh giữa các mô hình trên các tập dữ liệu
+│   ├── benchmark_run_*.log   # Log thực thi benchmark suite
+│   ├── *_history.csv         # Lịch sử chi tiết từng epoch (loss, metrics, latency, vram)
+│   ├── *_results.json        # Dữ liệu JSON phục vụ tổng hợp kết quả
+│   └── *_report.md           # Báo cáo chi tiết từng mô hình
 ├── docs/                     # Tài liệu thiết kế và nghiên cứu học thuật
 │   ├── SPEC.md               # Đặc tả bài toán, phương pháp, dữ liệu và khung thực nghiệm
 │   ├── RELATED_WORK.md       # Tổng quan các công trình nghiên cứu liên quan
 │   ├── AGENT.md              # [Đóng băng] Ghi chú thiết kế Agent kiểm chứng cho web demo
 │   └── ERD.md                # [Đóng băng] Lược đồ CSDL quan hệ cho web demo
 │
-├── tests/                    # Bộ kiểm thử tự động toàn diện (57 unit tests)
+├── tests/                    # Bộ kiểm thử tự động
 ├── requirements.txt          # Danh sách thư viện phụ thuộc của dự án
 ├── .env.example              # Mẫu biến môi trường cấu hình đường dẫn và CSDL
 └── POLICY.md                 # Quy ước đóng góp git, đặt tên nhánh và commit
@@ -89,16 +98,19 @@ reconia/
 Khuyến nghị sử dụng **Python 3.10**:
 
 ```bash
-# Tạo môi trường ảo
+# 1. Tạo môi trường ảo
 python -m venv .venv
 
-# Kích hoạt môi trường (Windows PowerShell)
-.\.venv\Scripts\Activate.ps1
+# 2. Kích hoạt môi trường ảo:
+# Trên Windows (PowerShell / CMD):
+.\.venv\Scripts\activate
+# Trên Linux / macOS / Kaggle:
+source .venv/bin/activate
 
-# Cài đặt các thư viện cơ bản và xử lý dữ liệu
+# 3. Cài đặt các thư viện phụ thuộc:
 pip install -r requirements.txt
 
-# (Khuyến nghị) Cài đặt PyTorch có hỗ trợ GPU NVIDIA CUDA (cho GTX 1650 Ti):
+# 4. (Khuyến nghị) Cài đặt PyTorch có hỗ trợ GPU NVIDIA CUDA (cho GTX 1650 Ti):
 pip install torch --index-url https://download.pytorch.org/whl/cu124
 ```
 
@@ -130,89 +142,159 @@ pytest tests/ -v
 Chạy công cụ dòng lệnh để xây dựng từ điển nhãn BIO và sinh bộ đệm đồ thị (`.cache/`):
 
 ```bash
-# Với bộ dữ liệu SROIE (500 train, 63 val):
-python -m app.graph.prepare --dataset sroie --splits train val
+# Với bộ dữ liệu SROIE (500 train, 63 val, 63 test):
+python -m app.graph.prepare --dataset sroie --splits train val test
 
-# Với bộ dữ liệu CORD-v2 (800 train, 100 validation):
-python -m app.graph.prepare --dataset cord --splits train validation
+# Với bộ dữ liệu CORD-v2 (800 train, 100 validation, 100 test):
+python -m app.graph.prepare --dataset cord --splits train validation test
 
 # Với bộ dữ liệu DocILE (5.180 train, 500 val):
 python -m app.graph.prepare --dataset docile --splits train val
 ```
 
-### 3.5. Huấn Luyện Mô Hình Học Sâu & Tự Động Xuất Báo Cáo
+### 3.5. Huấn Luyện Mô Hình Học Sâu (Training Pipelines)
 
-Hệ thống hỗ trợ huấn luyện độc lập từng kiến trúc mô hình học sâu. Mọi script đều tự động tính toán loss có trọng số cân bằng lớp (`compute_class_weights`), profiling tài nguyên GPU VRAM, đo độ trễ suy luận, và ghi log song song ra console lẫn file log timestamp (`reports/train_<model>_<dataset>_<timestamp>.log`):
+Hệ thống cung cấp quy trình huấn luyện độc lập cho từng kiến trúc mô hình với các cơ chế tự động:
+* **Xử lý mất cân bằng lớp:** Tự động tính toán và bù trọng số lớp (`compute_class_weights`) trong hàm mất mát.
+* **Theo dõi hiệu năng phần cứng:** Giám sát mức chiếm dụng VRAM đỉnh (`Peak GPU VRAM`) và độ trễ suy luận trung bình mỗi tài liệu (`Latency ms/doc`).
+* **Quản lý Checkpoint kép:** Tự động lưu mô hình tốt nhất (`*_best.pt`) theo chỉ số giám sát và mô hình gần nhất (`*_latest.pt`) để sẵn sàng phục hồi.
+* **Theo dõi tiến trình:** Bảng kết quả từng epoch hiển thị trực tiếp trên Terminal:
+  ```text
+  ===================================================================================
+  Epoch  | TrainLoss  | ValLoss    | Precision  | Recall     | F1         | Latency(ms)
+  ===================================================================================
+  ```
+  * `TrainLoss` / `ValLoss`: CrossEntropy loss trên tập train và validation.
+  * `Precision` / `Recall` / `F1`: Độ chính xác, độ bao phủ và F1 trích xuất thực thể (Entity-level Exact Match).
+  * `Latency (ms)`: Thời gian suy luận trung bình mỗi tài liệu (ms).
 
-**Huấn luyện Mô hình 1: GNN (Spatial Relational Graph Neural Network)**:
+#### Các lệnh huấn luyện tiêu biểu:
+
+**1. Huấn luyện Mô hình 1: Spatial Relational GNN**
 ```bash
-# Huấn luyện GNN trên SROIE (kèm Early Stopping sau 5 epochs không tăng)
-python -m app.training.train_gnn --dataset sroie --epochs 20 --patience 5
+# Huấn luyện trên SROIE (Mặc định: 20 epoch, Effective Batch Size = 16, LR = 1e-3, theo dõi F1)
+python -m app.training.train_gnn --dataset sroie
 
-# Huấn luyện tiếp tục từ checkpoint đã lưu (Resume Training)
-python -m app.training.train_gnn --dataset sroie --epochs 25 --resume checkpoints/gnn_sroie_latest.pt
+# Huấn luyện trên CORD-v2 theo dõi Entity F1
+python -m app.training.train_gnn --dataset cord --monitor-metric f1
 
-# Huấn luyện GNN trên CORD-v2 theo dõi Entity F1
-python -m app.training.train_gnn --dataset cord --epochs 15 --monitor-metric ent_f1
-
-# Huấn luyện GNN trên DocILE (subset hoặc full)
-python -m app.training.train_gnn --dataset docile --epochs 10 --limit-train 500 --limit-val 100
+# Huấn luyện trên DocILE (tập con 500 train, 100 val)
+python -m app.training.train_gnn --dataset docile --limit-train 500 --limit-val 100
 ```
 
-**Huấn luyện Mô hình 2: RoBERTa (RoBERTa-base + 2D Layout Positional Embedding)**:
+**2. Huấn luyện Mô hình 2: RoBERTa + 2D Layout Positional Embedding**
 ```bash
-# Huấn luyện RoBERTa trên SROIE (learning rate chuẩn fine-tuning 3e-5)
-python -m app.training.train_roberta --dataset sroie --epochs 10 --patience 5 --batch-size 4
+# Huấn luyện trên SROIE (Mặc định: 20 epoch, batch size 4 x accum 4 = 16, LR = 3e-5)
+python -m app.training.train_roberta --dataset sroie
 
-# Huấn luyện RoBERTa trên CORD-v2
-python -m app.training.train_roberta --dataset cord --epochs 10 --patience 5 --batch-size 4
+# Huấn luyện trên CORD-v2 theo dõi Entity F1
+python -m app.training.train_roberta --dataset cord --monitor-metric f1
 
-# Huấn luyện RoBERTa trên DocILE
-python -m app.training.train_roberta --dataset docile --epochs 10 --limit-train 500 --limit-val 100
+# Huấn luyện trên DocILE (tập con 500 train, 100 val)
+python -m app.training.train_roberta --dataset docile --limit-train 500 --limit-val 100
 ```
 
-**Các tính năng huấn luyện nâng cao:**
-- `--patience <int>` (hoặc `--early-stopping`): Tự động dừng sớm nếu chỉ số theo dõi không cải thiện sau $N$ epochs liên tiếp, bảo vệ GPU và tránh overfitting.
-- `--resume <path>`: Nạp lại toàn bộ trọng số, optimizer, epoch và lịch sử huấn luyện từ tệp `.pt` để học tiếp tục liền mạch.
-- `--monitor-metric <tok_macro|ent_f1|val_loss>`: Lựa chọn chỉ số giám sát để lưu mô hình tối ưu nhất (mặc định: `tok_macro`).
-- `--clip-grad-norm <float>`: Cắt tỉa gradient (mặc định: `1.0`) giúp ổn định quá trình tối ưu hóa, triệt tiêu nguy cơ nổ gradient.
-- **Cơ chế lưu Checkpoint kép:** Hệ thống luôn tự động lưu song song `<model>_<dataset>_best.pt` (checkpoint tối ưu nhất) và `<model>_<dataset>_latest.pt` (checkpoint epoch gần nhất phục vụ resume mọi lúc).
+**3. Tiếp tục huấn luyện từ Checkpoint (Resume)**
+```bash
+# Nạp lại toàn bộ trọng số và trạng thái optimizer để tiếp tục học
+python -m app.training.train_gnn --dataset sroie --resume checkpoints/gnn_sroie_latest.pt --epochs 30
+python -m app.training.train_roberta --dataset sroie --resume checkpoints/roberta_sroie_latest.pt --epochs 30
+```
 
-**Cơ chế xuất kết quả tự động khi hoàn thành:**
-Khi quá trình huấn luyện kết thúc, hệ thống sẽ **tự động kết xuất trọn bộ báo cáo đọc được** vào thư mục `reports/`:
-- `reports/<model>_<dataset>_report.md`: Báo cáo Markdown đọc được trực tiếp, trình bày bảng tóm tắt kết quả tốt nhất, bảng chi tiết từng trường thông tin (Precision, Recall, F1, Support) và bảng theo dõi từng epoch.
-- `reports/<model>_<dataset>_history.csv`: Bảng tính chi tiết từng epoch, tương thích mở bằng Microsoft Excel hoặc Google Sheets.
-- `reports/<model>_<dataset>_results.json`: Dữ liệu có cấu trúc phục vụ phân tích và tổng hợp tự động.
-- `reports/figures/<model>_<dataset>_training_curves.png`: Biểu đồ 4-trong-1 chất lượng cao (300 DPI) gồm đường cong Loss, Token F1, Entity Micro-F1 và biểu đồ cột F1 của từng trường nhãn.
-- `reports/benchmark_summary.md` & `reports/figures/benchmark_comparison.png`: Tự động cập nhật bảng so sánh đối đầu và biểu đồ so sánh chéo đa mô hình.
+**4. Chạy kiểm thử nhanh (Fast Debugging)**
+```bash
+# Chỉ nạp 30 tài liệu train và 10 tài liệu val để kiểm tra mã nguồn trong 1 phút
+python -m app.training.train_gnn --dataset sroie --limit-train 30 --limit-val 10 --epochs 3
+python -m app.training.train_roberta --dataset sroie --limit-train 30 --limit-val 10 --epochs 3
+```
 
+---
 
-### 3.6. Công Cụ Tổng Hợp Báo Cáo & Vẽ Biểu Đồ So Sánh (`report.py`)
+### 3.6. Cẩm Nang Tra Cứu Tham Số Dòng Lệnh (CLI Reference)
 
-Khi bạn muốn tổng hợp lại toàn bộ kết quả, cập nhật bảng so sánh đối đầu hoặc vẽ lại biểu đồ so sánh chéo giữa tất cả các mô hình và các bộ dữ liệu mà **không cần phải huấn luyện lại từ đầu**:
+Mọi kịch bản huấn luyện đều tuân thủ quy ước tham số thống nhất:
 
+#### Bảng 1: Nhóm tham số Điều Khiển Chung (Áp dụng cho cả `train_gnn` và `train_roberta`)
+
+| Tham số | Kiểu | Mặc định | Ý nghĩa & Các lựa chọn khả dụng |
+| :--- | :--- | :--- | :--- |
+| **`--dataset`** | chuỗi | `sroie` | Bộ dữ liệu mục tiêu: `sroie`, `cord`, `docile` |
+| **`--epochs`** | int | `20` | Số lượng epoch tối đa trong một đợt huấn luyện |
+| **`--patience`** | int | `5` | Số epoch dừng sớm nếu chỉ số theo dõi không tăng (`0` để tắt) |
+| **`--monitor-metric`** | chuỗi | `f1` | Chỉ số giám sát để lưu model tốt nhất và dừng sớm:<br>• `f1` *(mặc định: F1 Exact Match theo chuẩn quốc tế)*<br>• `val_loss` *(Validation Loss)* |
+| **`--device`** | chuỗi | `auto` | Thiết bị tính toán: `cuda`, `cpu`, hoặc `auto` |
+| **`--resume`** | path | `None` | Đường dẫn tệp checkpoint `.pt` để khôi phục trạng thái huấn luyện |
+| **`--seed`** | int | `42` | Hạt giống ngẫu nhiên đảm bảo tính tái lập khoa học |
+| **`--limit-train`** | int | `None` | Giới hạn số tài liệu huấn luyện (dùng khi thử nghiệm nhanh) |
+| **`--limit-val`** | int | `None` | Giới hạn số tài liệu kiểm định (dùng khi thử nghiệm nhanh) |
+| **`--save-dir`** | path | `checkpoints/`| Thư mục lưu trữ trọng số mô hình |
+| **`--report-dir`** | path | `reports/` | Thư mục lưu trữ báo cáo, bảng tính và biểu đồ |
+| **`--no-weighted-loss`**| flag | *Tắt* | Tắt cơ chế cân bằng trọng số lớp trong Loss |
+
+#### Bảng 2: Nhóm tham số Tối Ưu Hóa & Cấu Hình Batch (Đảm bảo công bằng phần cứng)
+
+| Tham số | Mặc định GNN | Mặc định RoBERTa | Ý nghĩa khoa học |
+| :--- | :--- | :--- | :--- |
+| **`--lr`** | `1e-3` | `3e-5` | Tốc độ học AdamW (GNN học từ đầu cần LR lớn; Transformer fine-tuning cần LR nhỏ). |
+| **`--batch-size`** | *(1 doc)* | `4` | Số tài liệu nạp vào GPU cùng lúc (RoBERTa đặt 4 để giữ VRAM $\approx 1.6\text{ GB}$). |
+| **`--batch-accum`** | `16` | `4` | Số bước tích lũy đạo hàm trước khi cập nhật trọng số.<br>$\Rightarrow$ **Effective Batch Size = 16** cho cả 2 mô hình ($1 \times 16 = 16$ và $4 \times 4 = 16$). |
+| **`--weight-decay`**| `1e-4` | `0.01` | Hệ số suy giảm trọng số L2 (RoBERTa dùng decoupled decay chuẩn). |
+| **`--clip-grad-norm`**| `1.0` | `1.0` | Ngưỡng cắt tỉa chuẩn gradient chống bùng nổ đạo hàm. |
+
+#### Bảng 3: Nhóm tham số Kiến Trúc Đặc Thù (Chỉ dành cho `train_gnn`)
+
+| Tham số | Kiểu | Mặc định | Ý nghĩa |
+| :--- | :--- | :--- | :--- |
+| **`--hidden-dim`** | int | `128` | Số chiều vector biểu diễn ẩn tại mỗi nút từ |
+| **`--num-layers`** | int | `2` | Số tầng tích chập không gian (Spatial Relational Edge Conv) |
+| **`--dropout`** | float | `0.2` | Tỷ lệ dropout chống quá khớp |
+
+#### Bảng 4: Nhóm tham số của Bộ Điều Phối Benchmark Tự Động (`run_benchmark`)
+
+| Tham số | Kiểu | Mặc định | Ý nghĩa & Lựa chọn |
+| :--- | :--- | :--- | :--- |
+| **`--models`** | list | `all` | Danh sách mô hình cần chạy: `gnn`, `roberta`, hoặc `all` |
+| **`--datasets`** | list | `sroie cord docile`| Danh sách tập dữ liệu: `sroie`, `cord`, `docile` |
+| **`--all`** | flag | *Bật* | Chạy toàn diện cả 3 tập dữ liệu (`sroie cord docile`) |
+| **`--epochs`** | int | `20` | Số epoch áp dụng đồng loạt cho mọi thí nghiệm trong suite |
+| **`--patience`** | int | `5` | Ngưỡng dừng sớm cho từng mô hình |
+| **`--monitor-metric`** | chuỗi | `f1` | Metric theo dõi truyền xuống các mô hình (`f1`, `val_loss`) |
+| **`--docile-limit-train`**| int | `500` | Giới hạn train cho DocILE (để `0` nếu muốn train toàn bộ 5.180 tài liệu) |
+| **`--docile-limit-val`** | int | `100` | Giới hạn val cho DocILE (để `0` nếu muốn val toàn bộ 500 tài liệu) |
+
+---
+
+### 3.7. Quy Trình Thực Nghiệm Tự Động Toàn Diện (Automated Benchmark Suite)
+
+Khi muốn chạy so sánh đối đầu tự động đa mô hình qua đêm (tự động chạy tất cả mô hình trên cả 3 bộ dữ liệu, lưu checkpoint và vẽ bảng so sánh):
+
+```bash
+# Chạy FULL tự động toàn bộ (Tất cả mô hình x Cả 3 bộ dữ liệu x 20 epoch):
+python -m app.training.run_benchmark
+
+# (Tùy chọn) Chạy riêng 1 mô hình trên cả 3 bộ dữ liệu:
+python -m app.training.run_benchmark --models roberta
+
+# (Tùy chọn) Chạy trên 2 bộ dữ liệu nhỏ (SROIE và CORD):
+python -m app.training.run_benchmark --datasets sroie cord
+```
+
+---
+
+### 3.8. Báo Cáo Thực Nghiệm & Đồ Thị (Reports)
+
+Sau khi huấn luyện hoặc chạy benchmark, kết quả được lưu tại thư mục `reports/`:
+* **`reports/<model>_<dataset>_report.md`**: Báo cáo Markdown chi tiết (Precision, Recall, F1, Latency, VRAM, kết quả theo từng loại nhãn và lịch sử huấn luyện).
+* **`reports/<model>_<dataset>_history.csv`**: Dữ liệu lịch sử huấn luyện dạng bảng (`epoch, train_loss, val_loss, precision, recall, f1, latency_ms, peak_vram_mb`).
+* **`reports/<model>_<dataset>_results.json`**: File JSON chứa toàn bộ metric và cấu hình phục vụ phân tích.
+* **`reports/figures/<model>_<dataset>_training_curves.png`**: Đồ thị 2 ô biểu diễn:
+  * Hội tụ Loss (Train vs Val)
+  * Chất lượng trích xuất (Precision, Recall và F1)
+* **`reports/benchmark_summary.md` & `reports/figures/benchmark_comparison.png`**: Bảng tổng hợp đối đầu giữa các mô hình và biểu đồ 3 ô so sánh F1 (%), Latency (ms), VRAM (MB).
+
+Để tạo lại báo cáo hoặc cập nhật bảng tổng hợp từ các file kết quả đã có:
 ```bash
 python -m app.evaluation.report --reports-dir reports
-```
-
-### 3.7. Quy Trình Thực Nghiệm Tự Động (Automated Benchmark Pipeline)
-
-Khi bạn muốn cho máy tính tự động chạy huấn luyện tuần tự qua các mô hình và bộ dữ liệu, hệ thống cung cấp quy trình chạy tự động toàn diện. Script sẽ tuần tự chạy từng mô hình trên từng bộ dữ liệu, tự động bắt lỗi an toàn, ghi nhật ký có mốc thời gian vào `reports/benchmark_run_*.log`, **lưu đầy đủ checkpoint, CSV, JSON, Markdown, biểu đồ PNG cho từng bộ dữ liệu** và tự động cập nhật biểu đồ so sánh chéo đa mô hình:
-
-```bash
-# Cách 1: Chạy bằng Python (khuyên dùng, hỗ trợ cả Windows, Linux và Kaggle)
-# Chạy tất cả các mô hình trên tất cả các bộ dữ liệu:
-python -m app.training.run_benchmark --models all --all --epochs 10 --patience 5
-
-# Chạy riêng Mô hình 2 (RoBERTa) trên SROIE và CORD:
-python -m app.training.run_benchmark --models roberta --datasets sroie cord --epochs 10
-
-# Cách 2: Chạy qua PowerShell script (Windows)
-# Chạy tất cả mô hình trên 3 bộ dữ liệu:
-.\scripts\run_benchmark.ps1 -Models "all" -Datasets "sroie", "cord", "docile" -Epochs 10 -Patience 5
-
-# Chạy riêng RoBERTa:
-.\scripts\run_benchmark.ps1 -Models "roberta" -Datasets "sroie", "cord" -Epochs 10
 ```
 
 

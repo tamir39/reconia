@@ -77,8 +77,7 @@ def build_vocabulary(documents: Iterable[Document]) -> tuple[dict[str, int], lis
     """Derive the BIO vocabulary from documents.
 
     Pass the complete training split. Building from a sample produces a vocabulary that
-    silently drops the rarest field types, and those are exactly the ones macro-F1 is
-    most sensitive to.
+    silently drops the rarest field types, which degrades evaluation metrics.
     """
     from app.graph.labels import build_label_vocabulary
 

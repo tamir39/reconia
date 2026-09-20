@@ -11,7 +11,7 @@ Includes:
 - Unified benchmark reporting (JSON, CSV, Markdown, PNG curves, comparative dashboard)
 
 Usage:
-    python -m app.training.train_roberta --dataset sroie --epochs 10 --batch-size 4 --lr 3e-5
+    python -m app.training.train_roberta --dataset sroie --epochs 20 --batch-size 4 --lr 3e-5
 """
 
 from __future__ import annotations
@@ -252,8 +252,11 @@ def evaluate_roberta_model(
 
     return {
         "val_loss": avg_val_loss,
-        "token_metrics": token_metrics,
+        "precision": float(entity_metrics["precision"]),
+        "recall": float(entity_metrics["recall"]),
+        "f1": float(entity_metrics["f1"]),
         "entity_metrics": entity_metrics,
+        "token_metrics": token_metrics,
         "perf": perf_stats,
     }
 
@@ -265,15 +268,20 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", default="sroie", choices=sorted(ADAPTERS), help="Dataset to train on (sroie, cord, docile)")
-    parser.add_argument("--epochs", type=int, default=10, help="Maximum number of training epochs")
+    parser.add_argument("--epochs", type=int, default=20, help="Maximum number of training epochs")
     parser.add_argument("--lr", type=float, default=3e-5, help="Peak learning rate for AdamW (typically 3e-5 for fine-tuning)")
     parser.add_argument("--weight-decay", type=float, default=0.01, help="Weight decay for AdamW regularizer")
     parser.add_argument("--batch-size", type=int, default=4, help="Batch size per device (default: 4 for 4GB VRAM)")
     parser.add_argument("--batch-accum", type=int, default=4, help="Gradient accumulation steps (effective batch size = batch_size * batch_accum)")
     parser.add_argument("--clip-grad-norm", type=float, default=1.0, help="Maximum gradient norm for clipping (<= 0 to disable)")
-    parser.add_argument("--patience", "--early-stopping", dest="patience", type=int, default=5, help="Early stopping patience in epochs (0 to disable)")
+    parser.add_argument("--patience", type=int, default=5, help="Early stopping patience in epochs (0 to disable)")
     parser.add_argument("--resume", type=Path, default=None, help="Path to checkpoint .pt to resume training from")
-    parser.add_argument("--monitor-metric", default="tok_macro", choices=["tok_macro", "ent_f1", "val_loss"], help="Metric to monitor for best checkpoint and early stopping")
+    parser.add_argument(
+        "--monitor-metric",
+        default="f1",
+        choices=["f1", "val_loss"],
+        help="Metric to monitor for best checkpoint and early stopping: 'f1' (default) or 'val_loss'",
+    )
     parser.add_argument("--no-weighted-loss", action="store_true", help="Disable class weighting in CrossEntropyLoss")
     parser.add_argument("--device", default="auto", help="Execution device: 'cuda', 'cpu', or 'auto'")
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE, help="Path to precomputed feature/vocabulary cache")
@@ -338,7 +346,10 @@ def main(argv: list[str] | None = None) -> int:
     print("Loading RobertaTokenizerFast (roberta-base)...")
     tokenizer = AutoTokenizer.from_pretrained("roberta-base")
 
+    print(f"Tokenizing and caching {len(train_docs)} training documents (subwords + 2D bbox)...")
+    t_tok = time.time()
     train_dataset = RoBERTaInvoiceDataset(train_docs, tokenizer=tokenizer, label_vocabulary=vocab)
+    print(f"Dataset ready: {len(train_dataset)} samples prepared in {time.time() - t_tok:.1f}s.")
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
 
     # 4. Model setup
@@ -401,9 +412,9 @@ def main(argv: list[str] | None = None) -> int:
 
     profiler = InferenceProfiler(device=device)
 
-    print("\n" + "=" * 95)
-    print(f"{'Epoch':<6} | {'TrainLoss':<10} | {'ValLoss':<10} | {'TokMicroF1':<11} | {'TokMacroF1':<11} | {'EntMicroF1':<11} | {'Lat(ms)':<8} | {'VRAM(MB)':<8}")
-    print("=" * 95)
+    print("\n" + "=" * 80)
+    print(f"{'Epoch':<6} | {'TrainLoss':<10} | {'ValLoss':<10} | {'Precision':<10} | {'Recall':<10} | {'F1':<10} | {'Latency(ms)':<11}")
+    print("=" * 80)
 
     best_eval_metrics: dict[str, Any] = {}
     best_epoch_num = 1
@@ -453,18 +464,16 @@ def main(argv: list[str] | None = None) -> int:
                 profiler=profiler,
             )
 
-            tok_micro = val_metrics["token_metrics"]["micro_f1"]
-            tok_macro = val_metrics["token_metrics"]["macro_f1"]
-            ent_micro = val_metrics["entity_metrics"]["f1"]
-            ent_macro = val_metrics["entity_metrics"].get("macro_f1", 0.0)
             val_loss = val_metrics["val_loss"]
+            precision = val_metrics["precision"]
+            recall = val_metrics["recall"]
+            f1 = val_metrics["f1"]
             lat_ms = val_metrics["perf"]["latency_ms_per_doc"]
             vram_mb = val_metrics["perf"]["peak_vram_mb"]
 
             print(
                 f"{epoch:<6} | {avg_train_loss:<10.4f} | {val_loss:<10.4f} | "
-                f"{tok_micro:<11.4f} | {tok_macro:<11.4f} | {ent_micro:<11.4f} | "
-                f"{lat_ms:<8.1f} | {vram_mb:<8.1f}"
+                f"{precision:<10.4f} | {recall:<10.4f} | {f1:<10.4f} | {lat_ms:<11.1f}"
             )
 
             # Record history
@@ -472,21 +481,16 @@ def main(argv: list[str] | None = None) -> int:
                 "epoch": epoch,
                 "train_loss": avg_train_loss,
                 "val_loss": val_loss,
-                "tok_micro_f1": tok_micro,
-                "tok_macro_f1": tok_macro,
-                "ent_micro_f1": ent_micro,
-                "ent_macro_f1": ent_macro,
+                "precision": float(precision),
+                "recall": float(recall),
+                "f1": float(f1),
                 "latency_ms": lat_ms,
                 "peak_vram_mb": vram_mb,
             }
             train_history.append(epoch_record)
 
             # Determine improvement
-            current_monitor = tok_macro
-            if args.monitor_metric == "ent_f1":
-                current_monitor = ent_micro
-            elif args.monitor_metric == "val_loss":
-                current_monitor = val_loss
+            current_monitor = f1 if args.monitor_metric == "f1" else val_loss
 
             is_improvement = (
                 current_monitor > best_monitor_val
@@ -494,43 +498,38 @@ def main(argv: list[str] | None = None) -> int:
                 else current_monitor < best_monitor_val
             )
 
-            # Save latest checkpoint
-            torch.save(
-                {
-                    "epoch": epoch,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "scheduler_state_dict": scheduler.state_dict(),
-                    "best_monitor_val": best_monitor_val,
-                    "train_history": train_history,
-                },
-                latest_checkpoint_path,
-            )
+            # Unified checkpoint state
+            checkpoint_state = {
+                "epoch": epoch,
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "scheduler_state_dict": scheduler.state_dict(),
+                "config": model_cfg.to_dict(),
+                "best_monitor_val": current_monitor if is_improvement else best_monitor_val,
+                "train_history": train_history,
+                "metrics": val_metrics,
+                "monitor_metric": args.monitor_metric,
+            }
+
+            # Always save latest checkpoint
+            torch.save(checkpoint_state, latest_checkpoint_path)
 
             if is_improvement:
                 best_monitor_val = current_monitor
                 patience_counter = 0
                 best_epoch_num = epoch
                 best_eval_metrics = val_metrics
-                torch.save(
-                    {
-                        "epoch": epoch,
-                        "model_state_dict": model.state_dict(),
-                        "config": model_cfg.to_dict(),
-                        "best_monitor_val": best_monitor_val,
-                    },
-                    best_checkpoint_path,
-                )
+                torch.save(checkpoint_state, best_checkpoint_path)
             else:
                 patience_counter += 1
                 if args.patience > 0 and patience_counter >= args.patience:
-                    print(f"\n[Early Stopping Triggered] No improvement in {args.monitor_metric} for {args.patience} epochs.")
+                    print(f"\n[Early Stopping] No improvement in '{args.monitor_metric}' for {args.patience} consecutive epochs. Stopping at epoch {epoch}.")
                     break
 
     except KeyboardInterrupt:
         print("\nTraining interrupted by user. Finalizing reports from completed epochs...")
 
-    print("=" * 95)
+    print("=" * 87)
     print(f"\nTraining completed. Best {args.monitor_metric}: {best_monitor_val:.4f} (at Epoch {best_epoch_num})")
     print(f"Best model checkpoint saved to: {best_checkpoint_path}")
     print(f"Latest checkpoint saved to:       {latest_checkpoint_path}")
@@ -538,14 +537,20 @@ def main(argv: list[str] | None = None) -> int:
     # 5. Export comprehensive benchmark reports and curves
     if (best_eval_metrics or val_metrics) and train_history:
         metadata = {
-            "device": f"{device} ({torch.cuda.get_device_name(device) if device.type == 'cuda' else 'CPU'})",
+            "device": str(device),
+            "gpu_name": torch.cuda.get_device_name(device) if device.type == "cuda" else "CPU",
             "total_params": total_params,
             "trainable_params": trainable_params,
             "epochs_trained": len(train_history),
             "best_epoch": best_epoch_num,
             "batch_size": args.batch_size,
             "batch_accum": args.batch_accum,
+            "effective_batch_size": args.batch_size * args.batch_accum,
             "lr": args.lr,
+            "patience": args.patience,
+            "monitor_metric": args.monitor_metric,
+            "clip_grad_norm": args.clip_grad_norm,
+            "resumed_from": str(args.resume) if args.resume else None,
             "seed": args.seed,
         }
 

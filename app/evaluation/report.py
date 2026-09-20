@@ -35,10 +35,9 @@ def save_training_history_csv(csv_path: Path, history: list[dict[str, Any]]) -> 
         "epoch",
         "train_loss",
         "val_loss",
-        "tok_micro_f1",
-        "tok_macro_f1",
-        "ent_micro_f1",
-        "ent_macro_f1",
+        "precision",
+        "recall",
+        "f1",
         "latency_ms",
         "peak_vram_mb",
     ]
@@ -47,7 +46,18 @@ def save_training_history_csv(csv_path: Path, history: list[dict[str, Any]]) -> 
         writer = csv.DictWriter(fh, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
         for row in history:
-            writer.writerow(row)
+            # Support both direct precision/recall/f1 and legacy entity_* keys
+            clean_row = {
+                "epoch": row.get("epoch", 1),
+                "train_loss": row.get("train_loss", 0.0),
+                "val_loss": row.get("val_loss", 0.0),
+                "precision": row.get("precision", row.get("entity_precision", 0.0)),
+                "recall": row.get("recall", row.get("entity_recall", 0.0)),
+                "f1": row.get("f1", row.get("entity_f1", 0.0)),
+                "latency_ms": row.get("latency_ms", 0.0),
+                "peak_vram_mb": row.get("peak_vram_mb", 0.0),
+            }
+            writer.writerow(clean_row)
 
 
 def save_markdown_report(
@@ -61,75 +71,84 @@ def save_markdown_report(
     model_name = summary_data.get("model", "Model")
     dataset_name = summary_data.get("dataset", "Dataset").upper()
     best_epoch = summary_data.get("best_epoch", 1)
-    best_tok_macro = summary_data.get("best_tok_macro_f1", 0.0)
-    best_tok_micro = summary_data.get("best_tok_micro_f1", 0.0)
-    best_ent_f1 = summary_data.get("best_ent_micro_f1", 0.0)
+    train_loss = summary_data.get("train_loss", 0.0)
+    val_loss = summary_data.get("val_loss", 0.0)
+    precision = summary_data.get("precision", summary_data.get("entity_precision", 0.0))
+    recall = summary_data.get("recall", summary_data.get("entity_recall", 0.0))
+    f1 = summary_data.get("f1", summary_data.get("entity_f1", 0.0))
     total_params = summary_data.get("total_params", 0)
     latency_ms = summary_data.get("latency_ms", 0.0)
     peak_vram = summary_data.get("peak_vram_mb", 0.0)
     device = summary_data.get("device", "CPU")
     history = summary_data.get("history", [])
-    per_class = summary_data.get("final_per_class", {})
+    per_type = summary_data.get("entity_per_type", summary_data.get("final_per_class", {}))
 
     lines: list[str] = [
         f"# Báo Cáo Thực Nghiệm: {model_name} trên Bộ Dữ Liệu {dataset_name}",
         "",
-        "## 1. Tóm Tắt Kết Quả Tối Ưu Nhất",
-        "",
-        "| Tiêu chí đánh giá | Giá trị đạt được |",
-        "|---|---|",
-        f"| **Mô hình** | `{model_name}` |",
-        f"| **Bộ dữ liệu** | `{dataset_name}` |",
-        f"| **Thiết bị phần cứng** | `{device}` |",
-        f"| **Tổng số tham số** | {total_params:,} |",
-        f"| **Epoch tốt nhất** | Epoch {best_epoch} |",
-        f"| **Token Macro-F1 (Tối ưu)** | **{best_tok_macro * 100:.2f}%** |",
-        f"| **Token Micro-F1** | **{best_tok_micro * 100:.2f}%** |",
-        f"| **Entity Micro-F1** | **{best_ent_f1 * 100:.2f}%** |",
-        f"| **Độ trễ suy luận trung bình** | **{latency_ms:.2f} ms / tài liệu** |",
-        f"| **Bộ nhớ GPU đỉnh điểm (VRAM)** | **{peak_vram:.1f} MB** |",
-        "",
     ]
+    sec_idx = 1
+    lines.append(f"## {sec_idx}. Kết Quả Tối Ưu")
+    lines.append("")
+    lines.append("| Tiêu chí | Giá trị |")
+    lines.append("|---|---|")
+    lines.append(f"| **Mô hình** | `{model_name}` |")
+    lines.append(f"| **Bộ dữ liệu** | `{dataset_name}` |")
+    lines.append(f"| **Thiết bị** | `{device}` |")
+    lines.append(f"| **Tham số** | {total_params:,} |")
+    lines.append(f"| **Epoch tối ưu** | {best_epoch} |")
+    lines.append(f"| **Train Loss** | {train_loss:.4f} |")
+    lines.append(f"| **Val Loss** | {val_loss:.4f} |")
+    lines.append(f"| **Precision** | **{precision * 100:.2f}%** |")
+    lines.append(f"| **Recall** | **{recall * 100:.2f}%** |")
+    lines.append(f"| **F1** | **{f1 * 100:.2f}%** |")
+    lines.append(f"| **Latency (ms)** | **{latency_ms:.2f}** |")
+    lines.append(f"| **VRAM (MB)** | **{peak_vram:.1f}** |")
+    lines.append("")
 
     # Embedded Figures
     if figure_paths:
-        lines.append("## 2. Biểu Đồ Huấn Luyện & Đánh Giá")
+        sec_idx += 1
+        lines.append(f"## {sec_idx}. Biểu Đồ Huấn Luyện")
         lines.append("")
         for fig_p in figure_paths:
             rel_path = fig_p.name
             lines.append(f"![{fig_p.stem}]({rel_path})")
             lines.append("")
 
-    # Per-class Table
-    if per_class:
-        lines.append("## 3. Đánh Giá Chi Tiết Theo Từng Lớp Thực Thể (Per-Class Breakdown)")
+    # Per-type Entity Table
+    if per_type:
+        sec_idx += 1
+        lines.append(f"## {sec_idx}. Kết Quả Theo Từng Nhãn Thực Thể")
         lines.append("")
-        lines.append("| Tên nhãn BIO | Precision (%) | Recall (%) | F1-Score (%) | Số lượng mẫu (Support) |")
+        lines.append("| Nhãn | Precision | Recall | F1 | Mẫu (Support) |")
         lines.append("|---|---|---|---|---|")
-        for cls_name, stats in sorted(per_class.items()):
+        for ent_name, stats in sorted(per_type.items()):
             p = stats.get("precision", 0.0) * 100
             r = stats.get("recall", 0.0) * 100
-            f1 = stats.get("f1", 0.0) * 100
+            ent_f1 = stats.get("f1", 0.0) * 100
             supp = stats.get("support", 0)
-            lines.append(f"| `{cls_name}` | {p:.2f}% | {r:.2f}% | **{f1:.2f}%** | {supp:,} |")
+            lines.append(f"| `{ent_name}` | {p:.2f}% | {r:.2f}% | **{ent_f1:.2f}%** | {supp:,} |")
+        lines.append(f"| **Tổng thể** | **{precision * 100:.2f}%** | **{recall * 100:.2f}%** | **{f1 * 100:.2f}%** | — |")
         lines.append("")
 
     # History Table
     if history:
-        lines.append("## 4. Lịch Sử Huấn Luyện Từng Epoch (Training History)")
+        sec_idx += 1
+        lines.append(f"## {sec_idx}. Lịch Sử Huấn Luyện")
         lines.append("")
-        lines.append("| Epoch | Train Loss | Val Loss | Tok Micro-F1 | Tok Macro-F1 | Ent Micro-F1 | Latency (ms) | Peak VRAM |")
+        lines.append("| Epoch | Train Loss | Val Loss | Precision | Recall | F1 | Latency (ms) | VRAM (MB) |")
         lines.append("|---|---|---|---|---|---|---|---|")
         for h in history:
             ep = h.get("epoch", 0)
             tl = h.get("train_loss", 0.0)
             vl = h.get("val_loss", 0.0)
-            t_mic = h.get("tok_micro_f1", 0.0) * 100
-            t_mac = h.get("tok_macro_f1", 0.0) * 100
-            e_mic = h.get("ent_micro_f1", 0.0) * 100
+            p = h.get("precision", h.get("entity_precision", 0.0)) * 100
+            r = h.get("recall", h.get("entity_recall", 0.0)) * 100
+            ef = h.get("f1", h.get("entity_f1", 0.0)) * 100
             lat = h.get("latency_ms", 0.0)
             vram = h.get("peak_vram_mb", 0.0)
-            lines.append(f"| {ep} | {tl:.4f} | {vl:.4f} | {t_mic:.2f}% | {t_mac:.2f}% | {e_mic:.2f}% | {lat:.1f} ms | {vram:.1f} MB |")
+            lines.append(f"| {ep} | {tl:.4f} | {vl:.4f} | {p:.2f}% | {r:.2f}% | **{ef:.2f}%** | {lat:.1f} | {vram:.1f} |")
         lines.append("")
 
     with md_path.open("w", encoding="utf-8") as fh:
@@ -139,11 +158,11 @@ def save_markdown_report(
 def plot_training_dashboard(
     figure_path: Path,
     history: list[dict[str, Any]],
-    per_class_metrics: dict[str, dict[str, float]],
+    per_type_metrics: dict[str, dict[str, float]],
     model_name: str,
     dataset_name: str,
 ) -> Path | None:
-    """Generate a high-resolution 4-panel training and evaluation dashboard figure."""
+    """Generate a clean 2-panel training and evaluation figure (Loss & Metrics)."""
     if plt is None:
         print("[Warning] matplotlib is not installed. Skipping chart generation.")
         return None
@@ -155,97 +174,54 @@ def plot_training_dashboard(
     epochs = [h["epoch"] for h in history]
     train_loss = [h["train_loss"] for h in history]
     val_loss = [h["val_loss"] for h in history]
-    tok_micro = [h["tok_micro_f1"] * 100 for h in history]
-    tok_macro = [h["tok_macro_f1"] * 100 for h in history]
-    ent_micro = [h["ent_micro_f1"] * 100 for h in history]
+    prec = [(h.get("precision") or h.get("entity_precision", 0.0)) * 100 for h in history]
+    rec = [(h.get("recall") or h.get("entity_recall", 0.0)) * 100 for h in history]
+    f1 = [(h.get("f1") or h.get("entity_f1", 0.0)) * 100 for h in history]
+    latencies = [h.get("latency_ms", 0.0) for h in history]
+    vrams = [h.get("peak_vram_mb", 0.0) for h in history]
+
+    avg_lat = float(np.mean(latencies)) if latencies else 0.0
+    peak_vram = max(vrams, default=0.0)
 
     plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default")
-    fig, axes = plt.subplots(2, 2, figsize=(15, 11), dpi=300)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), dpi=300)
     fig.suptitle(
-        f"Training & Evaluation Metrics: {model_name} on {dataset_name.upper()}",
-        fontsize=16,
+        f"{model_name} on {dataset_name.upper()}  (Latency: {avg_lat:.1f} ms | VRAM: {peak_vram:.1f} MB)",
+        fontsize=13,
         fontweight="bold",
         y=0.98,
     )
 
     # Panel 1: Loss Curves
-    ax1 = axes[0, 0]
+    ax1 = axes[0]
     ax1.plot(epochs, train_loss, "o-", color="#1f77b4", label="Train Loss", linewidth=2, markersize=5)
     ax1.plot(epochs, val_loss, "s--", color="#d62728", label="Val Loss", linewidth=2, markersize=5)
     max_loss = max(max(train_loss, default=1.0), max(val_loss, default=1.0))
     ax1.set_ylim(bottom=0, top=max_loss * 1.2 + 0.1)
-    ax1.set_title("Loss Convergence", fontsize=12, fontweight="bold")
+    ax1.set_title("Hội Tụ Loss", fontsize=11, fontweight="bold")
     ax1.set_xlabel("Epoch", fontsize=10)
     ax1.set_ylabel("CrossEntropy Loss", fontsize=10)
     ax1.legend(loc="upper right", frameon=True)
     ax1.grid(True, linestyle="--", alpha=0.6)
 
-    # Panel 2: Token F1 Curves
-    ax2 = axes[0, 1]
-    ax2.plot(epochs, tok_macro, "^-", color="#2ca02c", label="Token Macro-F1 (%)", linewidth=2, markersize=5)
-    ax2.plot(epochs, tok_micro, "v--", color="#ff7f0e", label="Token Micro-F1 (%)", linewidth=2, markersize=5)
-    ax2.set_ylim(0, 110)
-    ax2.set_title("Token-Level Classification F1", fontsize=12, fontweight="bold")
+    # Panel 2: Precision, Recall & F1 Curves
+    ax2 = axes[1]
+    ax2.plot(epochs, prec, "o-", color="#17becf", label="Precision (%)", linewidth=2, markersize=5)
+    ax2.plot(epochs, rec, "s--", color="#ff7f0e", label="Recall (%)", linewidth=2, markersize=5)
+    ax2.plot(epochs, f1, "^-", color="#2ca02c", label="F1 (%)", linewidth=2, markersize=5)
+    ax2.set_ylim(0, 105)
+    ax2.set_title("Chất Lượng Trích Xuất (%)", fontsize=11, fontweight="bold")
     ax2.set_xlabel("Epoch", fontsize=10)
-    ax2.set_ylabel("F1 Score (%)", fontsize=10)
+    ax2.set_ylabel("Tỷ lệ (%)", fontsize=10)
     ax2.legend(loc="lower right", frameon=True)
     ax2.grid(True, linestyle="--", alpha=0.6)
 
-    # Panel 3: Entity F1 Curve
-    ax3 = axes[1, 0]
-    ax3.plot(epochs, ent_micro, "D-", color="#9467bd", label="Entity Micro-F1 (%)", linewidth=2, markersize=5)
-    ax3.set_ylim(0, 110)
-    ax3.set_title("Entity-Level Extraction F1 (Exact Match)", fontsize=12, fontweight="bold")
-    ax3.set_xlabel("Epoch", fontsize=10)
-    ax3.set_ylabel("Entity F1 (%)", fontsize=10)
-    ax3.legend(loc="lower right", frameon=True)
-    ax3.grid(True, linestyle="--", alpha=0.6)
-
-    # Ensure integer ticks for epochs across subplots 1, 2, 3
+    # Ensure integer ticks for epochs
     if len(epochs) <= 20:
-        for ax in (ax1, ax2, ax3):
+        for ax in [ax1, ax2]:
             ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))
 
-    # Panel 4: Per-Class F1 Bar Chart (Filtering out background 'O')
-    ax4 = axes[1, 1]
-    entity_classes = [
-        (cls, stats["f1"] * 100)
-        for cls, stats in per_class_metrics.items()
-        if cls != "O" and stats.get("support", 0) > 0
-    ]
-    # Sort by F1 descending
-    entity_classes.sort(key=lambda x: x[1], reverse=True)
-    # Cap to top 15 if there are too many classes (like DocILE)
-    if len(entity_classes) > 15:
-        entity_classes = entity_classes[:15]
-
-    if entity_classes:
-        names = [item[0] for item in entity_classes]
-        scores = [item[1] for item in entity_classes]
-        colors = plt.cm.viridis(np.linspace(0.2, 0.8, len(names)))
-        bars = ax4.barh(names, scores, color=colors, edgecolor="black", linewidth=0.5)
-        ax4.set_title("Per-Class F1 Score Breakdown (Top Classes)", fontsize=12, fontweight="bold")
-        ax4.set_xlabel("F1 Score (%)", fontsize=10)
-        # Give ample breathing room on the right (118%) so labels like 95.0% or 100.0% never clip or overflow
-        ax4.set_xlim(0, 118)
-        ax4.invert_yaxis()  # Highest at top
-        for bar in bars:
-            width = bar.get_width()
-            ax4.text(
-                width + 1.2,
-                bar.get_y() + bar.get_height() / 2,
-                f"{width:.1f}%",
-                va="center",
-                fontsize=8,
-                fontweight="semibold",
-            )
-    else:
-        ax4.text(0.5, 0.5, "No active entity classes", ha="center", va="center")
-        ax4.set_title("Per-Class Breakdown", fontsize=12, fontweight="bold")
-
-    ax4.grid(True, linestyle="--", alpha=0.6, axis="x")
-
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.tight_layout(rect=[0, 0.03, 1, 0.94])
     plt.savefig(figure_path, format="png", bbox_inches="tight")
     plt.close(fig)
     return figure_path
@@ -259,10 +235,7 @@ def export_full_benchmark_report(
     final_val_metrics: dict[str, Any],
     metadata: dict[str, Any],
 ) -> dict[str, Path]:
-    """Orchestrate saving JSON, CSV, Markdown, and Chart figures.
-
-    Returns dict mapping format names ('json', 'csv', 'markdown', 'figure') to file paths.
-    """
+    """Orchestrate saving JSON, CSV, Markdown, and Chart figures."""
     output_dir.mkdir(parents=True, exist_ok=True)
     figures_dir = output_dir / "figures"
     figures_dir.mkdir(parents=True, exist_ok=True)
@@ -273,9 +246,25 @@ def export_full_benchmark_report(
     md_path = output_dir / f"{base_name}_report.md"
     fig_path = figures_dir / f"{base_name}_training_curves.png"
 
-    # Find best epoch based on token macro F1
-    best_entry = max(history, key=lambda x: x.get("tok_macro_f1", 0.0)) if history else {}
-    best_epoch = best_entry.get("epoch", 1)
+    # Determine best epoch
+    best_epoch = metadata.get("best_epoch")
+    if best_epoch is not None and history:
+        best_entry = next((e for e in history if e.get("epoch") == best_epoch), {})
+    else:
+        best_entry = max(history, key=lambda x: x.get("f1", x.get("entity_f1", 0.0))) if history else {}
+        best_epoch = best_entry.get("epoch", 1)
+
+    precision = best_entry.get("precision", best_entry.get("entity_precision", 0.0))
+    recall = best_entry.get("recall", best_entry.get("entity_recall", 0.0))
+    f1 = best_entry.get("f1", best_entry.get("entity_f1", 0.0))
+
+    # Per-type entity stats
+    per_type = (
+        final_val_metrics.get("entity_metrics", {}).get("per_type")
+        or final_val_metrics.get("per_type")
+        or final_val_metrics.get("token_metrics", {}).get("per_class")
+        or {}
+    )
 
     summary_data = {
         "model": model_name,
@@ -283,12 +272,14 @@ def export_full_benchmark_report(
         "device": metadata.get("device", "CPU"),
         "total_params": metadata.get("total_params", 0),
         "best_epoch": best_epoch,
-        "best_tok_macro_f1": best_entry.get("tok_macro_f1", 0.0),
-        "best_tok_micro_f1": best_entry.get("tok_micro_f1", 0.0),
-        "best_ent_micro_f1": best_entry.get("ent_micro_f1", 0.0),
+        "train_loss": best_entry.get("train_loss", 0.0),
+        "val_loss": best_entry.get("val_loss", 0.0),
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
         "latency_ms": best_entry.get("latency_ms", 0.0),
         "peak_vram_mb": best_entry.get("peak_vram_mb", 0.0),
-        "final_per_class": final_val_metrics.get("token_metrics", {}).get("per_class", {}),
+        "entity_per_type": per_type,
         "history": history,
         "metadata": metadata,
     }
@@ -304,7 +295,7 @@ def export_full_benchmark_report(
     generated_fig = plot_training_dashboard(
         fig_path,
         history,
-        summary_data["final_per_class"],
+        per_type,
         model_name,
         dataset_name,
     )
@@ -364,13 +355,13 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
     # 1. Generate Markdown Comparison Table
     md_path = reports_dir / "benchmark_summary.md"
     md_lines = [
-        "# Bảng So Sánh Tổng Hợp Các Mô Hình Học Sâu",
+        "# Bảng So Sánh Tổng Hợp Các Mô Hình",
         "",
-        "Báo cáo tự động tổng hợp từ các kết quả thực nghiệm trong thư mục `reports/`.",
+        "Tổng hợp kết quả thực nghiệm từ các file trong thư mục `reports/`:",
         "",
-        "## 1. Bảng So Sánh Toàn Diện (Comprehensive Benchmark Table)",
+        "## 1. Kết Quả Tổng Hợp",
         "",
-        "| Mô hình | Bộ dữ liệu | Epoch tối ưu | Token Macro-F1 | Token Micro-F1 | Entity Micro-F1 | Độ trễ (ms/doc) | GPU VRAM (MB) |",
+        "| Mô hình | Bộ dữ liệu | Epoch | Precision (%) | Recall (%) | F1 (%) | Latency (ms) | VRAM (MB) |",
         "|---|---|---|---|---|---|---|---|",
     ]
 
@@ -378,14 +369,14 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
         model = r.get("model", "Unknown")
         dataset = r.get("dataset", "Unknown").upper()
         best_ep = r.get("best_epoch", 1)
-        tok_macro = r.get("best_tok_macro_f1", 0.0) * 100
-        tok_micro = r.get("best_tok_micro_f1", 0.0) * 100
-        ent_micro = r.get("best_ent_micro_f1", 0.0) * 100
+        prec = (r.get("precision") or r.get("entity_precision", 0.0)) * 100
+        rec = (r.get("recall") or r.get("entity_recall", 0.0)) * 100
+        f1_val = (r.get("f1") or r.get("entity_f1", 0.0)) * 100
         lat = r.get("latency_ms", 0.0)
         vram = r.get("peak_vram_mb", 0.0)
 
         md_lines.append(
-            f"| **{model}** | `{dataset}` | Epoch {best_ep} | **{tok_macro:.2f}%** | {tok_micro:.2f}% | **{ent_micro:.2f}%** | {lat:.2f} ms | {vram:.1f} MB |"
+            f"| **{model}** | `{dataset}` | {best_ep} | {prec:.2f}% | {rec:.2f}% | **{f1_val:.2f}%** | {lat:.2f} ms | {vram:.1f} MB |"
         )
 
     fig_path = figures_dir / "benchmark_comparison.png"
@@ -395,46 +386,41 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
     if plt is not None and len(records) >= 1:
         try:
             labels = [f"{r.get('model', '')}\n({r.get('dataset', '').upper()})" for r in records]
-            tok_macro_scores = [r.get("best_tok_macro_f1", 0.0) * 100 for r in records]
-            ent_micro_scores = [r.get("best_ent_micro_f1", 0.0) * 100 for r in records]
+            f1s = [(r.get("f1") or r.get("entity_f1", 0.0)) * 100 for r in records]
             latencies = [r.get("latency_ms", 0.0) for r in records]
             vrams = [r.get("peak_vram_mb", 0.0) for r in records]
 
-            fig, axes = plt.subplots(1, 3, figsize=(17, 5.5), dpi=300)
-            fig.suptitle("Đánh Giá So Sánh Thực Nghiệm Các Mô Hình Học Sâu", fontsize=15, fontweight="bold", y=0.98)
+            fig, axes = plt.subplots(1, 3, figsize=(16, 5.2), dpi=300)
+            fig.suptitle("So Sánh Hiệu Năng Các Mô Hình", fontsize=14, fontweight="bold", y=0.98)
 
             x = np.arange(len(labels))
-            width = 0.35
 
-            # Subplot 1: Accuracy (Macro-F1 & Entity Micro-F1)
+            # Subplot 1: F1
             ax1 = axes[0]
-            rects1 = ax1.bar(x - width / 2, tok_macro_scores, width, label="Token Macro-F1", color="#1f77b4")
-            rects2 = ax1.bar(x + width / 2, ent_micro_scores, width, label="Entity Micro-F1", color="#ff7f0e")
-            ax1.set_title("Độ Chính Xác Trích Xuất (F1-Score)", fontsize=12, fontweight="bold")
-            ax1.set_ylabel("F1 Score (%)", fontsize=10)
+            bars_f1 = ax1.bar(x, f1s, width=0.45, color="#2ca02c", edgecolor="black", linewidth=0.5)
+            ax1.set_title("F1 (%)", fontsize=11, fontweight="bold")
+            ax1.set_ylabel("F1 (%)", fontsize=10)
             ax1.set_xticks(x)
             ax1.set_xticklabels(labels, fontsize=9)
-            ax1.set_ylim(0, 118)
-            ax1.legend(loc="upper left", frameon=True)
+            ax1.set_ylim(0, 115)
             ax1.grid(True, linestyle="--", alpha=0.5, axis="y")
-            for rect in list(rects1) + list(rects2):
-                h = rect.get_height()
-                if h > 0:
-                    ax1.text(
-                        rect.get_x() + rect.get_width() / 2,
-                        h + 1.2,
-                        f"{h:.1f}%",
-                        ha="center",
-                        va="bottom",
-                        fontsize=8,
-                        fontweight="semibold",
-                    )
+            for bar in bars_f1:
+                h = bar.get_height()
+                ax1.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    h + 1.5,
+                    f"{h:.1f}%",
+                    ha="center",
+                    va="bottom",
+                    fontsize=8.5,
+                    fontweight="semibold",
+                )
 
-            # Subplot 2: Inference Latency
+            # Subplot 2: Latency
             ax2 = axes[1]
-            bars_lat = ax2.bar(x, latencies, width=0.45, color="#2ca02c", edgecolor="black", linewidth=0.5)
-            ax2.set_title("Độ Trễ Suy Luận (Inference Latency)", fontsize=12, fontweight="bold")
-            ax2.set_ylabel("Thời gian (ms / tài liệu)", fontsize=10)
+            bars_lat = ax2.bar(x, latencies, width=0.45, color="#1f77b4", edgecolor="black", linewidth=0.5)
+            ax2.set_title("Latency (ms)", fontsize=11, fontweight="bold")
+            ax2.set_ylabel("Latency (ms / doc)", fontsize=10)
             ax2.set_xticks(x)
             ax2.set_xticklabels(labels, fontsize=9)
             max_lat = max(latencies) if latencies else 1.0
@@ -448,15 +434,15 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
                     f"{h:.1f} ms",
                     ha="center",
                     va="bottom",
-                    fontsize=8,
+                    fontsize=8.5,
                     fontweight="semibold",
                 )
 
-            # Subplot 3: GPU Memory Footprint
+            # Subplot 3: VRAM
             ax3 = axes[2]
             bars_vram = ax3.bar(x, vrams, width=0.45, color="#d62728", edgecolor="black", linewidth=0.5)
-            ax3.set_title("Tiêu Thụ Bộ Nhớ GPU (Peak VRAM)", fontsize=12, fontweight="bold")
-            ax3.set_ylabel("Dung lượng (MB)", fontsize=10)
+            ax3.set_title("VRAM (MB)", fontsize=11, fontweight="bold")
+            ax3.set_ylabel("VRAM (MB)", fontsize=10)
             ax3.set_xticks(x)
             ax3.set_xticklabels(labels, fontsize=9)
             max_vram = max(vrams) if vrams else 100.0
@@ -470,7 +456,7 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
                     f"{h:.1f} MB",
                     ha="center",
                     va="bottom",
-                    fontsize=8,
+                    fontsize=8.5,
                     fontweight="semibold",
                 )
 
@@ -484,7 +470,7 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
     if has_fig:
         md_lines.extend([
             "",
-            "## 2. Biểu Đồ Trực Quan So Sánh (Comparative Charts)",
+            "## 2. Biểu Đồ So Sánh",
             "",
             "![benchmark_comparison](figures/benchmark_comparison.png)",
         ])
@@ -501,9 +487,10 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Generate benchmark summary report from JSON results.")
-    parser.add_argument("--reports-dir", type=str, default="reconia/reports", help="Path to reports directory")
+    default_dir = Path("reports") if Path("reports").exists() else Path("reconia/reports")
+    parser.add_argument("--reports-dir", type=Path, default=default_dir, help="Path to reports directory")
     args = parser.parse_args()
-    summary = generate_benchmark_summary(Path(args.reports_dir))
+    summary = generate_benchmark_summary(args.reports_dir)
     print(f"[SUCCESS] Markdown summary: {summary['markdown']}")
     print(f"[SUCCESS] Figure comparison: {summary['figure']}")
 

@@ -43,22 +43,49 @@ def test_compute_token_metrics_perfect():
 
     metrics = compute_token_metrics(y_true, y_pred, label_names, ignore_labels={"O"})
     assert metrics["accuracy"] == 1.0
-    assert metrics["micro_f1"] == 1.0
-    assert metrics["macro_f1"] == 1.0
+    assert metrics["precision"] == 1.0
+    assert metrics["recall"] == 1.0
+    assert metrics["f1"] == 1.0
     assert metrics["num_tokens"] == 6
 
 
 def test_compute_token_metrics_with_errors():
+    # 6 mock tokens representing words in an invoice:
+    # [0: 'O', 1: 'B-company', 2: 'I-company', 3: 'O', 4: 'B-total', 5: 'O']
     y_true = [0, 1, 2, 0, 3, 0]
-    y_pred = [0, 1, 0, 0, 3, 3]  # token 2 misclassified as O, token 5 misclassified as 3
+    # Prediction has 2 errors:
+    # - index 2: true is 'I-company' (2), predicted as 'O' (0) -> False Negative for I-company
+    # - index 5: true is 'O' (0), predicted as 'B-total' (3) -> False Positive for B-total
+    y_pred = [0, 1, 0, 0, 3, 3]
     label_names = {0: "O", 1: "B-company", 2: "I-company", 3: "B-total"}
 
     metrics = compute_token_metrics(y_true, y_pred, label_names, ignore_labels={"O"})
+
+    # Accuracy counts all tokens (4 correct out of 6):
     assert metrics["accuracy"] == 4 / 6
-    assert 0.0 < metrics["micro_f1"] < 1.0
-    assert 0.0 < metrics["macro_f1"] < 1.0
+    assert metrics["num_tokens"] == 6
+
+    # Overall token metrics (excluding 'O'):
+    # TP=2, FP=1, FN=1 -> Precision = 2/3, Recall = 2/3, F1 = 2/3
+    assert pytest.approx(metrics["precision"], 1e-4) == 2 / 3
+    assert pytest.approx(metrics["recall"], 1e-4) == 2 / 3
+    assert pytest.approx(metrics["f1"], 1e-4) == 2 / 3
+
+    # Per-class breakdown:
+    # B-company: 1 TP, 0 FP, 0 FN -> perfect
+    assert metrics["per_class"]["B-company"]["precision"] == 1.0
+    assert metrics["per_class"]["B-company"]["recall"] == 1.0
     assert metrics["per_class"]["B-company"]["f1"] == 1.0
+
+    # I-company: 0 TP, 0 FP, 1 FN -> missed
+    assert metrics["per_class"]["I-company"]["precision"] == 0.0
     assert metrics["per_class"]["I-company"]["recall"] == 0.0
+    assert metrics["per_class"]["I-company"]["f1"] == 0.0
+
+    # B-total: 1 TP, 1 FP, 0 FN
+    assert metrics["per_class"]["B-total"]["precision"] == 0.5
+    assert metrics["per_class"]["B-total"]["recall"] == 1.0
+    assert pytest.approx(metrics["per_class"]["B-total"]["f1"], 1e-4) == 2 / 3
 
 
 def test_compute_entity_metrics():

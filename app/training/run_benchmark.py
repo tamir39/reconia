@@ -6,7 +6,7 @@ and automatically updates comparative benchmark reports and visualization dashbo
 
 Usage:
     python -m app.training.run_benchmark --models roberta --datasets sroie --epochs 5
-    python -m app.training.run_benchmark --models all --all --epochs 10 --patience 5
+    python -m app.training.run_benchmark --models all --all --epochs 20 --patience 5
 """
 
 from __future__ import annotations
@@ -42,10 +42,11 @@ def format_duration(seconds: float) -> str:
 def run_benchmark_suite(
     models: list[str] | None = None,
     datasets: list[str] | None = None,
-    epochs: int = 10,
+    epochs: int = 20,
     patience: int = 5,
     lr: float | None = None,
     batch_accum: int | None = None,
+    monitor_metric: str = "f1",
     docile_limit_train: int | None = None,
     docile_limit_val: int | None = None,
     device: str = "auto",
@@ -54,7 +55,7 @@ def run_benchmark_suite(
 ) -> int:
     reports_dir = reports_dir or RECONIA_ROOT / "reports"
     save_dir = save_dir or RECONIA_ROOT / "checkpoints"
-    models = models or ["gnn"]
+    models = [m for m in (models or list(SUPPORTED_MODELS)) if m in SUPPORTED_MODELS] or list(SUPPORTED_MODELS)
     datasets = datasets or ["sroie", "cord", "docile"]
 
     reports_dir.mkdir(parents=True, exist_ok=True)
@@ -120,6 +121,8 @@ def run_benchmark_suite(
                 str(save_dir),
                 "--report-dir",
                 str(reports_dir),
+                "--monitor-metric",
+                monitor_metric,
             ]
 
             if batch_accum is not None:
@@ -145,9 +148,13 @@ def run_benchmark_suite(
                 )
 
                 assert process.stdout is not None
-                for line in process.stdout:
-                    line_str = line.rstrip("\n\r")
-                    log_and_print(f"  [{model.upper()}-{dataset.upper()}] {line_str}")
+                while True:
+                    line = process.stdout.readline()
+                    if not line and process.poll() is not None:
+                        break
+                    if line:
+                        line_str = line.rstrip("\n\r")
+                        log_and_print(f"  [{model.upper()}-{dataset.upper()}] {line_str}")
 
                 process.wait()
                 ret_code = process.returncode
@@ -198,21 +205,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--models",
         nargs="+",
-        default=["gnn"],
-        help="Models to benchmark: 'gnn', 'roberta', or 'all' (default: gnn)",
+        default=["all"],
+        help="Models to benchmark: 'gnn', 'roberta', or 'all' (default: all)",
     )
     parser.add_argument(
         "--datasets",
         nargs="+",
-        default=["sroie", "cord"],
+        default=["sroie", "cord", "docile"],
         choices=["sroie", "cord", "docile"],
-        help="Datasets to train on sequentially (default: sroie cord)",
+        help="Datasets to train on sequentially (default: sroie cord docile)",
     )
     parser.add_argument("--all", action="store_true", help="Run on all 3 datasets (sroie, cord, docile)")
-    parser.add_argument("--epochs", type=int, default=10, help="Number of epochs per dataset")
+    parser.add_argument("--epochs", type=int, default=20, help="Number of epochs per dataset")
     parser.add_argument("--patience", type=int, default=5, help="Early stopping patience (0 to disable)")
     parser.add_argument("--lr", type=float, default=None, help="Learning rate (default: model-specific)")
     parser.add_argument("--batch-accum", type=int, default=None, help="Gradient accumulation steps")
+    parser.add_argument(
+        "--monitor-metric",
+        default="f1",
+        choices=["f1", "val_loss"],
+        help="Metric to monitor for best checkpoint and early stopping: 'f1' (default) or 'val_loss'",
+    )
     parser.add_argument(
         "--docile-limit-train",
         type=int,
@@ -249,6 +262,7 @@ def main(argv: list[str] | None = None) -> int:
         patience=args.patience,
         lr=args.lr,
         batch_accum=args.batch_accum,
+        monitor_metric=args.monitor_metric,
         docile_limit_train=docile_train,
         docile_limit_val=docile_val,
         device=args.device,
