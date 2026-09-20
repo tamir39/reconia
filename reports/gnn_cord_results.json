@@ -1,0 +1,445 @@
+{
+  "model": "GNN",
+  "dataset": "cord",
+  "device": "cuda",
+  "total_params": 3942589,
+  "best_epoch": 5,
+  "best_tok_macro_f1": 0.5409782241021244,
+  "best_tok_micro_f1": 0.7840805123513266,
+  "best_ent_micro_f1": 0.6400293255131966,
+  "latency_ms": 4.160539000004064,
+  "peak_vram_mb": 63.708984375,
+  "final_per_class": {
+    "O": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "B-menu.cnt": {
+      "precision": 0.8721461187214612,
+      "recall": 0.9095238095238095,
+      "f1": 0.8904428904428904,
+      "support": 210
+    },
+    "I-menu.cnt": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 4
+    },
+    "B-menu.discountprice": {
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "f1": 0.5,
+      "support": 3
+    },
+    "I-menu.discountprice": {
+      "precision": 0.6153846153846154,
+      "recall": 0.5333333333333333,
+      "f1": 0.5714285714285715,
+      "support": 15
+    },
+    "B-menu.etc": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "I-menu.etc": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "B-menu.itemsubtotal": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "I-menu.itemsubtotal": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "B-menu.nm": {
+      "precision": 0.8577586206896551,
+      "recall": 0.9004524886877828,
+      "f1": 0.8785871964679911,
+      "support": 221
+    },
+    "I-menu.nm": {
+      "precision": 0.8625730994152047,
+      "recall": 0.8779761904761905,
+      "f1": 0.8702064896755163,
+      "support": 336
+    },
+    "B-menu.num": {
+      "precision": 0.36363636363636365,
+      "recall": 1.0,
+      "f1": 0.5333333333333333,
+      "support": 4
+    },
+    "I-menu.num": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "B-menu.price": {
+      "precision": 0.7935779816513762,
+      "recall": 0.7863636363636364,
+      "f1": 0.7899543378995434,
+      "support": 220
+    },
+    "I-menu.price": {
+      "precision": 0.2,
+      "recall": 0.25,
+      "f1": 0.22222222222222224,
+      "support": 4
+    },
+    "B-menu.sub.cnt": {
+      "precision": 0.625,
+      "recall": 0.46875,
+      "f1": 0.5357142857142857,
+      "support": 32
+    },
+    "I-menu.sub.cnt": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "B-menu.sub.nm": {
+      "precision": 0.7872340425531915,
+      "recall": 0.7551020408163265,
+      "f1": 0.7708333333333333,
+      "support": 49
+    },
+    "I-menu.sub.nm": {
+      "precision": 0.7162162162162162,
+      "recall": 0.6625,
+      "f1": 0.6883116883116882,
+      "support": 80
+    },
+    "B-menu.sub.price": {
+      "precision": 0.3333333333333333,
+      "recall": 0.5714285714285714,
+      "f1": 0.4210526315789474,
+      "support": 14
+    },
+    "I-menu.sub.price": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 3
+    },
+    "B-menu.sub.unitprice": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "I-menu.sub.unitprice": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "B-menu.unitprice": {
+      "precision": 0.8863636363636364,
+      "recall": 0.78,
+      "f1": 0.8297872340425532,
+      "support": 50
+    },
+    "I-menu.unitprice": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 2
+    },
+    "B-menu.vatyn": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 1
+    },
+    "I-menu.vatyn": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 2
+    },
+    "B-sub_total.discount_price": {
+      "precision": 0.42857142857142855,
+      "recall": 0.75,
+      "f1": 0.5454545454545454,
+      "support": 4
+    },
+    "I-sub_total.discount_price": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 7
+    },
+    "B-sub_total.etc": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1": 0.5,
+      "support": 2
+    },
+    "I-sub_total.etc": {
+      "precision": 0.3333333333333333,
+      "recall": 0.3333333333333333,
+      "f1": 0.3333333333333333,
+      "support": 3
+    },
+    "B-sub_total.othersvc_price": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "I-sub_total.othersvc_price": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "B-sub_total.service_price": {
+      "precision": 0.9090909090909091,
+      "recall": 0.8333333333333334,
+      "f1": 0.8695652173913043,
+      "support": 12
+    },
+    "I-sub_total.service_price": {
+      "precision": 0.7368421052631579,
+      "recall": 0.5185185185185185,
+      "f1": 0.6086956521739131,
+      "support": 27
+    },
+    "B-sub_total.subtotal_price": {
+      "precision": 0.9076923076923077,
+      "recall": 0.9076923076923077,
+      "f1": 0.9076923076923076,
+      "support": 65
+    },
+    "I-sub_total.subtotal_price": {
+      "precision": 0.5540540540540541,
+      "recall": 0.47126436781609193,
+      "f1": 0.5093167701863355,
+      "support": 87
+    },
+    "B-sub_total.tax_price": {
+      "precision": 0.8958333333333334,
+      "recall": 0.9555555555555556,
+      "f1": 0.924731182795699,
+      "support": 45
+    },
+    "I-sub_total.tax_price": {
+      "precision": 0.8243243243243243,
+      "recall": 0.7093023255813954,
+      "f1": 0.7625,
+      "support": 86
+    },
+    "B-total.cashprice": {
+      "precision": 0.8656716417910447,
+      "recall": 0.90625,
+      "f1": 0.8854961832061069,
+      "support": 64
+    },
+    "I-total.cashprice": {
+      "precision": 0.6944444444444444,
+      "recall": 0.6410256410256411,
+      "f1": 0.6666666666666666,
+      "support": 78
+    },
+    "B-total.changeprice": {
+      "precision": 0.8955223880597015,
+      "recall": 0.9375,
+      "f1": 0.9160305343511451,
+      "support": 64
+    },
+    "I-total.changeprice": {
+      "precision": 0.6547619047619048,
+      "recall": 0.7746478873239436,
+      "f1": 0.7096774193548387,
+      "support": 71
+    },
+    "B-total.creditcardprice": {
+      "precision": 0.7058823529411765,
+      "recall": 0.8,
+      "f1": 0.7500000000000001,
+      "support": 15
+    },
+    "I-total.creditcardprice": {
+      "precision": 0.47058823529411764,
+      "recall": 0.42105263157894735,
+      "f1": 0.4444444444444444,
+      "support": 19
+    },
+    "B-total.emoneyprice": {
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1": 0.75,
+      "support": 4
+    },
+    "I-total.emoneyprice": {
+      "precision": 0.14285714285714285,
+      "recall": 0.42857142857142855,
+      "f1": 0.21428571428571427,
+      "support": 7
+    },
+    "B-total.menuqty_cnt": {
+      "precision": 0.6956521739130435,
+      "recall": 0.6153846153846154,
+      "f1": 0.6530612244897959,
+      "support": 26
+    },
+    "I-total.menuqty_cnt": {
+      "precision": 0.6774193548387096,
+      "recall": 0.875,
+      "f1": 0.7636363636363636,
+      "support": 24
+    },
+    "B-total.menutype_cnt": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 3
+    },
+    "I-total.menutype_cnt": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 5
+    },
+    "B-total.total_etc": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 4
+    },
+    "I-total.total_etc": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 8
+    },
+    "B-total.total_price": {
+      "precision": 0.883495145631068,
+      "recall": 0.978494623655914,
+      "f1": 0.9285714285714286,
+      "support": 93
+    },
+    "I-total.total_price": {
+      "precision": 0.6440677966101694,
+      "recall": 0.672566371681416,
+      "f1": 0.658008658008658,
+      "support": 113
+    },
+    "B-void_menu.nm": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "I-void_menu.nm": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "B-void_menu.price": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "I-void_menu.price": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 2.7057799883186817,
+      "val_loss": 1.6942823445796966,
+      "tok_micro_f1": 0.6143641354071363,
+      "tok_macro_f1": 0.30952358613637226,
+      "ent_micro_f1": 0.4612230953194397,
+      "ent_macro_f1": 0.1960743597956481,
+      "latency_ms": 7.069680999998127,
+      "peak_vram_mb": 63.708984375
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.4837234029173851,
+      "val_loss": 1.2576043859124184,
+      "tok_micro_f1": 0.7259835315645013,
+      "tok_macro_f1": 0.45125562071930747,
+      "ent_micro_f1": 0.5825522710886806,
+      "ent_macro_f1": 0.28981202172472764,
+      "latency_ms": 8.92894399999932,
+      "peak_vram_mb": 63.708984375
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.0789163172990084,
+      "val_loss": 1.0721617616713046,
+      "tok_micro_f1": 0.7543458371454712,
+      "tok_macro_f1": 0.5028381893792828,
+      "ent_micro_f1": 0.5992753623188406,
+      "ent_macro_f1": 0.34341091172158567,
+      "latency_ms": 4.07879899999898,
+      "peak_vram_mb": 63.708984375
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.878023814605549,
+      "val_loss": 1.0448686050251126,
+      "tok_micro_f1": 0.7662397072278133,
+      "tok_macro_f1": 0.5326714431809482,
+      "ent_micro_f1": 0.6167883211678833,
+      "ent_macro_f1": 0.37806651896280125,
+      "latency_ms": 4.064468000001398,
+      "peak_vram_mb": 63.708984375
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.7777673204429447,
+      "val_loss": 1.005659168995917,
+      "tok_micro_f1": 0.7840805123513266,
+      "tok_macro_f1": 0.5409782241021244,
+      "ent_micro_f1": 0.6400293255131966,
+      "ent_macro_f1": 0.39580395419785924,
+      "latency_ms": 4.160539000004064,
+      "peak_vram_mb": 63.708984375
+    }
+  ],
+  "metadata": {
+    "device": "cuda",
+    "gpu_name": "NVIDIA GeForce GTX 1650 Ti",
+    "total_params": 3942589,
+    "patience": 3,
+    "monitor_metric": "tok_macro",
+    "clip_grad_norm": 1.0,
+    "resumed_from": null,
+    "config": {
+      "geo_dim": 17,
+      "text_dim": 128,
+      "hidden_dim": 128,
+      "num_layers": 2,
+      "num_classes": 59,
+      "dropout": 0.2
+    },
+    "batch_accum": 8,
+    "lr": 0.001,
+    "seed": 42
+  }
+}

@@ -5,5 +5,12 @@ Contains:
 """
 
 from app.models_dl.gnn import InvoiceGNN, InvoiceGNNConfig
+from app.models_dl.roberta import RoBERTaWithLayoutConfig, RoBERTaWithLayoutForTokenClassification
 
-__all__ = ["InvoiceGNN", "InvoiceGNNConfig"]
+__all__ = [
+    "InvoiceGNN",
+    "InvoiceGNNConfig",
+    "RoBERTaWithLayoutConfig",
+    "RoBERTaWithLayoutForTokenClassification",
+]
+

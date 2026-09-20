@@ -142,18 +142,41 @@ python -m app.graph.prepare --dataset docile --splits train val
 
 ### 3.5. Huấn Luyện Mô Hình Học Sâu & Tự Động Xuất Báo Cáo
 
-Chạy script huấn luyện mô hình (ví dụ Mô hình 1: GNN). Hệ thống sẽ tự động tính toán loss có trọng số cân bằng lớp (`compute_class_weights`), profiling tài nguyên GPU VRAM và đo độ trễ suy luận:
+Hệ thống hỗ trợ huấn luyện độc lập từng kiến trúc mô hình học sâu. Mọi script đều tự động tính toán loss có trọng số cân bằng lớp (`compute_class_weights`), profiling tài nguyên GPU VRAM, đo độ trễ suy luận, và ghi log song song ra console lẫn file log timestamp (`reports/train_<model>_<dataset>_<timestamp>.log`):
 
+**Huấn luyện Mô hình 1: GNN (Spatial Relational Graph Neural Network)**:
 ```bash
-# Huấn luyện GNN trên SROIE
-python -m app.training.train_gnn --dataset sroie --epochs 10
+# Huấn luyện GNN trên SROIE (kèm Early Stopping sau 5 epochs không tăng)
+python -m app.training.train_gnn --dataset sroie --epochs 20 --patience 5
 
-# Huấn luyện GNN trên CORD-v2
-python -m app.training.train_gnn --dataset cord --epochs 10
+# Huấn luyện tiếp tục từ checkpoint đã lưu (Resume Training)
+python -m app.training.train_gnn --dataset sroie --epochs 25 --resume checkpoints/gnn_sroie_latest.pt
+
+# Huấn luyện GNN trên CORD-v2 theo dõi Entity F1
+python -m app.training.train_gnn --dataset cord --epochs 15 --monitor-metric ent_f1
 
 # Huấn luyện GNN trên DocILE (subset hoặc full)
 python -m app.training.train_gnn --dataset docile --epochs 10 --limit-train 500 --limit-val 100
 ```
+
+**Huấn luyện Mô hình 2: RoBERTa (RoBERTa-base + 2D Layout Positional Embedding)**:
+```bash
+# Huấn luyện RoBERTa trên SROIE (learning rate chuẩn fine-tuning 3e-5)
+python -m app.training.train_roberta --dataset sroie --epochs 10 --patience 5 --batch-size 4
+
+# Huấn luyện RoBERTa trên CORD-v2
+python -m app.training.train_roberta --dataset cord --epochs 10 --patience 5 --batch-size 4
+
+# Huấn luyện RoBERTa trên DocILE
+python -m app.training.train_roberta --dataset docile --epochs 10 --limit-train 500 --limit-val 100
+```
+
+**Các tính năng huấn luyện nâng cao:**
+- `--patience <int>` (hoặc `--early-stopping`): Tự động dừng sớm nếu chỉ số theo dõi không cải thiện sau $N$ epochs liên tiếp, bảo vệ GPU và tránh overfitting.
+- `--resume <path>`: Nạp lại toàn bộ trọng số, optimizer, epoch và lịch sử huấn luyện từ tệp `.pt` để học tiếp tục liền mạch.
+- `--monitor-metric <tok_macro|ent_f1|val_loss>`: Lựa chọn chỉ số giám sát để lưu mô hình tối ưu nhất (mặc định: `tok_macro`).
+- `--clip-grad-norm <float>`: Cắt tỉa gradient (mặc định: `1.0`) giúp ổn định quá trình tối ưu hóa, triệt tiêu nguy cơ nổ gradient.
+- **Cơ chế lưu Checkpoint kép:** Hệ thống luôn tự động lưu song song `<model>_<dataset>_best.pt` (checkpoint tối ưu nhất) và `<model>_<dataset>_latest.pt` (checkpoint epoch gần nhất phục vụ resume mọi lúc).
 
 **Cơ chế xuất kết quả tự động khi hoàn thành:**
 Khi quá trình huấn luyện kết thúc, hệ thống sẽ **tự động kết xuất trọn bộ báo cáo đọc được** vào thư mục `reports/`:
@@ -163,6 +186,7 @@ Khi quá trình huấn luyện kết thúc, hệ thống sẽ **tự động k�
 - `reports/figures/<model>_<dataset>_training_curves.png`: Biểu đồ 4-trong-1 chất lượng cao (300 DPI) gồm đường cong Loss, Token F1, Entity Micro-F1 và biểu đồ cột F1 của từng trường nhãn.
 - `reports/benchmark_summary.md` & `reports/figures/benchmark_comparison.png`: Tự động cập nhật bảng so sánh đối đầu và biểu đồ so sánh chéo đa mô hình.
 
+
 ### 3.6. Công Cụ Tổng Hợp Báo Cáo & Vẽ Biểu Đồ So Sánh (`report.py`)
 
 Khi bạn muốn tổng hợp lại toàn bộ kết quả, cập nhật bảng so sánh đối đầu hoặc vẽ lại biểu đồ so sánh chéo giữa tất cả các mô hình và các bộ dữ liệu mà **không cần phải huấn luyện lại từ đầu**:
@@ -171,10 +195,26 @@ Khi bạn muốn tổng hợp lại toàn bộ kết quả, cập nhật bảng 
 python -m app.evaluation.report --reports-dir reports
 ```
 
-**Chức năng của lệnh:**
-1. Quét toàn bộ các tệp kết quả `*_results.json` trong thư mục `reports/`.
-2. Tự động sinh/cập nhật bảng so sánh Markdown toàn diện tại [`reports/benchmark_summary.md`](reports/benchmark_summary.md) (so sánh Token Macro-F1, Token Micro-F1, Entity Micro-F1, Độ trễ suy luận ms/doc, Tiêu thụ GPU VRAM).
-3. Tự động vẽ biểu đồ cột nhóm chất lượng cao (300 DPI) so sánh trực quan các mô hình tại [`reports/figures/benchmark_comparison.png`](reports/figures/benchmark_comparison.png).
+### 3.7. Quy Trình Thực Nghiệm Tự Động (Automated Benchmark Pipeline)
+
+Khi bạn muốn cho máy tính tự động chạy huấn luyện tuần tự qua các mô hình và bộ dữ liệu, hệ thống cung cấp quy trình chạy tự động toàn diện. Script sẽ tuần tự chạy từng mô hình trên từng bộ dữ liệu, tự động bắt lỗi an toàn, ghi nhật ký có mốc thời gian vào `reports/benchmark_run_*.log`, **lưu đầy đủ checkpoint, CSV, JSON, Markdown, biểu đồ PNG cho từng bộ dữ liệu** và tự động cập nhật biểu đồ so sánh chéo đa mô hình:
+
+```bash
+# Cách 1: Chạy bằng Python (khuyên dùng, hỗ trợ cả Windows, Linux và Kaggle)
+# Chạy tất cả các mô hình trên tất cả các bộ dữ liệu:
+python -m app.training.run_benchmark --models all --all --epochs 10 --patience 5
+
+# Chạy riêng Mô hình 2 (RoBERTa) trên SROIE và CORD:
+python -m app.training.run_benchmark --models roberta --datasets sroie cord --epochs 10
+
+# Cách 2: Chạy qua PowerShell script (Windows)
+# Chạy tất cả mô hình trên 3 bộ dữ liệu:
+.\scripts\run_benchmark.ps1 -Models "all" -Datasets "sroie", "cord", "docile" -Epochs 10 -Patience 5
+
+# Chạy riêng RoBERTa:
+.\scripts\run_benchmark.ps1 -Models "roberta" -Datasets "sroie", "cord" -Epochs 10
+```
+
 
 
 ---

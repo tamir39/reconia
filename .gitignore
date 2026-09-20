@@ -9,6 +9,7 @@ venv/
 .ruff_cache/
 .cache/
 *.cache
+*.log
 
 # Env & secrets
 .env

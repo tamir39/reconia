@@ -160,7 +160,7 @@ def plot_training_dashboard(
     ent_micro = [h["ent_micro_f1"] * 100 for h in history]
 
     plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default")
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10), dpi=300)
+    fig, axes = plt.subplots(2, 2, figsize=(15, 11), dpi=300)
     fig.suptitle(
         f"Training & Evaluation Metrics: {model_name} on {dataset_name.upper()}",
         fontsize=16,
@@ -172,6 +172,8 @@ def plot_training_dashboard(
     ax1 = axes[0, 0]
     ax1.plot(epochs, train_loss, "o-", color="#1f77b4", label="Train Loss", linewidth=2, markersize=5)
     ax1.plot(epochs, val_loss, "s--", color="#d62728", label="Val Loss", linewidth=2, markersize=5)
+    max_loss = max(max(train_loss, default=1.0), max(val_loss, default=1.0))
+    ax1.set_ylim(bottom=0, top=max_loss * 1.2 + 0.1)
     ax1.set_title("Loss Convergence", fontsize=12, fontweight="bold")
     ax1.set_xlabel("Epoch", fontsize=10)
     ax1.set_ylabel("CrossEntropy Loss", fontsize=10)
@@ -182,6 +184,7 @@ def plot_training_dashboard(
     ax2 = axes[0, 1]
     ax2.plot(epochs, tok_macro, "^-", color="#2ca02c", label="Token Macro-F1 (%)", linewidth=2, markersize=5)
     ax2.plot(epochs, tok_micro, "v--", color="#ff7f0e", label="Token Micro-F1 (%)", linewidth=2, markersize=5)
+    ax2.set_ylim(0, 110)
     ax2.set_title("Token-Level Classification F1", fontsize=12, fontweight="bold")
     ax2.set_xlabel("Epoch", fontsize=10)
     ax2.set_ylabel("F1 Score (%)", fontsize=10)
@@ -191,11 +194,17 @@ def plot_training_dashboard(
     # Panel 3: Entity F1 Curve
     ax3 = axes[1, 0]
     ax3.plot(epochs, ent_micro, "D-", color="#9467bd", label="Entity Micro-F1 (%)", linewidth=2, markersize=5)
+    ax3.set_ylim(0, 110)
     ax3.set_title("Entity-Level Extraction F1 (Exact Match)", fontsize=12, fontweight="bold")
     ax3.set_xlabel("Epoch", fontsize=10)
     ax3.set_ylabel("Entity F1 (%)", fontsize=10)
     ax3.legend(loc="lower right", frameon=True)
     ax3.grid(True, linestyle="--", alpha=0.6)
+
+    # Ensure integer ticks for epochs across subplots 1, 2, 3
+    if len(epochs) <= 20:
+        for ax in (ax1, ax2, ax3):
+            ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))
 
     # Panel 4: Per-Class F1 Bar Chart (Filtering out background 'O')
     ax4 = axes[1, 1]
@@ -217,16 +226,18 @@ def plot_training_dashboard(
         bars = ax4.barh(names, scores, color=colors, edgecolor="black", linewidth=0.5)
         ax4.set_title("Per-Class F1 Score Breakdown (Top Classes)", fontsize=12, fontweight="bold")
         ax4.set_xlabel("F1 Score (%)", fontsize=10)
-        ax4.set_xlim(0, 100)
+        # Give ample breathing room on the right (118%) so labels like 95.0% or 100.0% never clip or overflow
+        ax4.set_xlim(0, 118)
         ax4.invert_yaxis()  # Highest at top
         for bar in bars:
             width = bar.get_width()
             ax4.text(
-                width + 1.5,
+                width + 1.2,
                 bar.get_y() + bar.get_height() / 2,
                 f"{width:.1f}%",
                 va="center",
                 fontsize=8,
+                fontweight="semibold",
             )
     else:
         ax4.text(0.5, 0.5, "No active entity classes", ha="center", va="center")
@@ -389,8 +400,8 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
             latencies = [r.get("latency_ms", 0.0) for r in records]
             vrams = [r.get("peak_vram_mb", 0.0) for r in records]
 
-            fig, axes = plt.subplots(1, 3, figsize=(16, 5), dpi=300)
-            fig.suptitle("Đánh Giá So Sánh Thực Nghiệm Các Mô Hình Học Sâu", fontsize=14, fontweight="bold")
+            fig, axes = plt.subplots(1, 3, figsize=(17, 5.5), dpi=300)
+            fig.suptitle("Đánh Giá So Sánh Thực Nghiệm Các Mô Hình Học Sâu", fontsize=15, fontweight="bold", y=0.98)
 
             x = np.arange(len(labels))
             width = 0.35
@@ -399,43 +410,71 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
             ax1 = axes[0]
             rects1 = ax1.bar(x - width / 2, tok_macro_scores, width, label="Token Macro-F1", color="#1f77b4")
             rects2 = ax1.bar(x + width / 2, ent_micro_scores, width, label="Entity Micro-F1", color="#ff7f0e")
-            ax1.set_title("Độ Chính Xác Trích Xuất (F1-Score)", fontsize=11, fontweight="bold")
+            ax1.set_title("Độ Chính Xác Trích Xuất (F1-Score)", fontsize=12, fontweight="bold")
             ax1.set_ylabel("F1 Score (%)", fontsize=10)
             ax1.set_xticks(x)
             ax1.set_xticklabels(labels, fontsize=9)
-            ax1.set_ylim(0, 100)
-            ax1.legend(loc="upper left")
+            ax1.set_ylim(0, 118)
+            ax1.legend(loc="upper left", frameon=True)
             ax1.grid(True, linestyle="--", alpha=0.5, axis="y")
             for rect in list(rects1) + list(rects2):
                 h = rect.get_height()
                 if h > 0:
-                    ax1.text(rect.get_x() + rect.get_width() / 2, h + 1.5, f"{h:.1f}%", ha="center", fontsize=8)
+                    ax1.text(
+                        rect.get_x() + rect.get_width() / 2,
+                        h + 1.2,
+                        f"{h:.1f}%",
+                        ha="center",
+                        va="bottom",
+                        fontsize=8,
+                        fontweight="semibold",
+                    )
 
             # Subplot 2: Inference Latency
             ax2 = axes[1]
             bars_lat = ax2.bar(x, latencies, width=0.45, color="#2ca02c", edgecolor="black", linewidth=0.5)
-            ax2.set_title("Độ Trễ Suy Luận (Inference Latency)", fontsize=11, fontweight="bold")
+            ax2.set_title("Độ Trễ Suy Luận (Inference Latency)", fontsize=12, fontweight="bold")
             ax2.set_ylabel("Thời gian (ms / tài liệu)", fontsize=10)
             ax2.set_xticks(x)
             ax2.set_xticklabels(labels, fontsize=9)
+            max_lat = max(latencies) if latencies else 1.0
+            ax2.set_ylim(0, max_lat * 1.28 + 0.5)
             ax2.grid(True, linestyle="--", alpha=0.5, axis="y")
             for bar in bars_lat:
                 h = bar.get_height()
-                ax2.text(bar.get_x() + bar.get_width() / 2, h + (max(latencies) * 0.02 + 0.1), f"{h:.1f} ms", ha="center", fontsize=8)
+                ax2.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    h + (max_lat * 0.02 + 0.1),
+                    f"{h:.1f} ms",
+                    ha="center",
+                    va="bottom",
+                    fontsize=8,
+                    fontweight="semibold",
+                )
 
             # Subplot 3: GPU Memory Footprint
             ax3 = axes[2]
             bars_vram = ax3.bar(x, vrams, width=0.45, color="#d62728", edgecolor="black", linewidth=0.5)
-            ax3.set_title("Tiêu Thụ Bộ Nhớ GPU (Peak VRAM)", fontsize=11, fontweight="bold")
+            ax3.set_title("Tiêu Thụ Bộ Nhớ GPU (Peak VRAM)", fontsize=12, fontweight="bold")
             ax3.set_ylabel("Dung lượng (MB)", fontsize=10)
             ax3.set_xticks(x)
             ax3.set_xticklabels(labels, fontsize=9)
+            max_vram = max(vrams) if vrams else 100.0
+            ax3.set_ylim(0, max_vram * 1.25 + 10.0)
             ax3.grid(True, linestyle="--", alpha=0.5, axis="y")
             for bar in bars_vram:
                 h = bar.get_height()
-                ax3.text(bar.get_x() + bar.get_width() / 2, h + (max(vrams) * 0.02 + 1.0), f"{h:.1f} MB", ha="center", fontsize=8)
+                ax3.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    h + (max_vram * 0.02 + 1.0),
+                    f"{h:.1f} MB",
+                    ha="center",
+                    va="bottom",
+                    fontsize=8,
+                    fontweight="semibold",
+                )
 
-            plt.tight_layout()
+            plt.tight_layout(rect=[0, 0.03, 1, 0.94])
             plt.savefig(fig_path, format="png", bbox_inches="tight")
             plt.close(fig)
             has_fig = True

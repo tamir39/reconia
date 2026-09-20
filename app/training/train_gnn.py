@@ -83,6 +83,7 @@ def train_one_epoch(
     criterion: nn.Module,
     device: torch.device,
     batch_accum: int = 8,
+    clip_grad_norm: float = 1.0,
 ) -> float:
     """Train model for one epoch using gradient accumulation across documents."""
     model.train()
@@ -110,11 +111,13 @@ def train_one_epoch(
 
         if accum_steps % batch_accum == 0 or step == len(indices):
             # Gradient clipping for training stability
-            nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            if clip_grad_norm > 0:
+                nn.utils.clip_grad_norm_(model.parameters(), max_norm=clip_grad_norm)
             optimizer.step()
             optimizer.zero_grad()
 
     return total_loss / max(len(train_docs), 1)
+
 
 
 @torch.no_grad()
@@ -211,6 +214,34 @@ def compute_class_weights(
     return torch.tensor(weights, dtype=torch.float32)
 
 
+class DualLogger:
+    """Duplicate stdout to both console and a log file."""
+    def __init__(self, log_path: Path):
+        self.terminal = sys.stdout
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        self.log_file = log_path.open("a", encoding="utf-8")
+
+    def write(self, message: str) -> None:
+        try:
+            self.terminal.write(message)
+            self.terminal.flush()
+        except UnicodeEncodeError:
+            self.terminal.write(message.encode("ascii", errors="replace").decode("ascii"))
+            self.terminal.flush()
+        self.log_file.write(message)
+        self.log_file.flush()
+
+    def flush(self) -> None:
+        self.terminal.flush()
+        self.log_file.flush()
+
+    def close(self) -> None:
+        try:
+            self.log_file.close()
+        except Exception:
+            pass
+
+
 def main(argv: list[str] | None = None) -> int:
     if torch is None:
         print("ERROR: PyTorch is required to run train_gnn.", file=sys.stderr)
@@ -225,6 +256,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--num-layers", type=int, default=2)
     parser.add_argument("--dropout", type=float, default=0.2)
     parser.add_argument("--batch-accum", type=int, default=8)
+    parser.add_argument("--clip-grad-norm", type=float, default=1.0, help="maximum gradient norm for clipping (<= 0 to disable)")
+    parser.add_argument("--patience", "--early-stopping", dest="patience", type=int, default=0, help="early stopping patience in epochs (0 to disable)")
+    parser.add_argument("--resume", type=Path, default=None, help="path to checkpoint .pt to resume training from")
+    parser.add_argument("--monitor-metric", default="tok_macro", choices=["tok_macro", "ent_f1", "val_loss"], help="metric to monitor for best checkpoint and early stopping")
     parser.add_argument("--no-weighted-loss", action="store_true", help="disable class weighting")
     parser.add_argument("--device", default="auto", help="'cuda', 'cpu', or 'auto'")
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE)
@@ -234,6 +269,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--limit-val", type=int, default=None)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args(argv)
+
+    # Enable automated dual logging (console + file) for every training run
+    args.report_dir.mkdir(parents=True, exist_ok=True)
+    timestamp_str = time.strftime("%Y%m%d_%H%M%S")
+    log_file = args.report_dir / f"train_gnn_{args.dataset}_{timestamp_str}.log"
+    dual_logger = DualLogger(log_file)
+    old_stdout = sys.stdout
+    sys.stdout = dual_logger
 
     # Set random seeds for reproducibility
     np.random.seed(args.seed)
@@ -251,6 +294,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Dataset:    {args.dataset}")
     print(f"Device:     {device} ({torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'})")
     print(f"Epochs:     {args.epochs}")
+
     print(f"Hidden Dim: {args.hidden_dim}, Layers: {args.num_layers}")
     print(f"Cache Dir:  {args.cache_dir}")
     print(f"Report Dir: {args.report_dir}")
@@ -305,23 +349,71 @@ def main(argv: list[str] | None = None) -> int:
         criterion = nn.CrossEntropyLoss()
 
     optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=args.lr * 0.05)
 
     args.save_dir.mkdir(parents=True, exist_ok=True)
     best_checkpoint_path = args.save_dir / f"gnn_{args.dataset}_best.pt"
-    best_macro_f1 = -1.0
+    latest_checkpoint_path = args.save_dir / f"gnn_{args.dataset}_latest.pt"
+
+    start_epoch = 1
+    best_score = float("inf") if args.monitor_metric == "val_loss" else -1.0
     best_val_metrics: dict[str, Any] = {}
     history: list[dict[str, Any]] = []
+
+    if args.resume is not None:
+        if not args.resume.exists():
+            print(f"ERROR: Checkpoint file not found: {args.resume}", file=sys.stderr)
+            return 1
+        print(f"Loading checkpoint from: {args.resume}")
+        checkpoint = torch.load(args.resume, map_location=device, weights_only=False)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        if "optimizer_state_dict" in checkpoint:
+            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        start_epoch = checkpoint.get("epoch", 0) + 1
+        history = checkpoint.get("history", [])
+        if "best_score" in checkpoint:
+            best_score = checkpoint["best_score"]
+        elif "metrics" in checkpoint:
+            best_val_metrics = checkpoint["metrics"]
+            if args.monitor_metric == "tok_macro":
+                best_score = best_val_metrics.get("token_metrics", {}).get("macro_f1", -1.0)
+            elif args.monitor_metric == "ent_f1":
+                best_score = best_val_metrics.get("entity_metrics", {}).get("f1", -1.0)
+            elif args.monitor_metric == "val_loss":
+                best_score = best_val_metrics.get("val_loss", float("inf"))
+        print(f"Successfully resumed at epoch {start_epoch}. Prior best {args.monitor_metric}: {best_score:.4f}")
+
+    if start_epoch > args.epochs:
+        print(
+            f"Checkpoint is already at epoch {start_epoch - 1}, but --epochs is set to {args.epochs}.\n"
+            f"To train further, specify a larger --epochs (e.g. --epochs {start_epoch + 5})."
+        )
+        return 0
+
+    scheduler = CosineAnnealingLR(
+        optimizer,
+        T_max=args.epochs,
+        eta_min=args.lr * 0.05,
+        last_epoch=(start_epoch - 2) if start_epoch > 1 else -1,
+    )
+
+    patience_counter = 0
 
     print("\n" + "=" * 95)
     header = f"{'Epoch':<6} | {'TrainLoss':<10} | {'ValLoss':<10} | {'TokMicroF1':<11} | {'TokMacroF1':<11} | {'EntMicroF1':<11} | {'Lat(ms)':<8} | {'VRAM(MB)':<8}"
     print(header)
     print("=" * 95)
 
-    for epoch in range(1, args.epochs + 1):
+    for epoch in range(start_epoch, args.epochs + 1):
         t0 = time.time()
         train_loss = train_one_epoch(
-            model, cache, train_docs, optimizer, criterion, device, batch_accum=args.batch_accum
+            model,
+            cache,
+            train_docs,
+            optimizer,
+            criterion,
+            device,
+            batch_accum=args.batch_accum,
+            clip_grad_norm=args.clip_grad_norm,
         )
         scheduler.step()
 
@@ -351,31 +443,61 @@ def main(argv: list[str] | None = None) -> int:
             f"{tok_macro:<11.4f} | {ent_micro:<11.4f} | {lat:<8.1f} | {vram:<8.1f}"
         )
 
-        if tok_macro > best_macro_f1:
-            best_macro_f1 = tok_macro
+        current_score = (
+            tok_macro if args.monitor_metric == "tok_macro"
+            else ent_micro if args.monitor_metric == "ent_f1"
+            else val_loss
+        )
+
+        improved = (
+            (current_score < best_score - 1e-4)
+            if args.monitor_metric == "val_loss"
+            else (current_score > best_score + 1e-4)
+        )
+
+        checkpoint_state = {
+            "epoch": epoch,
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+            "config": gnn_config,
+            "vocabulary": vocabulary,
+            "fieldtypes": fieldtypes,
+            "metrics": val_metrics,
+            "history": history,
+            "best_score": current_score if improved else best_score,
+            "monitor_metric": args.monitor_metric,
+        }
+
+        if improved:
+            best_score = current_score
             best_val_metrics = val_metrics
-            torch.save(
-                {
-                    "epoch": epoch,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "config": gnn_config,
-                    "vocabulary": vocabulary,
-                    "fieldtypes": fieldtypes,
-                    "metrics": val_metrics,
-                },
-                best_checkpoint_path,
-            )
+            patience_counter = 0
+            checkpoint_state["best_score"] = best_score
+            torch.save(checkpoint_state, best_checkpoint_path)
+        else:
+            patience_counter += 1
+
+        # Always save latest checkpoint for resume capability
+        torch.save(checkpoint_state, latest_checkpoint_path)
+
+        if args.patience > 0 and patience_counter >= args.patience:
+            print(f"\n[Early Stopping] No improvement in '{args.monitor_metric}' for {args.patience} consecutive epochs. Stopping at epoch {epoch}.")
+            break
 
     print("=" * 95)
-    print(f"\nTraining completed. Best Token Macro-F1: {best_macro_f1:.4f}")
+    print(f"\nTraining completed. Best {args.monitor_metric}: {best_score:.4f}")
     print(f"Best model checkpoint saved to: {best_checkpoint_path}")
+    print(f"Latest checkpoint saved to:       {latest_checkpoint_path}")
 
     # Export human-readable reports and charts
     metadata = {
         "device": str(device),
         "gpu_name": torch.cuda.get_device_name(0) if device.type == "cuda" else "CPU",
         "total_params": total_params,
+        "patience": args.patience,
+        "monitor_metric": args.monitor_metric,
+        "clip_grad_norm": args.clip_grad_norm,
+        "resumed_from": str(args.resume) if args.resume else None,
         "config": {
             "geo_dim": gnn_config.geo_dim,
             "text_dim": gnn_config.text_dim,
@@ -402,8 +524,12 @@ def main(argv: list[str] | None = None) -> int:
     for fmt, path in report_files.items():
         print(f"  - [{fmt.upper()}]: {path}")
 
+    sys.stdout = old_stdout
+    dual_logger.close()
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
