@@ -103,6 +103,7 @@ def run_benchmark_suite(
 
             cmd = [
                 PYTHON_EXE,
+                "-u",
                 "-m",
                 f"app.training.train_{model}",
                 "--dataset",
