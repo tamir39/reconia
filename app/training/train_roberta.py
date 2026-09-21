@@ -1,17 +1,9 @@
 """Training pipeline for RoBERTa with 2D Layout Positional Embedding (Model 2).
 
-Fine-tunes RoBERTa-base augmented with 2D bounding box embeddings on invoice
-datasets (SROIE, CORD-v2, DocILE).
-
-Includes:
-- Dual logging to console and timestamped file in reports/
-- Early stopping & checkpoint resumption (best & latest)
-- Gradient accumulation & clipping
-- Memory & inference latency profiling
-- Unified benchmark reporting (JSON, CSV, Markdown, PNG curves, comparative dashboard)
+Fine-tunes RoBERTa-base on invoice datasets (SROIE, CORD-v2, DocILE).
 
 Usage:
-    python -m app.training.train_roberta --dataset sroie --epochs 20 --batch-size 4 --lr 3e-5
+    python -m app.training.train_roberta --dataset sroie --epochs 20
 """
 
 from __future__ import annotations
@@ -48,13 +40,14 @@ from app.evaluation import (
     compute_token_metrics,
     export_full_benchmark_report,
     extract_entities_from_bio,
+    save_training_history_csv,
 )
-from app.evaluation.report import generate_benchmark_summary
 from app.graph.cache import build_vocabulary, load_vocabulary, save_vocabulary
 from app.graph.labels import label_document
 from app.models_dl.roberta import (
     RoBERTaWithLayoutConfig,
     RoBERTaWithLayoutForTokenClassification,
+    get_default_roberta_model_path,
 )
 
 DEFAULT_CACHE = Path(__file__).resolve().parents[2] / ".cache"
@@ -68,33 +61,7 @@ ADAPTERS: dict[str, type] = {
 }
 
 
-class DualLogger:
-    """Duplicate stdout to both console and a log file."""
-
-    def __init__(self, log_path: Path):
-        self.terminal = sys.stdout
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-        self.log_file = log_path.open("a", encoding="utf-8")
-
-    def write(self, message: str) -> None:
-        try:
-            self.terminal.write(message)
-            self.terminal.flush()
-        except UnicodeEncodeError:
-            self.terminal.write(message.encode("ascii", errors="replace").decode("ascii"))
-            self.terminal.flush()
-        self.log_file.write(message)
-        self.log_file.flush()
-
-    def flush(self) -> None:
-        self.terminal.flush()
-        self.log_file.flush()
-
-    def close(self) -> None:
-        try:
-            self.log_file.close()
-        except Exception:
-            pass
+from app.training.utils import DualLogger, str2bool
 
 
 def compute_class_weights(
@@ -102,8 +69,9 @@ def compute_class_weights(
     vocab: dict[str, int],
     num_classes: int,
     device: torch.device,
+    power: float = 0.5,
 ) -> torch.Tensor:
-    """Compute inverse class frequency weights to balance rare entity classes."""
+    """Compute smoothed inverse class frequency weights to balance rare entity classes."""
     counts = np.zeros(num_classes, dtype=np.float64)
     for doc in documents:
         tags, _ = label_document(doc)
@@ -112,24 +80,13 @@ def compute_class_weights(
             if 0 <= cid < num_classes:
                 counts[cid] += 1.0
 
-    total_tokens = counts.sum()
-    if total_tokens == 0:
-        return torch.ones(num_classes, dtype=torch.float32, device=device)
+    mask = counts > 0
+    weights = np.ones(num_classes, dtype=np.float64)
+    if mask.any():
+        weights[mask] = 1.0 / (counts[mask] ** power)
+        weights[mask] = weights[mask] / weights[mask].mean()
+        weights = np.clip(weights, 0.2, 5.0)
 
-    # Balanced weighting: total / (num_classes * count)
-    weights = np.zeros(num_classes, dtype=np.float64)
-    for i in range(num_classes):
-        if counts[i] > 0:
-            weights[i] = total_tokens / (num_classes * counts[i])
-        else:
-            weights[i] = 1.0
-
-    # Down-weight 'O' class (index 0) so model focuses on entities
-    weights[0] = 0.2
-    # Normalize
-    weights = weights / weights.mean()
-    # Clip extremes
-    weights = np.clip(weights, 0.1, 10.0)
     return torch.tensor(weights, dtype=torch.float32, device=device)
 
 
@@ -156,13 +113,6 @@ def evaluate_roberta_model(
     all_targets: list[int] = []
     total_val_loss = 0.0
     val_steps = 0
-
-    with torch.no_grad():
-        for batch in val_loader:
-            input_ids = batch["input_ids"].to(device)
-            bbox = batch["bbox"].to(device)
-            attention_mask = batch["attention_mask"].to(device)
-            labels = batch["labels"].to(device)
 
     if profiler:
         profiler.start()
@@ -198,9 +148,8 @@ def evaluate_roberta_model(
         if profiler
         else {
             "elapsed_sec": 0.0,
-            "latency_ms_per_doc": 0.0,
-            "throughput_docs_per_sec": 0.0,
-            "peak_vram_mb": 0.0,
+            "latency": 0.0,
+            "throughput": 0.0,
         }
     )
 
@@ -267,9 +216,15 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset", default="sroie", choices=sorted(ADAPTERS), help="Dataset to train on (sroie, cord, docile)")
+    parser.add_argument(
+        "--dataset",
+        default="all",
+        choices=["all", "sroie", "cord", "docile"],
+        help="Dataset to train on: 'all' (default: sroie cord docile), 'sroie', 'cord', 'docile'",
+    )
     parser.add_argument("--epochs", type=int, default=20, help="Maximum number of training epochs")
-    parser.add_argument("--lr", type=float, default=3e-5, help="Peak learning rate for AdamW (typically 3e-5 for fine-tuning)")
+    parser.add_argument("--lr", type=float, default=5e-5, help="Peak learning rate for RoBERTa backbone (default: 5e-5)")
+    parser.add_argument("--head-lr", type=float, default=2e-4, help="Learning rate for layout embeddings and classification head (default: 2e-4)")
     parser.add_argument("--weight-decay", type=float, default=0.01, help="Weight decay for AdamW regularizer")
     parser.add_argument("--batch-size", type=int, default=4, help="Batch size per device (default: 4 for 4GB VRAM)")
     parser.add_argument("--batch-accum", type=int, default=4, help="Gradient accumulation steps (effective batch size = batch_size * batch_accum)")
@@ -282,7 +237,12 @@ def main(argv: list[str] | None = None) -> int:
         choices=["f1", "val_loss"],
         help="Metric to monitor for best checkpoint and early stopping: 'f1' (default) or 'val_loss'",
     )
-    parser.add_argument("--no-weighted-loss", action="store_true", help="Disable class weighting in CrossEntropyLoss")
+    parser.add_argument(
+        "--weighted-loss",
+        type=str2bool,
+        default=True,
+        help="Enable class-frequency weighted loss in CrossEntropy",
+    )
     parser.add_argument("--device", default="auto", help="Execution device: 'cuda', 'cpu', or 'auto'")
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE, help="Path to precomputed feature/vocabulary cache")
     parser.add_argument("--save-dir", type=Path, default=DEFAULT_CHECKPOINTS, help="Directory to save model checkpoints")
@@ -291,14 +251,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--limit-val", type=int, default=None, help="Limit number of validation documents (debugging)")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
     args = parser.parse_args(argv)
-
-    # Enable automated dual logging
-    args.report_dir.mkdir(parents=True, exist_ok=True)
-    timestamp_str = time.strftime("%Y%m%d_%H%M%S")
-    log_file = args.report_dir / f"train_roberta_{args.dataset}_{timestamp_str}.log"
-    dual_logger = DualLogger(log_file)
-    old_stdout = sys.stdout
-    sys.stdout = dual_logger
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -310,51 +262,51 @@ def main(argv: list[str] | None = None) -> int:
     else:
         device = torch.device(args.device)
 
-    print("=== Starting RoBERTa Training (Model 2: RoBERTa-base + Layout Positional Embedding) ===")
-    print(f"Dataset:     {args.dataset}")
-    print(f"Device:      {device} ({torch.cuda.get_device_name(device) if device.type == 'cuda' else 'CPU'})")
-    print(f"Epochs:      {args.epochs}")
-    print(f"Batch Size:  {args.batch_size} (Gradient Accumulation: {args.batch_accum} -> Effective: {args.batch_size * args.batch_accum})")
-    print(f"LR:          {args.lr}, Weight Decay: {args.weight_decay}")
-    print(f"Cache Dir:   {args.cache_dir}")
-    print(f"Report Dir:  {args.report_dir}")
+    target_datasets = ["sroie", "cord", "docile"] if args.dataset == "all" else [args.dataset]
+    for current_dataset in target_datasets:
+        train_single_roberta_dataset(args, current_dataset, device)
+    return 0
+
+
+def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, device: torch.device) -> None:
+    args.report_dir.mkdir(parents=True, exist_ok=True)
+    log_dir = args.report_dir / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    timestamp_str = time.strftime("%Y%m%d_%H%M%S")
+    log_file = log_dir / f"train_roberta_{dataset_name}_{timestamp_str}.log"
+    dual_logger = DualLogger(log_file)
+    old_stdout = sys.stdout
+    sys.stdout = dual_logger
 
     # 1. Load dataset adapter
-    adapter_cls = ADAPTERS[args.dataset]
+    adapter_cls = ADAPTERS[dataset_name]
     adapter: DatasetAdapter = adapter_cls()
 
     train_docs = list(adapter.iter_documents("train", limit=args.limit_train))
     val_docs = list(adapter.iter_documents("val", limit=args.limit_val))
 
-    print(f"Loaded {len(train_docs)} train documents, {len(val_docs)} validation documents.")
-
     # 2. Vocabulary
-    vocab_file = args.cache_dir / f"{args.dataset}-vocabulary.json"
+    vocab_file = args.cache_dir / f"{dataset_name}-vocabulary.json"
     if vocab_file.exists():
         vocab, fieldtypes = load_vocabulary(vocab_file)
-        print(f"Loaded existing vocabulary: {len(vocab)} BIO labels from {vocab_file}")
     else:
         full_train_docs = list(adapter.iter_documents("train"))
         vocab, fieldtypes = build_vocabulary(full_train_docs)
         save_vocabulary(vocab_file, vocab, fieldtypes)
-        print(f"Built and saved vocabulary: {len(vocab)} BIO labels to {vocab_file}")
 
     inv_vocab = {idx: name for name, idx in vocab.items()}
     num_classes = len(vocab)
 
     # 3. Tokenizer & Dataset
-    print("Loading RobertaTokenizerFast (roberta-base)...")
-    tokenizer = AutoTokenizer.from_pretrained("roberta-base")
+    model_source = get_default_roberta_model_path()
+    tokenizer = AutoTokenizer.from_pretrained(model_source)
 
-    print(f"Tokenizing and caching {len(train_docs)} training documents (subwords + 2D bbox)...")
-    t_tok = time.time()
     train_dataset = RoBERTaInvoiceDataset(train_docs, tokenizer=tokenizer, label_vocabulary=vocab)
-    print(f"Dataset ready: {len(train_dataset)} samples prepared in {time.time() - t_tok:.1f}s.")
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
 
     # 4. Model setup
     model_cfg = RoBERTaWithLayoutConfig(
-        model_name_or_path="roberta-base",
+        model_name_or_path=model_source,
         num_labels=num_classes,
         label2id=vocab,
         id2label=inv_vocab,
@@ -364,27 +316,39 @@ def main(argv: list[str] | None = None) -> int:
 
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Total parameters: {total_params:,} (Trainable: {trainable_params:,})")
 
-    # Class weighting
+    # Class weighting (optional frequency-weighted loss to balance entity extraction)
     class_weights = None
-    if not args.no_weighted_loss:
+    if args.weighted_loss:
         class_weights = compute_class_weights(train_docs, vocab, num_classes, device)
-        print("Enabled class-frequency weighted loss to balance entity extraction.")
 
-    # Optimizer & Scheduler
-    no_decay = ["bias", "LayerNorm.weight"]
+    # Optimizer & Scheduler with differential learning rates (backbone vs new heads)
+    no_decay = ["bias", "LayerNorm.weight", "layer_norm.weight"]
+    backbone_decay = [p for n, p in model.roberta.named_parameters() if not any(nd in n for nd in no_decay)]
+    backbone_no_decay = [p for n, p in model.roberta.named_parameters() if any(nd in n for nd in no_decay)]
+    head_params = (
+        [p for n, p in model.layout_embeddings.named_parameters()]
+        + [p for n, p in model.classifier.named_parameters()]
+    )
+
     optimizer_grouped_parameters = [
         {
-            "params": [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
+            "params": backbone_decay,
+            "lr": args.lr,
             "weight_decay": args.weight_decay,
         },
         {
-            "params": [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)],
+            "params": backbone_no_decay,
+            "lr": args.lr,
+            "weight_decay": 0.0,
+        },
+        {
+            "params": head_params,
+            "lr": args.head_lr,
             "weight_decay": 0.0,
         },
     ]
-    optimizer = AdamW(optimizer_grouped_parameters, lr=args.lr)
+    optimizer = AdamW(optimizer_grouped_parameters)
     scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
 
     # Early stopping & Resumption tracking
@@ -406,17 +370,54 @@ def main(argv: list[str] | None = None) -> int:
         train_history = ckpt.get("train_history", [])
         print(f"Resumed at Epoch {start_epoch} with prior best {args.monitor_metric}: {best_monitor_val:.4f}")
 
+    is_debug = bool(args.limit_train is not None or args.limit_val is not None)
+
     args.save_dir.mkdir(parents=True, exist_ok=True)
-    best_checkpoint_path = args.save_dir / f"roberta_{args.dataset}_best.pt"
-    latest_checkpoint_path = args.save_dir / f"roberta_{args.dataset}_latest.pt"
+    best_checkpoint_path = args.save_dir / f"roberta_{dataset_name}_best.pt"
+    latest_checkpoint_path = args.save_dir / f"roberta_{dataset_name}_latest.pt"
+
+    metrics_dir = args.report_dir / "metrics"
+    metrics_dir.mkdir(parents=True, exist_ok=True)
+    history_csv_path = metrics_dir / f"roberta_{dataset_name.lower()}_history.csv"
 
     profiler = InferenceProfiler(device=device)
+
+    gpu_desc = f"{torch.cuda.get_device_name(device)}" if device.type == "cuda" else "CPU"
+    loss_mode = "CrossEntropy (Weighted: True - Inverse class frequency)" if args.weighted_loss else "CrossEntropy (Weighted: False - Standard)"
+    eff_batch = args.batch_size * args.batch_accum
+    patience_desc = f"{args.patience} epochs (monitoring '{args.monitor_metric}')" if args.patience > 0 else "Disabled"
+    fields_desc = f"{len(fieldtypes)} entity types ({', '.join(sorted(fieldtypes))})" if fieldtypes else "N/A"
+
+    print(f"\n{'=' * 80}")
+    print(f"{'RECONIA EXPERIMENT SETUP: ROBERTA-BASE':^80}")
+    print(f"{'=' * 80}")
+    print(f"[Hardware & Runtime]")
+    print(f"  Device              : {str(device).upper()} ({gpu_desc})")
+    print(f"  Random Seed         : {args.seed}")
+    print(f"\n[Dataset & Labels]")
+    print(f"  Target Dataset      : {dataset_name.upper()} (Train: {len(train_docs)} docs | Val: {len(val_docs)} docs)")
+    print(f"  Vocabulary          : {len(vocab)} BIO tags across {fields_desc}")
+    print(f"\n[Model Architecture]")
+    print(f"  Backbone            : roberta-base (12 layers, 768 hidden, 12 heads)")
+    print(f"  Layout Module       : 2D Spatial Positional Embeddings (x0, y0, x1, y1)")
+    print(f"  Parameters          : {trainable_params:,} trainable parameters")
+    print(f"\n[Training Hyperparameters]")
+    print(f"  Batch Strategy      : Batch size: {args.batch_size} x Accum: {args.batch_accum}  ==>  Effective Batch Size: {eff_batch}")
+    print(f"  Learning Rates      : Backbone LR: {args.lr:.1e} | Head LR: {args.head_lr:.1e}")
+    print(f"  Optimization        : AdamW (Weight Decay: {args.weight_decay} | Clip Norm: {args.clip_grad_norm})")
+    print(f"  Schedule & EarlyStop: {args.epochs} max epochs (Patience: {patience_desc})")
+    print(f"  Loss Criterion      : {loss_mode}")
+    print(f"\n[Artifacts & Outputs]")
+    print(f"  Best Checkpoint     : {best_checkpoint_path}")
+    print(f"  Reports & Charts    : {args.report_dir}")
+    print(f"{'=' * 80}")
 
     print("\n" + "=" * 80)
     print(f"{'Epoch':<6} | {'TrainLoss':<10} | {'ValLoss':<10} | {'Precision':<10} | {'Recall':<10} | {'F1':<10} | {'Latency(ms)':<11}")
     print("=" * 80)
 
     best_eval_metrics: dict[str, Any] = {}
+    val_metrics: dict[str, Any] = {}
     best_epoch_num = 1
 
     try:
@@ -468,12 +469,11 @@ def main(argv: list[str] | None = None) -> int:
             precision = val_metrics["precision"]
             recall = val_metrics["recall"]
             f1 = val_metrics["f1"]
-            lat_ms = val_metrics["perf"]["latency_ms_per_doc"]
-            vram_mb = val_metrics["perf"]["peak_vram_mb"]
+            lat = val_metrics["perf"]["latency"]
 
             print(
                 f"{epoch:<6} | {avg_train_loss:<10.4f} | {val_loss:<10.4f} | "
-                f"{precision:<10.4f} | {recall:<10.4f} | {f1:<10.4f} | {lat_ms:<11.1f}"
+                f"{precision:<10.4f} | {recall:<10.4f} | {f1:<10.4f} | {lat:<11.1f}"
             )
 
             # Record history
@@ -484,10 +484,13 @@ def main(argv: list[str] | None = None) -> int:
                 "precision": float(precision),
                 "recall": float(recall),
                 "f1": float(f1),
-                "latency_ms": lat_ms,
-                "peak_vram_mb": vram_mb,
+                "latency": lat,
             }
             train_history.append(epoch_record)
+
+            # Real-time persistence of training history (full training only)
+            if not is_debug:
+                save_training_history_csv(history_csv_path, train_history)
 
             # Determine improvement
             current_monitor = f1 if args.monitor_metric == "f1" else val_loss
@@ -501,11 +504,14 @@ def main(argv: list[str] | None = None) -> int:
             # Unified checkpoint state
             checkpoint_state = {
                 "epoch": epoch,
+                "best_epoch": epoch if is_improvement else best_epoch_num,
                 "model_state_dict": model.state_dict(),
                 "optimizer_state_dict": optimizer.state_dict(),
                 "scheduler_state_dict": scheduler.state_dict(),
                 "config": model_cfg.to_dict(),
+                "best_score": current_monitor if is_improvement else best_monitor_val,
                 "best_monitor_val": current_monitor if is_improvement else best_monitor_val,
+                "history": train_history,
                 "train_history": train_history,
                 "metrics": val_metrics,
                 "monitor_metric": args.monitor_metric,
@@ -521,7 +527,8 @@ def main(argv: list[str] | None = None) -> int:
                 best_eval_metrics = val_metrics
                 torch.save(checkpoint_state, best_checkpoint_path)
             else:
-                patience_counter += 1
+                if best_monitor_val > 0.0 or args.monitor_metric == "val_loss":
+                    patience_counter += 1
                 if args.patience > 0 and patience_counter >= args.patience:
                     print(f"\n[Early Stopping] No improvement in '{args.monitor_metric}' for {args.patience} consecutive epochs. Stopping at epoch {epoch}.")
                     break
@@ -534,11 +541,40 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Best model checkpoint saved to: {best_checkpoint_path}")
     print(f"Latest checkpoint saved to:       {latest_checkpoint_path}")
 
-    # 5. Export comprehensive benchmark reports and curves
-    if (best_eval_metrics or val_metrics) and train_history:
+    # 5. Automatic Test Set Evaluation & Prediction Export on best checkpoint (Full Training only)
+    test_metrics: dict[str, Any] | None = None
+    if is_debug:
+        print(f"\n[Debug Mode Detected] Skipping TEST set evaluation, prediction export, and benchmark reporting.")
+    elif "test" in adapter.splits() and getattr(adapter, "has_ground_truth", lambda s: True)("test"):
+        print(f"\n=== Evaluating Best Checkpoint & Exporting Predictions on TEST Set ({dataset_name.upper()}) ===")
+        pred_dir = args.report_dir / "predictions"
+        pred_dir.mkdir(parents=True, exist_ok=True)
+        pred_file = pred_dir / f"predictions_roberta_{dataset_name.lower()}_test.json"
+
+        from app.evaluation.predict import run_prediction_pipeline
+
+        test_metrics = run_prediction_pipeline(
+            model_path=best_checkpoint_path,
+            dataset_name=dataset_name,
+            split="test",
+            output_json=pred_file,
+            device_str=str(device),
+            cache_dir=args.cache_dir,
+            model_type="roberta",
+        )
+        p_t = test_metrics["precision"] * 100
+        r_t = test_metrics["recall"] * 100
+        f1_t = test_metrics["f1"] * 100
+        lat_t = test_metrics.get("latency", test_metrics.get("perf", {}).get("latency", 0.0))
+        print(f"TEST Results (Best Checkpoint - Epoch {best_epoch_num}):")
+        print(f"  Precision: {p_t:.2f}% | Recall: {r_t:.2f}% | F1: {f1_t:.2f}% | Latency: {lat_t:.1f} ms")
+        print(f"  Predictions saved to: {pred_file}")
+
+    # 6. Export comprehensive benchmark reports (Full Training only)
+    if not is_debug and (best_eval_metrics or val_metrics) and train_history:
         metadata = {
             "device": str(device),
-            "gpu_name": torch.cuda.get_device_name(device) if device.type == "cuda" else "CPU",
+            "gpu_name": "CUDA GPU" if device.type == "cuda" else "CPU",
             "total_params": total_params,
             "trainable_params": trainable_params,
             "epochs_trained": len(train_history),
@@ -547,6 +583,7 @@ def main(argv: list[str] | None = None) -> int:
             "batch_accum": args.batch_accum,
             "effective_batch_size": args.batch_size * args.batch_accum,
             "lr": args.lr,
+            "head_lr": args.head_lr,
             "patience": args.patience,
             "monitor_metric": args.monitor_metric,
             "clip_grad_norm": args.clip_grad_norm,
@@ -557,17 +594,16 @@ def main(argv: list[str] | None = None) -> int:
         report_files = export_full_benchmark_report(
             output_dir=args.report_dir,
             model_name="RoBERTa",
-            dataset_name=args.dataset,
+            dataset_name=dataset_name,
             history=train_history,
             final_val_metrics=best_eval_metrics or val_metrics,
+            test_metrics=test_metrics,
             metadata=metadata,
         )
 
-        print("\nGenerated benchmark reports & comparison figures:")
+        print("\nGenerated benchmark reports & training curves:")
         for fmt, path in report_files.items():
             print(f"  - [{fmt.upper()}]: {path}")
-
-
 
     sys.stdout = old_stdout
     dual_logger.close()

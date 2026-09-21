@@ -1,7 +1,7 @@
 """Training pipeline for the Spatial Relational GNN model (Model 1).
 
 Supports all 3 benchmark datasets (SROIE, CORD-v2, DocILE).
-Profiles GPU VRAM, inference latency, token metrics, and entity metrics.
+Profiles inference latency, throughput, token metrics, and entity metrics.
 
 Usage:
     python -m app.training.train_gnn --dataset sroie --epochs 20 --device cuda
@@ -34,6 +34,7 @@ from app.evaluation import (
     compute_token_metrics,
     export_full_benchmark_report,
     extract_entities_from_bio,
+    save_training_history_csv,
 )
 from app.graph.builder import DocumentGraph
 from app.graph.cache import BuildConfig, GraphCache, build_vocabulary, load_vocabulary, save_vocabulary
@@ -49,6 +50,8 @@ ADAPTERS: dict[str, type] = {
     "cord": CordAdapter,
     "docile": DocileAdapter,
 }
+
+from app.training.utils import DualLogger, str2bool
 
 
 def prepare_graph_tensors(
@@ -210,39 +213,9 @@ def compute_class_weights(
                 counts[label] += 1
     counts = np.maximum(counts, 1.0)
     weights = 1.0 / (counts**power)
-    if "O" in vocabulary:
-        # Downweight background 'O' tag so the model prioritizes identifying key entities
-        weights[vocabulary["O"]] *= 0.25
     weights = weights / weights.mean()
+    weights = np.clip(weights, 0.2, 5.0)
     return torch.tensor(weights, dtype=torch.float32)
-
-
-class DualLogger:
-    """Duplicate stdout to both console and a log file."""
-    def __init__(self, log_path: Path):
-        self.terminal = sys.stdout
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-        self.log_file = log_path.open("a", encoding="utf-8")
-
-    def write(self, message: str) -> None:
-        try:
-            self.terminal.write(message)
-            self.terminal.flush()
-        except UnicodeEncodeError:
-            self.terminal.write(message.encode("ascii", errors="replace").decode("ascii"))
-            self.terminal.flush()
-        self.log_file.write(message)
-        self.log_file.flush()
-
-    def flush(self) -> None:
-        self.terminal.flush()
-        self.log_file.flush()
-
-    def close(self) -> None:
-        try:
-            self.log_file.close()
-        except Exception:
-            pass
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -251,13 +224,18 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset", default="sroie", choices=sorted(ADAPTERS), help="Dataset to train on (sroie, cord, docile)")
-    parser.add_argument("--epochs", type=int, default=20, help="Maximum number of training epochs")
-    parser.add_argument("--lr", type=float, default=1e-3, help="Peak learning rate for AdamW")
-    parser.add_argument("--weight-decay", type=float, default=1e-4, help="Weight decay for AdamW regularizer")
-    parser.add_argument("--hidden-dim", type=int, default=128, help="Hidden dimension of GNN node representations")
-    parser.add_argument("--num-layers", type=int, default=2, help="Number of Spatial GNN convolution layers")
-    parser.add_argument("--dropout", type=float, default=0.2, help="Dropout probability for GNN layers")
+    parser.add_argument(
+        "--dataset",
+        default="all",
+        choices=["all", "sroie", "cord", "docile"],
+        help="Dataset name: 'all' (default: sroie cord docile), 'sroie', 'cord', 'docile'",
+    )
+    parser.add_argument("--epochs", type=int, default=20, help="Number of training epochs")
+    parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate (default: 1e-3)")
+    parser.add_argument("--weight-decay", type=float, default=1e-4, help="Weight decay factor (default: 1e-4)")
+    parser.add_argument("--hidden-dim", type=int, default=128, help="Hidden dimension for GNN layers")
+    parser.add_argument("--num-layers", type=int, default=2, help="Number of EdgeConv GNN layers")
+    parser.add_argument("--dropout", type=float, default=0.2, help="Dropout probability")
     parser.add_argument("--batch-accum", type=int, default=16, help="Gradient accumulation steps (effective batch size = 16)")
     parser.add_argument("--clip-grad-norm", type=float, default=1.0, help="Maximum gradient norm for clipping (<= 0 to disable)")
     parser.add_argument("--patience", type=int, default=5, help="Early stopping patience in epochs (0 to disable)")
@@ -268,7 +246,12 @@ def main(argv: list[str] | None = None) -> int:
         choices=["f1", "val_loss"],
         help="Metric to monitor for best checkpoint and early stopping: 'f1' (default) or 'val_loss'",
     )
-    parser.add_argument("--no-weighted-loss", action="store_true", help="Disable class weighting in CrossEntropyLoss")
+    parser.add_argument(
+        "--weighted-loss",
+        type=str2bool,
+        default=True,
+        help="Enable class-frequency weighted loss in CrossEntropy",
+    )
     parser.add_argument("--device", default="auto", help="Execution device: 'cuda', 'cpu', or 'auto'")
     parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE, help="Path to precomputed feature/graph cache")
     parser.add_argument("--save-dir", type=Path, default=DEFAULT_CHECKPOINTS, help="Directory to save model checkpoints")
@@ -277,14 +260,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--limit-val", type=int, default=None, help="Limit number of validation documents (debugging)")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
     args = parser.parse_args(argv)
-
-    # Enable automated dual logging (console + file) for every training run
-    args.report_dir.mkdir(parents=True, exist_ok=True)
-    timestamp_str = time.strftime("%Y%m%d_%H%M%S")
-    log_file = args.report_dir / f"train_gnn_{args.dataset}_{timestamp_str}.log"
-    dual_logger = DualLogger(log_file)
-    old_stdout = sys.stdout
-    sys.stdout = dual_logger
 
     # Set random seeds for reproducibility
     np.random.seed(args.seed)
@@ -298,34 +273,37 @@ def main(argv: list[str] | None = None) -> int:
     else:
         device = torch.device(args.device)
 
-    print(f"=== Starting GNN Training (Model 1) ===")
-    print(f"Dataset:    {args.dataset}")
-    print(f"Device:     {device} ({torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'})")
-    print(f"Epochs:     {args.epochs}")
+    target_datasets = ["sroie", "cord", "docile"] if args.dataset == "all" else [args.dataset]
+    for current_dataset in target_datasets:
+        train_single_gnn_dataset(args, current_dataset, device)
+    return 0
 
-    print(f"Hidden Dim: {args.hidden_dim}, Layers: {args.num_layers}")
-    print(f"Cache Dir:  {args.cache_dir}")
-    print(f"Report Dir: {args.report_dir}")
+
+def train_single_gnn_dataset(args: argparse.Namespace, dataset_name: str, device: torch.device) -> None:
+    args.report_dir.mkdir(parents=True, exist_ok=True)
+    log_dir = args.report_dir / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    timestamp_str = time.strftime("%Y%m%d_%H%M%S")
+    log_file = log_dir / f"train_gnn_{dataset_name}_{timestamp_str}.log"
+    dual_logger = DualLogger(log_file)
+    old_stdout = sys.stdout
+    sys.stdout = dual_logger
 
     # 1. Load Dataset
-    adapter_cls = ADAPTERS[args.dataset]
+    adapter_cls = ADAPTERS[dataset_name]
     adapter: DatasetAdapter = adapter_cls()
 
     train_docs = list(adapter.iter_documents("train", limit=args.limit_train))
     val_docs = list(adapter.iter_documents("val", limit=args.limit_val))
-    print(f"Loaded {len(train_docs)} train documents, {len(val_docs)} validation documents.")
 
     # 2. Vocabulary setup
     args.cache_dir.mkdir(parents=True, exist_ok=True)
-    vocab_path = args.cache_dir / f"{args.dataset}-vocabulary.json"
+    vocab_path = args.cache_dir / f"{dataset_name}-vocabulary.json"
     if vocab_path.exists():
         vocabulary, fieldtypes = load_vocabulary(vocab_path)
-        print(f"Loaded existing vocabulary: {len(vocabulary)} BIO labels from {vocab_path}")
     else:
-        print("Building label vocabulary from full training split...")
         vocabulary, fieldtypes = build_vocabulary(adapter.iter_documents("train"))
         save_vocabulary(vocab_path, vocabulary, fieldtypes)
-        print(f"Built & saved vocabulary: {len(vocabulary)} BIO labels to {vocab_path}")
 
     # 3. Graph Cache
     config = BuildConfig()
@@ -344,28 +322,32 @@ def main(argv: list[str] | None = None) -> int:
         dropout=args.dropout,
     )
     model = InvoiceGNN(gnn_config).to(device)
-
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Total trainable parameters: {total_params:,}")
 
     # Loss & Optimizer
-    if not args.no_weighted_loss:
+    if args.weighted_loss:
         class_weights = compute_class_weights(train_docs, vocabulary, cache).to(device)
         criterion = nn.CrossEntropyLoss(weight=class_weights)
-        print("Enabled class-frequency weighted loss to balance entity extraction.")
     else:
         criterion = nn.CrossEntropyLoss()
 
     optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
+    is_debug = bool(args.limit_train is not None or args.limit_val is not None)
+
     args.save_dir.mkdir(parents=True, exist_ok=True)
-    best_checkpoint_path = args.save_dir / f"gnn_{args.dataset}_best.pt"
-    latest_checkpoint_path = args.save_dir / f"gnn_{args.dataset}_latest.pt"
+    best_checkpoint_path = args.save_dir / f"gnn_{dataset_name}_best.pt"
+    latest_checkpoint_path = args.save_dir / f"gnn_{dataset_name}_latest.pt"
+
+    metrics_dir = args.report_dir / "metrics"
+    metrics_dir.mkdir(parents=True, exist_ok=True)
+    history_csv_path = metrics_dir / f"gnn_{dataset_name.lower()}_history.csv"
 
     start_epoch = 1
     best_epoch = 1
     best_score = float("inf") if args.monitor_metric == "val_loss" else -1.0
     best_val_metrics: dict[str, Any] = {}
+    val_metrics: dict[str, Any] = {}
     history: list[dict[str, Any]] = []
 
     if args.resume is not None:
@@ -407,133 +389,197 @@ def main(argv: list[str] | None = None) -> int:
 
     patience_counter = 0
 
+    gpu_desc = f"{torch.cuda.get_device_name(0)}" if device.type == "cuda" else "CPU"
+    loss_mode = "CrossEntropy (Weighted: True - Inverse class frequency)" if args.weighted_loss else "CrossEntropy (Weighted: False - Standard)"
+    patience_desc = f"{args.patience} epochs (monitoring '{args.monitor_metric}')" if args.patience > 0 else "Disabled"
+    fields_desc = f"{len(fieldtypes)} entity types ({', '.join(sorted(fieldtypes))})" if fieldtypes else "N/A"
+
+    print(f"\n{'=' * 80}")
+    print(f"{'RECONIA EXPERIMENT SETUP: SPATIAL RELATIONAL GNN':^80}")
+    print(f"{'=' * 80}")
+    print(f"[Hardware & Runtime]")
+    print(f"  Device              : {str(device).upper()} ({gpu_desc})")
+    print(f"  Random Seed         : {args.seed}")
+    print(f"\n[Dataset & Labels]")
+    print(f"  Target Dataset      : {dataset_name.upper()} (Train: {len(train_docs)} docs | Val: {len(val_docs)} docs)")
+    print(f"  Vocabulary          : {len(vocabulary)} BIO tags across {fields_desc}")
+    print(f"\n[Model Architecture]")
+    print(f"  GNN Backbone        : EdgeConv GNN ({args.num_layers} layers, {args.hidden_dim} hidden, dropout: {args.dropout})")
+    print(f"  Node & Edge Dims    : Geo: {gnn_config.geo_dim}-d, Text: {gnn_config.text_dim}-d, Spatial Edge: {gnn_config.edge_spatial_dim}-d, Edge Types: {gnn_config.num_edge_types}")
+    print(f"  Parameters          : {total_params:,} total trainable parameters")
+    print(f"\n[Training Hyperparameters]")
+    print(f"  Batch Strategy      : Graph Batch: 1 x Accum: {args.batch_accum}  ==>  Effective Batch Size: {args.batch_accum}")
+    print(f"  Learning Rate       : {args.lr:.1e} (CosineAnnealingLR, min: {args.lr * 0.05:.1e})")
+    print(f"  Optimization        : AdamW (Weight Decay: {args.weight_decay} | Clip Norm: {args.clip_grad_norm})")
+    print(f"  Schedule & EarlyStop: {args.epochs} max epochs (Patience: {patience_desc})")
+    print(f"  Loss Criterion      : {loss_mode}")
+    print(f"\n[Artifacts & Outputs]")
+    print(f"  Best Checkpoint     : {best_checkpoint_path}")
+    print(f"  Reports & Charts    : {args.report_dir}")
+    print(f"{'=' * 80}")
+
     print("\n" + "=" * 80)
     header = f"{'Epoch':<6} | {'TrainLoss':<10} | {'ValLoss':<10} | {'Precision':<10} | {'Recall':<10} | {'F1':<10} | {'Latency(ms)':<11}"
     print(header)
     print("=" * 80)
 
-    for epoch in range(start_epoch, args.epochs + 1):
-        t0 = time.time()
-        train_loss = train_one_epoch(
-            model,
-            cache,
-            train_docs,
-            optimizer,
-            criterion,
-            device,
-            batch_accum=args.batch_accum,
-            clip_grad_norm=args.clip_grad_norm,
-        )
-        scheduler.step()
+    try:
+        for epoch in range(start_epoch, args.epochs + 1):
+            t0 = time.time()
+            train_loss = train_one_epoch(
+                model,
+                cache,
+                train_docs,
+                optimizer,
+                criterion,
+                device,
+                batch_accum=args.batch_accum,
+                clip_grad_norm=args.clip_grad_norm,
+            )
+            scheduler.step()
 
-        val_metrics = evaluate_model(model, cache, val_docs, criterion, device, vocabulary)
-        val_loss = val_metrics["val_loss"]
-        precision = val_metrics["precision"]
-        recall = val_metrics["recall"]
-        f1 = val_metrics["f1"]
-        lat = val_metrics["perf"]["latency_ms_per_doc"]
-        vram = val_metrics["perf"]["peak_vram_mb"]
+            val_metrics = evaluate_model(model, cache, val_docs, criterion, device, vocabulary)
+            val_loss = val_metrics["val_loss"]
+            precision = val_metrics["precision"]
+            recall = val_metrics["recall"]
+            f1 = val_metrics["f1"]
+            lat = val_metrics["perf"]["latency"]
 
-        history.append({
-            "epoch": epoch,
-            "train_loss": float(train_loss),
-            "val_loss": float(val_loss),
-            "precision": float(precision),
-            "recall": float(recall),
-            "f1": float(f1),
-            "latency_ms": float(lat),
-            "peak_vram_mb": float(vram),
-        })
+            history.append({
+                "epoch": epoch,
+                "train_loss": float(train_loss),
+                "val_loss": float(val_loss),
+                "precision": float(precision),
+                "recall": float(recall),
+                "f1": float(f1),
+                "latency": float(lat),
+            })
 
-        print(
-            f"{epoch:<6} | {train_loss:<10.4f} | {val_loss:<10.4f} | {precision:<10.4f} | "
-            f"{recall:<10.4f} | {f1:<10.4f} | {lat:<11.1f}"
-        )
+            # Real-time persistence of training history (full training only)
+            if not is_debug:
+                save_training_history_csv(history_csv_path, history)
 
-        current_score = f1 if args.monitor_metric == "f1" else val_loss
+            print(
+                f"{epoch:<6} | {train_loss:<10.4f} | {val_loss:<10.4f} | {precision:<10.4f} | "
+                f"{recall:<10.4f} | {f1:<10.4f} | {lat:<11.1f}"
+            )
 
-        improved = (
-            (current_score < best_score)
-            if args.monitor_metric == "val_loss"
-            else (current_score > best_score)
-        )
+            current_score = f1 if args.monitor_metric == "f1" else val_loss
 
-        checkpoint_state = {
-            "epoch": epoch,
-            "best_epoch": best_epoch,
-            "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-            "scheduler_state_dict": scheduler.state_dict(),
-            "config": gnn_config,
-            "vocabulary": vocabulary,
-            "fieldtypes": fieldtypes,
-            "metrics": val_metrics,
-            "history": history,
-            "best_score": current_score if improved else best_score,
-            "monitor_metric": args.monitor_metric,
-        }
+            improved = (
+                (current_score < best_score)
+                if args.monitor_metric == "val_loss"
+                else (current_score > best_score)
+            )
 
-        if improved:
-            best_score = current_score
-            best_epoch = epoch
-            checkpoint_state["best_epoch"] = best_epoch
-            best_val_metrics = val_metrics
-            patience_counter = 0
-            checkpoint_state["best_score"] = best_score
-            torch.save(checkpoint_state, best_checkpoint_path)
-        else:
-            patience_counter += 1
+            checkpoint_state = {
+                "epoch": epoch,
+                "best_epoch": best_epoch,
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "scheduler_state_dict": scheduler.state_dict(),
+                "config": gnn_config,
+                "vocabulary": vocabulary,
+                "fieldtypes": fieldtypes,
+                "metrics": val_metrics,
+                "history": history,
+                "best_score": current_score if improved else best_score,
+                "monitor_metric": args.monitor_metric,
+            }
 
-        # Always save latest checkpoint for resume capability
-        torch.save(checkpoint_state, latest_checkpoint_path)
+            if improved:
+                best_score = current_score
+                best_epoch = epoch
+                checkpoint_state["best_epoch"] = best_epoch
+                best_val_metrics = val_metrics
+                patience_counter = 0
+                checkpoint_state["best_score"] = best_score
+                torch.save(checkpoint_state, best_checkpoint_path)
+            else:
+                patience_counter += 1
 
-        if args.patience > 0 and patience_counter >= args.patience:
-            print(f"\n[Early Stopping] No improvement in '{args.monitor_metric}' for {args.patience} consecutive epochs. Stopping at epoch {epoch}.")
-            break
+            # Always save latest checkpoint for resume capability
+            torch.save(checkpoint_state, latest_checkpoint_path)
+
+            if args.patience > 0 and patience_counter >= args.patience:
+                print(f"\n[Early Stopping] No improvement in '{args.monitor_metric}' for {args.patience} consecutive epochs. Stopping at epoch {epoch}.")
+                break
+    except KeyboardInterrupt:
+        print("\nTraining interrupted by user. Finalizing artifacts from completed epochs...")
 
     print("=" * 87)
     print(f"\nTraining completed. Best {args.monitor_metric}: {best_score:.4f} (at Epoch {best_epoch})")
     print(f"Best model checkpoint saved to: {best_checkpoint_path}")
     print(f"Latest checkpoint saved to:       {latest_checkpoint_path}")
 
-    # Export human-readable reports and charts
-    metadata = {
-        "device": str(device),
-        "gpu_name": torch.cuda.get_device_name(0) if device.type == "cuda" else "CPU",
-        "total_params": total_params,
-        "trainable_params": total_params,
-        "epochs_trained": len(history),
-        "best_epoch": best_epoch,
-        "batch_accum": args.batch_accum,
-        "effective_batch_size": args.batch_accum,
-        "lr": args.lr,
-        "patience": args.patience,
-        "monitor_metric": args.monitor_metric,
-        "clip_grad_norm": args.clip_grad_norm,
-        "resumed_from": str(args.resume) if args.resume else None,
-        "config": {
-            "geo_dim": gnn_config.geo_dim,
-            "text_dim": gnn_config.text_dim,
-            "hidden_dim": gnn_config.hidden_dim,
-            "num_layers": gnn_config.num_layers,
-            "num_classes": gnn_config.num_classes,
-            "dropout": gnn_config.dropout,
-        },
-        "seed": args.seed,
-    }
+    # Automatic Test Set Evaluation & Prediction Export on best checkpoint (Full Training only)
+    test_metrics: dict[str, Any] | None = None
+    if is_debug:
+        print(f"\n[Debug Mode Detected] Skipping TEST set evaluation, prediction export, and benchmark reporting.")
+    elif "test" in adapter.splits() and getattr(adapter, "has_ground_truth", lambda s: True)("test"):
+        print(f"\n=== Evaluating Best Checkpoint & Exporting Predictions on TEST Set ({dataset_name.upper()}) ===")
+        pred_dir = args.report_dir / "predictions"
+        pred_dir.mkdir(parents=True, exist_ok=True)
+        pred_file = pred_dir / f"predictions_gnn_{dataset_name.lower()}_test.json"
+        from app.evaluation.predict import run_prediction_pipeline
 
-    report_files = export_full_benchmark_report(
-        output_dir=args.report_dir,
-        model_name="GNN",
-        dataset_name=args.dataset,
-        history=history,
-        final_val_metrics=best_val_metrics or val_metrics,
-        metadata=metadata,
-    )
+        test_metrics = run_prediction_pipeline(
+            model_path=best_checkpoint_path,
+            dataset_name=dataset_name,
+            split="test",
+            output_json=pred_file,
+            device_str=str(device),
+            cache_dir=args.cache_dir,
+            model_type="gnn",
+        )
+        p_t = test_metrics["precision"] * 100
+        r_t = test_metrics["recall"] * 100
+        f1_t = test_metrics["f1"] * 100
+        lat_t = test_metrics.get("latency", test_metrics.get("perf", {}).get("latency", 0.0))
+        print(f"TEST Results (Best Checkpoint - Epoch {best_epoch}):")
+        print(f"  Precision: {p_t:.2f}% | Recall: {r_t:.2f}% | F1: {f1_t:.2f}% | Latency: {lat_t:.1f} ms")
+        print(f"  Predictions saved to: {pred_file}")
 
-    print("\nGenerated benchmark reports & comparison figures:")
-    for fmt, path in report_files.items():
-        print(f"  - [{fmt.upper()}]: {path}")
+    # Export comprehensive benchmark reports (Full Training only)
+    if not is_debug and (best_val_metrics or val_metrics) and history:
+        metadata = {
+            "device": str(device),
+            "gpu_name": "CUDA GPU" if device.type == "cuda" else "CPU",
+            "total_params": total_params,
+            "trainable_params": total_params,
+            "epochs_trained": len(history),
+            "best_epoch": best_epoch,
+            "batch_accum": args.batch_accum,
+            "effective_batch_size": args.batch_accum,
+            "lr": args.lr,
+            "patience": args.patience,
+            "monitor_metric": args.monitor_metric,
+            "clip_grad_norm": args.clip_grad_norm,
+            "resumed_from": str(args.resume) if args.resume else None,
+            "config": {
+                "geo_dim": gnn_config.geo_dim,
+                "text_dim": gnn_config.text_dim,
+                "hidden_dim": gnn_config.hidden_dim,
+                "num_layers": gnn_config.num_layers,
+                "num_classes": gnn_config.num_classes,
+                "dropout": gnn_config.dropout,
+            },
+            "seed": args.seed,
+        }
+
+        report_files = export_full_benchmark_report(
+            output_dir=args.report_dir,
+            model_name="GNN",
+            dataset_name=dataset_name,
+            history=history,
+            final_val_metrics=best_val_metrics or val_metrics,
+            test_metrics=test_metrics,
+            metadata=metadata,
+        )
+
+        print("\nGenerated benchmark reports & training curves:")
+        for fmt, path in report_files.items():
+            print(f"  - [{fmt.upper()}]: {path}")
 
     sys.stdout = old_stdout
     dual_logger.close()

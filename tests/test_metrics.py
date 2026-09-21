@@ -125,6 +125,23 @@ def test_inference_profiler():
     stats = profiler.stop(num_documents=2)
 
     assert stats["elapsed_sec"] > 0
-    assert stats["latency_ms_per_doc"] > 0
-    assert stats["throughput_docs_per_sec"] > 0
-    assert stats["peak_vram_mb"] == 0.0  # CPU has 0 VRAM
+    assert stats["latency"] > 0
+    assert "vram" not in stats
+    assert stats["throughput"] > 0
+
+
+def test_span_to_bbox():
+    from app.data.schema import BBox, Document, Word
+    from app.evaluation.predict import span_to_bbox
+
+    words = [
+        Word("Total", BBox(0.1, 0.5, 0.2, 0.55), page=0),
+        Word("Due", BBox(0.22, 0.5, 0.3, 0.55), page=0),
+        Word("$120.00", BBox(0.7, 0.5, 0.85, 0.55), page=0),
+    ]
+    doc = Document(doc_id="mock_doc", words=words, fields=[])
+    span = EntitySpan(entity_type="amount_due", start_token=0, end_token=2)
+    bbox = span_to_bbox(doc, span)
+
+    assert bbox == [0.1, 0.5, 0.3, 0.55]
+

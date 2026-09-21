@@ -21,8 +21,7 @@ HISTORY_COLUMNS = [
     "precision",
     "recall",
     "f1",
-    "latency_ms",
-    "peak_vram_mb",
+    "latency",
 ]
 
 SAMPLE_HISTORY = [
@@ -33,8 +32,7 @@ SAMPLE_HISTORY = [
         "precision": 0.6,
         "recall": 0.5,
         "f1": 0.55,
-        "latency_ms": 5.0,
-        "peak_vram_mb": 64.0,
+        "latency": 5.0,
     },
     {
         "epoch": 2,
@@ -43,8 +41,7 @@ SAMPLE_HISTORY = [
         "precision": 0.8,
         "recall": 0.7,
         "f1": 0.75,
-        "latency_ms": 4.8,
-        "peak_vram_mb": 64.0,
+        "latency": 4.8,
     },
 ]
 
@@ -76,8 +73,7 @@ def test_save_markdown_report(tmp_path: Path):
         "precision": 0.8,
         "recall": 0.7,
         "f1": 0.75,
-        "latency_ms": 4.8,
-        "peak_vram_mb": 64.0,
+        "latency": 4.8,
         "history": SAMPLE_HISTORY,
         "entity_per_type": {
             "company": {"precision": 0.85, "recall": 0.8, "f1": 0.82, "support": 50},
@@ -93,7 +89,7 @@ def test_save_markdown_report(tmp_path: Path):
     assert "Recall" in content
     assert "F1" in content
     assert "Latency (ms)" in content
-    assert "VRAM (MB)" in content
+    assert "VRAM (MB)" not in content
     assert "75.00%" in content
     assert "company" in content
 
@@ -118,6 +114,7 @@ def test_export_full_benchmark_report(tmp_path: Path):
         "best_epoch": 2,
     }
     final_metrics = {
+        "val_loss": 0.15,
         "entity_metrics": {
             "precision": 0.8,
             "recall": 0.7,
@@ -125,7 +122,27 @@ def test_export_full_benchmark_report(tmp_path: Path):
             "per_type": {
                 "total": {"precision": 0.8, "recall": 0.7, "f1": 0.75, "support": 30}
             },
-        }
+        },
+        "perf": {
+            "latency": 4.8,
+        },
+    }
+    test_metrics = {
+        "val_loss": 0.12,
+        "precision": 0.85,
+        "recall": 0.78,
+        "f1": 0.81,
+        "entity_metrics": {
+            "precision": 0.85,
+            "recall": 0.78,
+            "f1": 0.81,
+            "per_type": {
+                "total": {"precision": 0.85, "recall": 0.78, "f1": 0.81, "support": 30}
+            },
+        },
+        "perf": {
+            "latency": 4.5,
+        },
     }
 
     out = export_full_benchmark_report(
@@ -134,6 +151,7 @@ def test_export_full_benchmark_report(tmp_path: Path):
         dataset_name="SROIE",
         history=SAMPLE_HISTORY,
         final_val_metrics=final_metrics,
+        test_metrics=test_metrics,
         metadata=metadata,
     )
 
@@ -143,9 +161,14 @@ def test_export_full_benchmark_report(tmp_path: Path):
 
     with out["json"].open("r", encoding="utf-8") as fh:
         data = json.load(fh)
-    assert data["f1"] == pytest.approx(0.75)
-    assert data["precision"] == pytest.approx(0.8)
-    assert data["recall"] == pytest.approx(0.7)
+    # Primary fields reflect test set
+    assert data["f1"] == pytest.approx(0.81)
+    assert data["precision"] == pytest.approx(0.85)
+    assert data["recall"] == pytest.approx(0.78)
+    assert data["latency"] == pytest.approx(4.5)
+    assert "vram" not in data
+    assert data["metrics_test"]["f1"] == pytest.approx(0.81)
+    assert data["metrics_val"]["f1"] == pytest.approx(0.75)
 
 
 def test_generate_benchmark_summary(tmp_path: Path):
@@ -153,21 +176,21 @@ def test_generate_benchmark_summary(tmp_path: Path):
         "model": "GNN",
         "dataset": "sroie",
         "best_epoch": 2,
+        "split": "test",
         "precision": 0.8,
         "recall": 0.7,
         "f1": 0.75,
-        "latency_ms": 4.8,
-        "peak_vram_mb": 64.0,
+        "latency": 4.8,
     }
     record_roberta = {
         "model": "RoBERTa",
         "dataset": "sroie",
         "best_epoch": 1,
+        "split": "test",
         "precision": 0.6,
         "recall": 0.5,
         "f1": 0.55,
-        "latency_ms": 50.0,
-        "peak_vram_mb": 1500.0,
+        "latency": 50.0,
     }
 
     with (tmp_path / "gnn_sroie_results.json").open("w", encoding="utf-8") as fh:
@@ -184,6 +207,6 @@ def test_generate_benchmark_summary(tmp_path: Path):
     assert "Recall (%)" in md_content
     assert "F1 (%)" in md_content
     assert "Latency (ms)" in md_content
-    assert "VRAM (MB)" in md_content
+    assert "VRAM (MB)" not in md_content
     assert "GNN" in md_content
     assert "RoBERTa" in md_content

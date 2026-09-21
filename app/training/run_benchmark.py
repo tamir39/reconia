@@ -1,12 +1,8 @@
-"""Automated benchmark pipeline for invoice information extraction models.
-
-Executes sequential training across selected models (GNN, RoBERTa) and
-datasets (SROIE, CORD-v2, DocILE), logs progress with timestamps, profiles hardware,
-and automatically updates comparative benchmark reports and visualization dashboards.
+"""Run benchmark suite across multiple models and datasets.
 
 Usage:
-    python -m app.training.run_benchmark --models roberta --datasets sroie --epochs 5
-    python -m app.training.run_benchmark --models all --all --epochs 20 --patience 5
+    python -m app.training.run_benchmark
+    python -m app.training.run_benchmark --models roberta --datasets sroie
 """
 
 from __future__ import annotations
@@ -16,6 +12,7 @@ import datetime
 import subprocess
 import sys
 import time
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from app.data.paths import WORKSPACE_ROOT
@@ -24,11 +21,31 @@ from app.evaluation.report import generate_benchmark_summary
 RECONIA_ROOT = Path(__file__).resolve().parents[2]
 PYTHON_EXE = sys.executable
 
-SUPPORTED_MODELS = ["gnn", "roberta"]
-MODEL_DEFAULT_LR = {
-    "gnn": 1e-3,
-    "roberta": 3e-5,
+
+@dataclass
+class ModelBenchmarkSpec:
+    name: str
+    entry_module: str
+    default_lr: float
+    extra_args: list[str] = field(default_factory=list)
+
+
+MODEL_SPECS: dict[str, ModelBenchmarkSpec] = {
+    "gnn": ModelBenchmarkSpec(
+        name="gnn",
+        entry_module="app.training.train_gnn",
+        default_lr=1e-3,
+        extra_args=[],
+    ),
+    "roberta": ModelBenchmarkSpec(
+        name="roberta",
+        entry_module="app.training.train_roberta",
+        default_lr=5e-5,
+        extra_args=["--head-lr", "2e-4"],
+    ),
 }
+
+SUPPORTED_MODELS = list(MODEL_SPECS.keys())
 
 
 def format_duration(seconds: float) -> str:
@@ -47,8 +64,8 @@ def run_benchmark_suite(
     lr: float | None = None,
     batch_accum: int | None = None,
     monitor_metric: str = "f1",
-    docile_limit_train: int | None = None,
-    docile_limit_val: int | None = None,
+    limit_train: int | None = None,
+    limit_val: int | None = None,
     device: str = "auto",
     reports_dir: Path | None = None,
     save_dir: Path | None = None,
@@ -60,9 +77,11 @@ def run_benchmark_suite(
 
     reports_dir.mkdir(parents=True, exist_ok=True)
     save_dir.mkdir(parents=True, exist_ok=True)
+    logs_dir = reports_dir / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = reports_dir / f"benchmark_run_{timestamp_str}.log"
+    log_file = logs_dir / f"benchmark_run_{timestamp_str}.log"
 
     def log_and_print(msg: str) -> None:
         try:
@@ -75,12 +94,14 @@ def run_benchmark_suite(
     total_experiments = len(models) * len(datasets)
 
     log_and_print("=" * 80)
-    log_and_print("=== RECONIA AUTOMATED BENCHMARK PIPELINE ===")
+    log_and_print(f"=== RECONIA BENCHMARK SUITE (TRAINING & EVALUATION) ===")
     log_and_print(f"Start Time:   {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     log_and_print(f"Models:       {', '.join(m.upper() for m in models)}")
     log_and_print(f"Datasets:     {', '.join(d.upper() for d in datasets)}")
     log_and_print(f"Experiments:  {total_experiments} total runs")
     log_and_print(f"Epochs:       {epochs} (Patience: {patience})")
+    if limit_train or limit_val:
+        log_and_print(f"Limit:        Train={limit_train or 'Full'}, Val={limit_val or 'Full'}")
     log_and_print(f"Python:       {PYTHON_EXE}")
     log_and_print(f"Reports Dir:  {reports_dir}")
     log_and_print(f"Log File:     {log_file}")
@@ -91,14 +112,22 @@ def run_benchmark_suite(
     exp_counter = 0
 
     for model in models:
-        # Determine model-appropriate learning rate
-        chosen_lr = lr if lr is not None else MODEL_DEFAULT_LR.get(model, 1e-4)
+        spec = MODEL_SPECS.get(
+            model,
+            ModelBenchmarkSpec(
+                name=model,
+                entry_module=f"app.training.train_{model}",
+                default_lr=1e-4,
+                extra_args=[],
+            ),
+        )
+        chosen_lr = lr if lr is not None else spec.default_lr
 
         for dataset in datasets:
             exp_counter += 1
             log_and_print(
-                f"\n[{exp_counter}/{total_experiments}] Starting {model.upper()} on {dataset.upper()} "
-                f"(LR: {chosen_lr}) at {datetime.datetime.now().strftime('%H:%M:%S')}..."
+                f"\n[{exp_counter}/{total_experiments}] Training {model.upper()} on {dataset.upper()} "
+                f"at {datetime.datetime.now().strftime('%H:%M:%S')}..."
             )
             task_start = time.time()
 
@@ -106,7 +135,7 @@ def run_benchmark_suite(
                 PYTHON_EXE,
                 "-u",
                 "-m",
-                f"app.training.train_{model}",
+                spec.entry_module,
                 "--dataset",
                 dataset,
                 "--epochs",
@@ -124,15 +153,15 @@ def run_benchmark_suite(
                 "--monitor-metric",
                 monitor_metric,
             ]
+            cmd.extend(spec.extra_args)
 
             if batch_accum is not None:
                 cmd.extend(["--batch-accum", str(batch_accum)])
 
-            if dataset == "docile":
-                if docile_limit_train:
-                    cmd.extend(["--limit-train", str(docile_limit_train)])
-                if docile_limit_val:
-                    cmd.extend(["--limit-val", str(docile_limit_val)])
+            if limit_train is not None:
+                cmd.extend(["--limit-train", str(limit_train)])
+            if limit_val is not None:
+                cmd.extend(["--limit-val", str(limit_val)])
 
             log_and_print(f"Command: {' '.join(cmd)}")
 
@@ -176,12 +205,13 @@ def run_benchmark_suite(
                 "duration": format_duration(task_elapsed),
             })
 
-            # Update global comparative benchmark summary after every single experiment
-            log_and_print(f"Updating comparative benchmark charts in {reports_dir}...")
-            try:
-                generate_benchmark_summary(reports_dir)
-            except Exception as e:
-                log_and_print(f"Warning: Failed to update comparative summary: {e}")
+            # Update global comparative benchmark summary after every single experiment (full training only)
+            if limit_train is None and limit_val is None:
+                log_and_print(f"Updating comparative benchmark charts in {reports_dir}...")
+                try:
+                    generate_benchmark_summary(reports_dir)
+                except Exception as e:
+                    log_and_print(f"Warning: Failed to update comparative summary: {e}")
 
     total_elapsed = time.time() - overall_start
     log_and_print("\n" + "=" * 80)
@@ -206,16 +236,15 @@ def main(argv: list[str] | None = None) -> int:
         "--models",
         nargs="+",
         default=["all"],
-        help="Models to benchmark: 'gnn', 'roberta', or 'all' (default: all)",
+        help="Models to benchmark (default: all; or specify model names)",
     )
     parser.add_argument(
         "--datasets",
         nargs="+",
-        default=["sroie", "cord", "docile"],
-        choices=["sroie", "cord", "docile"],
-        help="Datasets to train on sequentially (default: sroie cord docile)",
+        default=["all"],
+        choices=["all", "sroie", "cord", "docile"],
+        help="Datasets to train sequentially: 'all' (default: sroie cord docile), 'sroie', 'cord', 'docile'",
     )
-    parser.add_argument("--all", action="store_true", help="Run on all 3 datasets (sroie, cord, docile)")
     parser.add_argument("--epochs", type=int, default=20, help="Number of epochs per dataset")
     parser.add_argument("--patience", type=int, default=5, help="Early stopping patience (0 to disable)")
     parser.add_argument("--lr", type=float, default=None, help="Learning rate (default: model-specific)")
@@ -227,20 +256,20 @@ def main(argv: list[str] | None = None) -> int:
         help="Metric to monitor for best checkpoint and early stopping: 'f1' (default) or 'val_loss'",
     )
     parser.add_argument(
-        "--docile-limit-train",
+        "--limit-train",
         type=int,
-        default=500,
-        help="Limit train docs for DocILE (default: 500 for fast benchmark; pass 0 for full 5180 docs)",
+        default=None,
+        help="Limit train docs per dataset (default: None for full dataset; use for fast debugging)",
     )
     parser.add_argument(
-        "--docile-limit-val",
+        "--limit-val",
         type=int,
-        default=100,
-        help="Limit val docs for DocILE (default: 100; pass 0 for full 500 docs)",
+        default=None,
+        help="Limit val docs per dataset (default: None for full dataset; use for fast debugging)",
     )
     parser.add_argument("--device", default="auto", help="'cuda', 'cpu', or 'auto'")
-    parser.add_argument("--reports-dir", type=Path, default=None)
-    parser.add_argument("--save-dir", type=Path, default=None)
+    parser.add_argument("--report-dir", type=Path, default=None, help="Directory for benchmark reports")
+    parser.add_argument("--save-dir", type=Path, default=None, help="Directory for model checkpoints")
     args = parser.parse_args(argv)
 
     # Process models
@@ -251,22 +280,24 @@ def main(argv: list[str] | None = None) -> int:
         if not selected_models:
             selected_models = ["gnn"]
 
-    datasets = ["sroie", "cord", "docile"] if args.all else args.datasets
-    docile_train = None if args.docile_limit_train == 0 else args.docile_limit_train
-    docile_val = None if args.docile_limit_val == 0 else args.docile_limit_val
+    # Process datasets
+    if "all" in args.datasets:
+        selected_datasets = ["sroie", "cord", "docile"]
+    else:
+        selected_datasets = [d.lower() for d in args.datasets if d.lower() in ("sroie", "cord", "docile")]
 
     return run_benchmark_suite(
         models=selected_models,
-        datasets=datasets,
+        datasets=selected_datasets,
         epochs=args.epochs,
         patience=args.patience,
         lr=args.lr,
         batch_accum=args.batch_accum,
         monitor_metric=args.monitor_metric,
-        docile_limit_train=docile_train,
-        docile_limit_val=docile_val,
+        limit_train=args.limit_train,
+        limit_val=args.limit_val,
         device=args.device,
-        reports_dir=args.reports_dir,
+        reports_dir=args.report_dir,
         save_dir=args.save_dir,
     )
 

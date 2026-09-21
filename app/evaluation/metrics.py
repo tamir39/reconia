@@ -1,5 +1,5 @@
 """Evaluation metrics for invoice and document information extraction.
-Provides precision, recall, f1, and inference latency/VRAM profiling.
+Provides precision, recall, f1, and inference latency/throughput profiling.
 """
 
 from __future__ import annotations
@@ -55,19 +55,24 @@ def extract_entities_from_bio(
             return None
         return " ".join(texts[s:e])
 
+    def flush(end_idx: int) -> None:
+        nonlocal current_type, start_idx, current_page
+        if current_type is not None:
+            entities.append(
+                EntitySpan(
+                    entity_type=current_type,
+                    start_token=start_idx,
+                    end_token=end_idx,
+                    text=get_text_slice(start_idx, end_idx),
+                    page=current_page,
+                )
+            )
+            current_type = None
+
     for i, tag in enumerate(tags):
         page_i = get_page(i)
         if tag.startswith("B-"):
-            if current_type is not None:
-                entities.append(
-                    EntitySpan(
-                        entity_type=current_type,
-                        start_token=start_idx,
-                        end_token=i,
-                        text=get_text_slice(start_idx, i),
-                        page=current_page,
-                    )
-                )
+            flush(i)
             current_type = tag[2:]
             start_idx = i
             current_page = page_i
@@ -75,48 +80,18 @@ def extract_entities_from_bio(
         elif tag.startswith("I-"):
             tag_type = tag[2:]
             # If I- matches current entity type and is on the same page, continue
-            if current_type == tag_type and current_page == page_i:
-                pass
-            else:
+            if current_type != tag_type or current_page != page_i:
                 # If stray I- tag or cross-page transition, end previous and start new
-                if current_type is not None:
-                    entities.append(
-                        EntitySpan(
-                            entity_type=current_type,
-                            start_token=start_idx,
-                            end_token=i,
-                            text=get_text_slice(start_idx, i),
-                            page=current_page,
-                        )
-                    )
+                flush(i)
                 current_type = tag_type
                 start_idx = i
                 current_page = page_i
 
         else:  # 'O' or other non-entity tag
-            if current_type is not None:
-                entities.append(
-                    EntitySpan(
-                        entity_type=current_type,
-                        start_token=start_idx,
-                        end_token=i,
-                        text=get_text_slice(start_idx, i),
-                        page=current_page,
-                    )
-                )
-                current_type = None
+            flush(i)
 
     # Handle entity extending to the end of document
-    if current_type is not None:
-        entities.append(
-            EntitySpan(
-                entity_type=current_type,
-                start_token=start_idx,
-                end_token=len(tags),
-                text=get_text_slice(start_idx, len(tags)),
-                page=current_page,
-            )
-        )
+    flush(len(tags))
 
     return entities
 
@@ -294,24 +269,16 @@ def compute_entity_metrics(
 
 
 class InferenceProfiler:
-    """Measures model inference latency, throughput, and peak GPU memory allocation."""
+    """Measures model inference latency and throughput."""
 
     def __init__(self, device: str = "cpu") -> None:
         self.device = str(device)
         self._start_time: float = 0.0
         self.elapsed_time: float = 0.0
-        self.peak_vram_mb: float = 0.0
         self.num_documents: int = 0
 
     def start(self) -> None:
         """Begin profiling session."""
-        if "cuda" in self.device:
-            try:
-                import torch
-                if torch.cuda.is_available():
-                    torch.cuda.reset_peak_memory_stats()
-            except ImportError:
-                pass
         self._start_time = time.perf_counter()
 
     def stop(self, num_documents: int = 1) -> dict[str, float]:
@@ -319,22 +286,11 @@ class InferenceProfiler:
         self.elapsed_time = time.perf_counter() - self._start_time
         self.num_documents = max(num_documents, 1)
 
-        if "cuda" in self.device:
-            try:
-                import torch
-                if torch.cuda.is_available():
-                    self.peak_vram_mb = torch.cuda.max_memory_allocated() / (1024 * 1024)
-            except ImportError:
-                self.peak_vram_mb = 0.0
-        else:
-            self.peak_vram_mb = 0.0
-
-        latency_ms_per_doc = (self.elapsed_time / self.num_documents) * 1000.0
+        latency = (self.elapsed_time / self.num_documents) * 1000.0
         throughput = self.num_documents / self.elapsed_time if self.elapsed_time > 0 else 0.0
 
         return {
             "elapsed_sec": float(self.elapsed_time),
-            "latency_ms_per_doc": float(latency_ms_per_doc),
-            "throughput_docs_per_sec": float(throughput),
-            "peak_vram_mb": float(self.peak_vram_mb),
+            "latency": float(latency),
+            "throughput": float(throughput),
         }

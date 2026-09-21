@@ -24,7 +24,7 @@ tqdm>=4.66.0
 matplotlib>=3.8.0
 
 # --- Khung Học sâu (Deep Learning Framework) ---
-# Lưu ý: Trên Windows có GPU NVIDIA (GTX 1650 Ti), khuyến nghị cài PyTorch hỗ trợ CUDA:
+# Lưu ý: Với môi trường có GPU NVIDIA, khuyến nghị cài PyTorch hỗ trợ CUDA:
 # pip install torch --index-url https://download.pytorch.org/whl/cu124
 torch>=2.0.0
 transformers>=4.38.0

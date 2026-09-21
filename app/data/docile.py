@@ -23,6 +23,12 @@ from typing import Iterator
 from app.data.paths import REPO_ROOT, WORKSPACE_ROOT, resolve_dataset_path
 from app.data.schema import BBox, Document, Field, Word
 
+import random
+
+SPLITS_FILE = Path(__file__).resolve().parent / "docile_splits.json"
+RANDOM_SEED = 42
+TRAIN_COUNT = 4680
+
 
 def _bbox(pair: list[list[float]]) -> BBox:
     (x0, y0), (x1, y1) = pair
@@ -35,7 +41,7 @@ def _bbox_from_flat(values: list[float]) -> BBox:
 
 
 def _iter_ocr_words(payload: dict) -> Iterator[tuple[int, str, BBox, float | None]]:
-    """Walk the nested OCR structure in natural forward reading order (top to bottom, line by line)."""
+    """Walk nested OCR words in reading order."""
     for page in payload.get("pages", []):
         page_idx = page.get("page_idx", 0)
         for block in page.get("blocks", []):
@@ -49,11 +55,7 @@ def _iter_ocr_words(payload: dict) -> Iterator[tuple[int, str, BBox, float | Non
 
 
 class DocileAdapter:
-    """Reads DocILE into the intermediate representation.
-
-    Supports multi-root resolution: reads train/val from annotated-trainval and test from
-    docile/data/test when downloaded later, without code modifications.
-    """
+    """Reads DocILE documents into intermediate representation."""
 
     name = "docile"
 
@@ -61,6 +63,7 @@ class DocileAdapter:
         self,
         root: str | os.PathLike[str] | None = None,
         test_root: str | os.PathLike[str] | None = None,
+        splits_path: str | os.PathLike[str] | None = None,
     ) -> None:
         candidates = [
             WORKSPACE_ROOT / "docile" / "data" / "annotated-trainval",
@@ -85,31 +88,62 @@ class DocileAdapter:
             ]
             self.test_root = next((c for c in test_candidates if c.is_dir()), None)
 
-    def _split_path(self, split: str) -> Path | None:
-        """Find the split json file in root or test_root."""
-        primary = self.root / f"{split}.json"
-        if primary.is_file():
-            return primary
-        if self.test_root:
-            secondary = self.test_root / f"{split}.json"
-            if secondary.is_file():
-                return secondary
-        return None
+        self.splits_file = Path(splits_path) if splits_path else SPLITS_FILE
+        self._splits = self._load_or_create_splits()
+
+    def _load_or_create_splits(self) -> dict[str, list[str]]:
+        if self.splits_file.is_file():
+            with self.splits_file.open(encoding="utf-8") as fh:
+                return json.load(fh)
+
+        train_p = self.root / "train.json"
+        val_p = self.root / "val.json"
+        if not train_p.is_file() or not val_p.is_file():
+            return {}
+
+        with train_p.open(encoding="utf-8") as fh:
+            train_ids = json.load(fh)
+        with val_p.open(encoding="utf-8") as fh:
+            val_ids = json.load(fh)
+
+        rng = random.Random(RANDOM_SEED)
+        shuffled = list(train_ids)
+        rng.shuffle(shuffled)
+
+        splits = {
+            "train": sorted(shuffled[:TRAIN_COUNT]),
+            "val": val_ids,
+            "test": sorted(shuffled[TRAIN_COUNT:]),
+        }
+
+        self.splits_file.parent.mkdir(parents=True, exist_ok=True)
+        with self.splits_file.open("w", encoding="utf-8") as fh:
+            json.dump(splits, fh, indent=2)
+
+        return splits
 
     def splits(self) -> list[str]:
-        """Dynamically detect available splits (train, val, and test if present)."""
-        detected: list[str] = []
-        for s in ("train", "val", "test"):
-            if self._split_path(s) is not None:
-                detected.append(s)
-        return detected
+        base_splits = ["train", "val", "test"] if self._splits else ["train", "val"]
+        if self.test_root and (self.test_root / "test.json").is_file():
+            base_splits.append("test_official")
+        return base_splits
+
+    def has_ground_truth(self, split: str) -> bool:
+        return split in ("train", "val", "test", "trainval")
 
     def document_ids(self, split: str) -> list[str]:
-        path = self._split_path(split)
-        if path is None:
-            raise ValueError(f"unknown split {split!r}; available: {self.splits()}")
-        with path.open(encoding="utf-8") as fh:
-            return json.load(fh)
+        if split in self._splits:
+            return self._splits[split]
+        if split == "test_official" and self.test_root:
+            test_p = self.test_root / "test.json"
+            if test_p.is_file():
+                with test_p.open(encoding="utf-8") as fh:
+                    return json.load(fh)
+        raw_p = self.root / f"{split}.json"
+        if raw_p.is_file():
+            with raw_p.open(encoding="utf-8") as fh:
+                return json.load(fh)
+        raise ValueError(f"unknown split {split!r}; available: {self.splits()}")
 
     def _find_file(self, subdir: str, filename: str) -> Path:
         """Locate an annotation, ocr, or pdf file across root and test_root."""

@@ -10,7 +10,6 @@ Tài liệu này đặc tả phạm vi, bài toán, kiến trúc và phương ph
 
 > **Trọng tâm đề tài:** Đánh giá, cài đặt và so sánh thực nghiệm 4 mô hình học sâu (GNN, RoBERTa,
 > LayoutLMv3, LiLT) trên 3 bộ dữ liệu hóa đơn chuẩn (DocILE, CORD-v2, SROIE) dưới một khung đo lường thống nhất.
-> Các nội dung liên quan đến ứng dụng đối soát nghiệp vụ (Sections 5-6) thuộc về lớp demo mở rộng đã đóng băng.
 
 ---
 
@@ -22,8 +21,8 @@ tin từ hóa đơn (Document Information Extraction), theo yêu cầu cốt lõ
 1. Khảo sát và lựa chọn 4 mô hình học sâu đại diện cho các trường phái tiếp cận: Đồ thị (GNN), Mô hình chuỗi văn bản (RoBERTa), Đa phương thức hoàn chỉnh (LayoutLMv3) và Đa phương thức tách biệt (LiLT).
 2. Chuẩn hóa và thực nghiệm trên 3 bộ dữ liệu: DocILE (hóa đơn thương mại đa trang, phức tạp), CORD-v2 (biên lai ẩm thực, đa trường) và SROIE (biên lai bán lẻ).
 3. Cài đặt hoặc huấn luyện lại các mô hình dưới **điều kiện thực nghiệm thống nhất** (cùng tập train/val, cùng chất lượng OCR, cùng pipeline tính chỉ số).
-4. Đánh giá bằng Precision, Recall và F1-score (cả micro-F1 và macro-F1) ở cấp độ thực thể (entity-level).
-5. So sánh và phân tích ưu/nhược điểm, tốc độ suy luận, chi phí tính toán (GPU memory, thời gian train/inference) của từng phương pháp.
+4. Đánh giá bằng Precision, Recall và F1-score ở cấp độ thực thể (entity-level Exact Match).
+5. So sánh và phân tích ưu/nhược điểm, tốc độ suy luận (Latency ms) và thời gian huấn luyện/suy luận của từng phương pháp.
 
 Bài toán trích xuất được định nghĩa theo chuẩn DocILE Benchmark:
 
@@ -40,22 +39,22 @@ liệu, cách tiền xử lý và cách tính chỉ số. Đề tài đưa các 
 
 | Nhóm phương pháp | Mô hình | Kiến trúc đại diện | Nơi huấn luyện |
 |---|---|---|---|
-| **Đồ thị (GNN)** | Relational GCN / Edge-augmented GNN | Đồ thị tài liệu đa quan hệ, nút là từ OCR (128-d text + 17-d layout), cạnh không gian ($r_{ij} \in \mathbb{R}^6$) | Máy cá nhân (GTX 1650 Ti) |
-| **Mô hình chuỗi** | RoBERTa-base | Pre-trained Transformer 1D bổ sung positional encoding 2D của hộp bao | Kaggle GPU (T4 / P100) |
-| **Đa phương thức** | LayoutLMv3-base | Multimodal Transformer kết hợp Text, 2D Layout và Visual Patches | Kaggle GPU (T4 / P100) |
-| **Đa phương thức nhẹ** | LiLT-base | Language-Independent Layout Transformer (tách biệt luồng văn bản và luồng bố cục) | Kaggle GPU (T4 / P100) |
+| **Đồ thị (GNN)** | Relational GCN / Edge-augmented GNN | Đồ thị tài liệu đa quan hệ, nút là từ OCR (128-d text + 17-d layout), cạnh không gian ($r_{ij} \in \mathbb{R}^6$) | Môi trường cục bộ (Local GPU) |
+| **Mô hình chuỗi** | RoBERTa-base | Pre-trained Transformer 1D bổ sung positional encoding 2D của hộp bao | Cloud GPU (Kaggle / Colab) |
+| **Đa phương thức** | LayoutLMv3-base | Multimodal Transformer kết hợp Text, 2D Layout và Visual Patches | Cloud GPU (Kaggle / Colab) |
+| **Đa phương thức nhẹ** | LiLT-base | Language-Independent Layout Transformer (tách biệt luồng văn bản và luồng bố cục) | Cloud GPU (Kaggle / Colab) |
 
 ### 1.2. Môi trường huấn luyện
 
-- **Máy cá nhân:** Intel Core i7 / AMD Ryzen, GPU NVIDIA GeForce GTX 1650 Ti (4GB VRAM), PyTorch 2.0+ CUDA. Dùng để phát triển, tiền xử lý dữ liệu, huấn luyện mô hình GNN và chạy khung đánh giá thống nhất.
-- **Kaggle GPU:** T4 x 2 (16GB VRAM) hoặc P100 (16GB VRAM). Dùng để fine-tune các mô hình Transformer tiền huấn luyện (RoBERTa, LayoutLMv3, LiLT) với checkpointing và early stopping định kỳ.
+- **Môi trường cục bộ (Local):** GPU tiêu chuẩn hỗ trợ PyTorch CUDA. Dùng để phát triển, tiền xử lý dữ liệu, huấn luyện mô hình GNN và chạy khung đánh giá thống nhất.
+- **Môi trường Cloud GPU:** GPU hỗ trợ CUDA (Kaggle/Colab). Dùng để fine-tune các mô hình Transformer tiền huấn luyện (RoBERTa, LayoutLMv3, LiLT) với checkpointing và early stopping định kỳ.
 
 ## 2. Dữ liệu thực nghiệm
 
 Đề tài sử dụng 3 bộ dữ liệu mở chuẩn quốc tế, đại diện cho các hình thái tài liệu hóa đơn và biên lai khác nhau:
 
 ### 2.1. Bộ dữ liệu DocILE (ICDAR 2023)
-- **Quy mô:** Tập `annotated-trainval` gồm 5.680 tài liệu (5.180 train, 500 val).
+- **Quy mô:** Tập `annotated-trainval` gồm 5.680 tài liệu có nhãn đầy đủ (`app/data/docile_splits.json`: 4.680 train, 500 val, 500 test local có nhãn) và tập `test_official` gồm 1.000 tài liệu phục vụ suy luận nộp bài thi ICDAR RRC.
 - **Đặc trưng:** Hóa đơn thương mại doanh nghiệp thực tế (B2B), đa trang (77% 1 trang, 19% 2 trang, 4% 3 trang trở lên). Bố cục dạng bảng phức tạp, biến thiên cao.
 - **Số loại trường:** 55 loại trường (36 trường KILE và 18 trường LIR).
 - **Thành phần:** PDF vector gốc, kết quả OCR có sẵn kèm hộp bao từng từ, nhãn chú giải chính xác.
@@ -67,7 +66,7 @@ liệu, cách tiền xử lý và cách tính chỉ số. Đề tài đưa các 
 - **Thành phần:** Ảnh biên lai gốc, danh sách từ OCR kèm tọa độ đa giác, nhãn phân loại BIO.
 
 ### 2.3. Bộ dữ liệu SROIE (ICDAR 2019 Task 3)
-- **Quy mô:** 987 biên lai bán lẻ (626 train, 361 test). Để phục vụ thực nghiệm thống nhất, tập train được chia ngẫu nhiên cố định (seed 42) thành 500 train và 126 val (`app/data/sroie_splits.json`).
+- **Quy mô:** 626 biên lai bán lẻ (`app/data/sroie_splits.json`: 500 train, 63 val, 63 test ngẫu nhiên không thiên lệch với `seed=42`).
 - **Đặc trưng:** Biên lai quét/chụp thực tế từ máy in nhiệt, nhiều nhiễu hình ảnh, góc nghiêng và mờ nhòe.
 - **Số loại trường:** 4 trường thông tin then chốt: `company`, `date`, `address`, `total`.
 - **Thành phần:** Ảnh JPG gốc, kết quả OCR từng dòng văn bản, nhãn thực thể chính xác.
@@ -107,7 +106,7 @@ Vector $r_{ij}$ cung cấp thông tin hình học liên tục cho cơ chế truy
 ### 4.1. Mô hình 1: Đồ thị tài liệu (GNN)
 - **Kiến trúc:** Relational Graph Convolutional Network (RGCN) hoặc Edge-augmented GAT (Graph Attention Network).
 - **Cơ chế:** Cập nhật biểu diễn nút qua nhiều tầng lan truyền thông tin theo các loại quan hệ không gian (`edge_type`) và vector quan hệ $r_{ij}$.
-- **Phân loại:** Bộ phân loại MLP dự đoán nhãn BIO trên từng nút từ vector biểu diễn sau GNN. Huấn luyện cục bộ trên GPU GTX 1650 Ti (bộ nhớ nhẹ, $< 1$GB VRAM).
+- **Phân loại:** Bộ phân loại MLP dự đoán nhãn BIO trên từng nút từ vector biểu diễn sau GNN. Huấn luyện trên GPU cục bộ (kiến trúc gọn nhẹ, tối ưu bộ nhớ).
 
 ### 4.2. Mô hình 2: Chuỗi văn bản (RoBERTa-base + Layout Positional Embedding)
 - **Kiến trúc:** RoBERTa-base với bộ mã hóa 12 tầng Transformer.
@@ -123,49 +122,41 @@ Vector $r_{ij}$ cung cấp thông tin hình học liên tục cho cơ chế truy
 
 ---
 
-> [!NOTE]
-> ### Lưu ý về Lớp Ứng dụng Đối soát & Agent (Mục 5 & 6)
-> Các nội dung tại **Mục 5 (Agent kiểm chứng)** và **Mục 6 (Ứng dụng đối soát)** thuộc về hệ thống đối soát 3 chiều (3-way matching demo) đã được phát triển trong giai đoạn trước. Nhằm tập trung tối đa nguồn lực vào đề tài nghiên cứu học thuật về Học sâu, **toàn bộ lớp ứng dụng này đã được đóng băng (frozen)** và giữ lại trong kho mã nguồn làm tài liệu tham khảo cho việc tích hợp vào hệ thống nghiệp vụ sau này.
-
-## 5. Lớp Agent kiểm chứng (Demo Layer — Frozen)
-
-Mô hình đồ thị phân loại từng nút một cách cục bộ và không có khái niệm về tính nhất quán ở mức
-toàn tài liệu. Lớp Agent xử lý đúng nhóm sai sót này:
-- Phát hiện xung đột giữa các trường thông tin đơn nhất.
-- Kiểm tra tính toán số học giữa tổng tiền và chi tiết các dòng hàng.
-- Chi tiết kiến trúc xem tại [AGENT.md](AGENT.md).
-
-## 6. Lớp ứng dụng minh họa đối soát (Demo Layer — Frozen)
-
-Ứng dụng đối soát chứng từ 3 chiều (Hóa đơn - Phiếu xuất/nhập kho - Đơn đặt hàng) sử dụng kết quả
-trích xuất từ mô hình để minh họa khả năng ứng dụng thực tế. Chi tiết lược đồ cơ sở dữ liệu xem tại [ERD.md](ERD.md).
-
----
-
-## 7. Khung thực nghiệm thống nhất
+## 5. Khung thực nghiệm thống nhất
 
 Đây là nội dung trọng tâm của đề tài. Mọi mô hình được đo dưới cùng một điều kiện:
 
 | Yếu tố | Quy định thống nhất |
 |---|---|
 | **Dữ liệu** | 3 bộ dữ liệu: DocILE, CORD-v2, SROIE qua các Dataset Adapter chung |
-| **Cách chia tập** | Cố định ngẫu nhiên với seed `42` (DocILE giữ nguyên tập gốc, SROIE theo `sroie_splits.json`, CORD-v2 theo official split) |
+| **Cách chia tập** | Cố định ngẫu nhiên với seed `42` (`docile_splits.json`, `sroie_splits.json`, CORD official split) |
 | **Tiền xử lý** | Dùng chung một kết quả OCR, cùng chuẩn hóa nhãn BIO và thứ tự đọc tự nhiên |
-| **Chỉ số đánh giá** | Precision, Recall, Micro-F1, Macro-F1 tính ở cấp độ thực thể (entity-level matching) |
-| **Khả năng tái lập** | Ghi nhận chi tiết thông số phần cứng, dung lượng VRAM, thời gian huấn luyện và tốc độ suy luận (ms/trang) |
+| **Chỉ số đánh giá** | Precision, Recall, F1 ở cấp độ thực thể (Exact Match) và độ trễ suy luận Latency (ms) đo đạc độc lập trên tập Test |
+| **Khả năng tái lập** | Ghi nhận chi tiết thông số phần cứng, số lượng tham số mô hình, thời gian huấn luyện và độ trễ suy luận (ms) |
 
 Khung đánh giá được thiết kế **độc lập với kiến trúc mô hình**: bổ sung một mô hình mới chỉ yêu
 cầu cung cấp đầu ra theo định dạng chung, không sửa phần đánh giá.
 
 Nội dung báo cáo kết quả:
-1. Bảng so sánh 4 mô hình trên 3 bộ dữ liệu (F1 tổng quát và theo từng nhóm trường).
-2. Phân tích chi phí tính toán: số lượng tham số, thời gian train, bộ nhớ GPU tiêu thụ.
+1. Bảng so sánh các mô hình trên 3 bộ dữ liệu (F1 tổng quát và theo từng nhóm trường).
+2. Phân tích chi phí tính toán: số lượng tham số mô hình, thời gian huấn luyện, tốc độ suy luận (Latency ms).
 3. So sánh định tính: phân tích các trường hợp lỗi điển hình của từng mô hình (lệch dòng, đa cột, bảng biểu phức tạp).
-4. Hệ thống báo cáo tự động (`app.evaluation.report`): Tự động xuất tệp Markdown, CSV, JSON và biểu đồ trực quan PNG (300 DPI) sau khi huấn luyện. Hỗ trợ lệnh tổng hợp độc lập: `python -m app.evaluation.report --reports-dir reports`.
+4. Hệ thống báo cáo tự động (`app.evaluation.report`): Tự động xuất báo cáo Markdown, số liệu CSV, JSON và biểu đồ trực quan PNG sau khi hoàn thành thực nghiệm. Lệnh tổng hợp độc lập: `python -m app.evaluation.report --report-dir reports`.
 
-## 8. Quy ước kỹ thuật bắt buộc
+## 6. Quy ước kỹ thuật bắt buộc
 
 1. **Hạt giống ngẫu nhiên cố định:** Tất cả mã nguồn khởi tạo tham số và chia tập phải cố định `seed = 42`.
 2. **Tính di động của đường dẫn:** Không hardcode đường dẫn tuyệt đối; luôn truy cập qua `app.data.paths` hoặc biến môi trường `DOCILE_DIR`, `SROIE_DIR`, `CORD_DIR`.
 3. **Độ tin cậy và gán nhãn:** Các dự đoán phải giữ lại điểm xác suất (confidence score) để hỗ trợ phân tích ngưỡng tin cậy.
 4. **Quản lý bộ nhớ GPU:** Giải phóng bộ nhớ (`torch.cuda.empty_cache()`) và checkpointing định kỳ sau mỗi epoch trên môi trường giới hạn như Kaggle.
+
+---
+
+## 7. Lớp Giao Diện Web Minh Họa (Web Demo Layer)
+
+Bên cạnh khung thực nghiệm dòng lệnh (CLI), hệ thống tích hợp lớp ứng dụng web minh họa (`app/main.py`, `app/ui/routes.py`, `app/models/`):
+- **Công nghệ nền tảng:** FastAPI, Jinja2 template, HTMX cho tương tác bất đồng bộ không cần SPA phức tạp, và TailwindCSS cho giao diện hiển thị.
+- **Trực quan hóa tài liệu và OCR:** Hiển thị trực quan trang tài liệu hóa đơn/biên lai cùng hệ thống hộp bao tọa độ từ OCR, phân biệt trực quan các vùng trường thông tin.
+- **Đối chiếu thực thể trích xuất:** Hỗ trợ đối chiếu trực quan kết quả dự đoán của từng mô hình học sâu với nhãn thực tế (ground-truth), phục vụ công tác nghiệm thu và phân tích định tính các ca lỗi (Error Analysis).
+- **Quản trị và tra cứu chứng từ:** Sử dụng SQLAlchemy ORM và Alembic migration quản lý cơ sở dữ liệu chứng từ, hỗ trợ tìm kiếm và lọc theo loại chứng từ.
+

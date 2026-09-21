@@ -10,11 +10,33 @@ from app.graph.labels import build_label_vocabulary, label_document
 def test_docile_adapter_splits_and_load():
     adapter = DocileAdapter()
     splits = adapter.splits()
-    # At present, annotated-trainval contains train and val
     assert "train" in splits
     assert "val" in splits
+    assert "test" in splits
 
-    # Test loading a sample document from val
+    assert adapter.has_ground_truth("train") is True
+    assert adapter.has_ground_truth("val") is True
+    assert adapter.has_ground_truth("test") is True
+    assert adapter.has_ground_truth("test_official") is False
+
+    test_ids = adapter.document_ids("test")
+    train_ids = adapter.document_ids("train")
+    assert len(test_ids) == 500
+    assert len(train_ids) == 4680
+    assert len(set(train_ids) & set(test_ids)) == 0
+    test_doc = adapter.load(test_ids[0])
+    assert test_doc.source == "docile"
+    assert len(test_doc.words) > 0
+    assert len(test_doc.fields) > 0
+
+    if "test_official" in splits:
+        official_ids = adapter.document_ids("test_official")
+        assert len(official_ids) == 1000
+        official_doc = adapter.load(official_ids[0])
+        assert official_doc.source == "docile"
+        assert len(official_doc.words) > 0
+        assert len(official_doc.fields) == 0
+
     val_ids = adapter.document_ids("val")
     assert len(val_ids) == 500
     doc = adapter.load(val_ids[0])

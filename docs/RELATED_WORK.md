@@ -65,7 +65,7 @@ Trong phạm vi đề tài, các mô hình Transformer tiền huấn luyện (Ro
 |---|---|---|---|
 | **DocILE** | 5.680 tài liệu train/val | Hóa đơn & đơn hàng B2B thực tế, đa trang, 55 loại trường | Bộ dữ liệu chính (thực nghiệm KILE & LIR) |
 | **CORD-v2** | 1.000 biên lai | Biên lai ẩm thực & dịch vụ, 30 loại nhãn phân cấp | Bộ dữ liệu mở rộng (thực nghiệm KILE) |
-| **SROIE** | 987 biên lai | Biên lai in nhiệt thực tế, 4 trường chính (company, date, address, total) | Bộ dữ liệu mở rộng (thực nghiệm KILE) |
+| **SROIE** | 626 biên lai | Biên lai in nhiệt thực tế (500 train, 63 val, 63 test), 4 trường chính (company, date, address, total) | Bộ dữ liệu mở rộng (thực nghiệm KILE) |
 | FUNSD | 199 biểu mẫu | Biểu mẫu quét nhiễu, nhãn tổng quát | Tham khảo |
 | RVL-CDIP | 400.000 tài liệu | Phân loại tài liệu | Tiền huấn luyện (tham khảo) |
 

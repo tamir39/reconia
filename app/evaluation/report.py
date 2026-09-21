@@ -38,24 +38,21 @@ def save_training_history_csv(csv_path: Path, history: list[dict[str, Any]]) -> 
         "precision",
         "recall",
         "f1",
-        "latency_ms",
-        "peak_vram_mb",
+        "latency",
     ]
 
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
         for row in history:
-            # Support both direct precision/recall/f1 and legacy entity_* keys
             clean_row = {
                 "epoch": row.get("epoch", 1),
                 "train_loss": row.get("train_loss", 0.0),
                 "val_loss": row.get("val_loss", 0.0),
-                "precision": row.get("precision", row.get("entity_precision", 0.0)),
-                "recall": row.get("recall", row.get("entity_recall", 0.0)),
-                "f1": row.get("f1", row.get("entity_f1", 0.0)),
-                "latency_ms": row.get("latency_ms", 0.0),
-                "peak_vram_mb": row.get("peak_vram_mb", 0.0),
+                "precision": row.get("precision", 0.0),
+                "recall": row.get("recall", 0.0),
+                "f1": row.get("f1", 0.0),
+                "latency": row.get("latency", 0.0),
             }
             writer.writerow(clean_row)
 
@@ -73,50 +70,62 @@ def save_markdown_report(
     best_epoch = summary_data.get("best_epoch", 1)
     train_loss = summary_data.get("train_loss", 0.0)
     val_loss = summary_data.get("val_loss", 0.0)
-    precision = summary_data.get("precision", summary_data.get("entity_precision", 0.0))
-    recall = summary_data.get("recall", summary_data.get("entity_recall", 0.0))
-    f1 = summary_data.get("f1", summary_data.get("entity_f1", 0.0))
+    precision = summary_data.get("precision", 0.0)
+    recall = summary_data.get("recall", 0.0)
+    f1 = summary_data.get("f1", 0.0)
     total_params = summary_data.get("total_params", 0)
-    latency_ms = summary_data.get("latency_ms", 0.0)
-    peak_vram = summary_data.get("peak_vram_mb", 0.0)
+    latency = summary_data.get("latency", 0.0)
     device = summary_data.get("device", "CPU")
     history = summary_data.get("history", [])
-    per_type = summary_data.get("entity_per_type", summary_data.get("final_per_class", {}))
+    per_type = summary_data.get("per_type", summary_data.get("entity_per_type", {}))
+    metrics_val = summary_data.get("metrics_val")
+    metrics_test = summary_data.get("metrics_test")
 
     lines: list[str] = [
         f"# Báo Cáo Thực Nghiệm: {model_name} trên Bộ Dữ Liệu {dataset_name}",
         "",
     ]
     sec_idx = 1
-    lines.append(f"## {sec_idx}. Kết Quả Tối Ưu")
-    lines.append("")
-    lines.append("| Tiêu chí | Giá trị |")
-    lines.append("|---|---|")
-    lines.append(f"| **Mô hình** | `{model_name}` |")
-    lines.append(f"| **Bộ dữ liệu** | `{dataset_name}` |")
-    lines.append(f"| **Thiết bị** | `{device}` |")
-    lines.append(f"| **Tham số** | {total_params:,} |")
-    lines.append(f"| **Epoch tối ưu** | {best_epoch} |")
-    lines.append(f"| **Train Loss** | {train_loss:.4f} |")
-    lines.append(f"| **Val Loss** | {val_loss:.4f} |")
-    lines.append(f"| **Precision** | **{precision * 100:.2f}%** |")
-    lines.append(f"| **Recall** | **{recall * 100:.2f}%** |")
-    lines.append(f"| **F1** | **{f1 * 100:.2f}%** |")
-    lines.append(f"| **Latency (ms)** | **{latency_ms:.2f}** |")
-    lines.append(f"| **VRAM (MB)** | **{peak_vram:.1f}** |")
+    lines.append(f"## {sec_idx}. Kết Quả Thực Nghiệm Tối Ưu")
     lines.append("")
 
-    # Embedded Figures
-    if figure_paths:
-        sec_idx += 1
-        lines.append(f"## {sec_idx}. Biểu Đồ Huấn Luyện")
+    if metrics_val and metrics_test:
+        v_prec = metrics_val.get("precision", 0.0) * 100
+        v_rec = metrics_val.get("recall", 0.0) * 100
+        v_f1 = metrics_val.get("f1", 0.0) * 100
+        v_lat = metrics_val.get("latency", 0.0)
+
+        t_prec = metrics_test.get("precision", 0.0) * 100
+        t_rec = metrics_test.get("recall", 0.0) * 100
+        t_f1 = metrics_test.get("f1", 0.0) * 100
+        t_lat = metrics_test.get("latency", 0.0)
+
+        lines.append("| Chỉ số | Tập Validation | Tập Test |")
+        lines.append("|---|:---:|:---:|")
+        lines.append(f"| **Precision** | {v_prec:.2f}% | **{t_prec:.2f}%** |")
+        lines.append(f"| **Recall** | {v_rec:.2f}% | **{t_rec:.2f}%** |")
+        lines.append(f"| **F1-Score** | {v_f1:.2f}% | **{t_f1:.2f}%** |")
+        lines.append(f"| **Latency** | {v_lat:.2f} ms | {t_lat:.2f} ms |")
         lines.append("")
-        for fig_p in figure_paths:
-            rel_path = fig_p.name
-            lines.append(f"![{fig_p.stem}]({rel_path})")
-            lines.append("")
+        lines.append(f"- **Mô hình**: `{model_name}` | **Thiết bị**: `{device}` | **Tham số**: {total_params:,} | **Epoch tối ưu**: {best_epoch}")
+        lines.append(f"- **Train Loss**: {train_loss:.4f} | **Val Loss**: {val_loss:.4f}")
+    else:
+        lines.append("| Tiêu chí | Giá trị |")
+        lines.append("|---|---|")
+        lines.append(f"| **Mô hình** | `{model_name}` |")
+        lines.append(f"| **Bộ dữ liệu** | `{dataset_name}` |")
+        lines.append(f"| **Thiết bị** | `{device}` |")
+        lines.append(f"| **Tham số** | {total_params:,} |")
+        lines.append(f"| **Epoch tối ưu** | {best_epoch} |")
+        lines.append(f"| **Train Loss** | {train_loss:.4f} |")
+        lines.append(f"| **Val Loss** | {val_loss:.4f} |")
+        lines.append(f"| **Precision** | **{precision * 100:.2f}%** |")
+        lines.append(f"| **Recall** | **{recall * 100:.2f}%** |")
+        lines.append(f"| **F1** | **{f1 * 100:.2f}%** |")
+        lines.append(f"| **Latency (ms)** | **{latency:.2f}** |")
+    lines.append("")
 
-    # Per-type Entity Table
+    # Per-type Entity Table (Section 2: Detailed breakdown right after summary)
     if per_type:
         sec_idx += 1
         lines.append(f"## {sec_idx}. Kết Quả Theo Từng Nhãn Thực Thể")
@@ -132,23 +141,32 @@ def save_markdown_report(
         lines.append(f"| **Tổng thể** | **{precision * 100:.2f}%** | **{recall * 100:.2f}%** | **{f1 * 100:.2f}%** | — |")
         lines.append("")
 
-    # History Table
+    # Embedded Figures (Section 3: Training dynamics visualization)
+    if figure_paths:
+        sec_idx += 1
+        lines.append(f"## {sec_idx}. Biểu Đồ Huấn Luyện")
+        lines.append("")
+        for fig_p in figure_paths:
+            rel_path = f"figures/{fig_p.name}" if fig_p.parent.name == "figures" else fig_p.name
+            lines.append(f"![{fig_p.stem}]({rel_path})")
+            lines.append("")
+
+    # History Table (Section 4: Epoch history)
     if history:
         sec_idx += 1
         lines.append(f"## {sec_idx}. Lịch Sử Huấn Luyện")
         lines.append("")
-        lines.append("| Epoch | Train Loss | Val Loss | Precision | Recall | F1 | Latency (ms) | VRAM (MB) |")
-        lines.append("|---|---|---|---|---|---|---|---|")
+        lines.append("| Epoch | Train Loss | Val Loss | Precision | Recall | F1 | Latency (ms) |")
+        lines.append("|---|---|---|---|---|---|---|")
         for h in history:
             ep = h.get("epoch", 0)
             tl = h.get("train_loss", 0.0)
             vl = h.get("val_loss", 0.0)
-            p = h.get("precision", h.get("entity_precision", 0.0)) * 100
-            r = h.get("recall", h.get("entity_recall", 0.0)) * 100
-            ef = h.get("f1", h.get("entity_f1", 0.0)) * 100
-            lat = h.get("latency_ms", 0.0)
-            vram = h.get("peak_vram_mb", 0.0)
-            lines.append(f"| {ep} | {tl:.4f} | {vl:.4f} | {p:.2f}% | {r:.2f}% | **{ef:.2f}%** | {lat:.1f} | {vram:.1f} |")
+            p = h.get("precision", 0.0) * 100
+            r = h.get("recall", 0.0) * 100
+            ef = h.get("f1", 0.0) * 100
+            lat = h.get("latency", 0.0)
+            lines.append(f"| {ep} | {tl:.4f} | {vl:.4f} | {p:.2f}% | {r:.2f}% | **{ef:.2f}%** | {lat:.1f} |")
         lines.append("")
 
     with md_path.open("w", encoding="utf-8") as fh:
@@ -174,19 +192,17 @@ def plot_training_dashboard(
     epochs = [h["epoch"] for h in history]
     train_loss = [h["train_loss"] for h in history]
     val_loss = [h["val_loss"] for h in history]
-    prec = [(h.get("precision") or h.get("entity_precision", 0.0)) * 100 for h in history]
-    rec = [(h.get("recall") or h.get("entity_recall", 0.0)) * 100 for h in history]
-    f1 = [(h.get("f1") or h.get("entity_f1", 0.0)) * 100 for h in history]
-    latencies = [h.get("latency_ms", 0.0) for h in history]
-    vrams = [h.get("peak_vram_mb", 0.0) for h in history]
+    prec = [h.get("precision", 0.0) * 100 for h in history]
+    rec = [h.get("recall", 0.0) * 100 for h in history]
+    f1 = [h.get("f1", 0.0) * 100 for h in history]
+    latencies = [h.get("latency", 0.0) for h in history]
 
     avg_lat = float(np.mean(latencies)) if latencies else 0.0
-    peak_vram = max(vrams, default=0.0)
 
     plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default")
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), dpi=300)
     fig.suptitle(
-        f"{model_name} on {dataset_name.upper()}  (Latency: {avg_lat:.1f} ms | VRAM: {peak_vram:.1f} MB)",
+        f"{model_name} on {dataset_name.upper()}  (Latency: {avg_lat:.1f} ms)",
         fontsize=13,
         fontweight="bold",
         y=0.98,
@@ -234,15 +250,18 @@ def export_full_benchmark_report(
     history: list[dict[str, Any]],
     final_val_metrics: dict[str, Any],
     metadata: dict[str, Any],
+    test_metrics: dict[str, Any] | None = None,
 ) -> dict[str, Path]:
     """Orchestrate saving JSON, CSV, Markdown, and Chart figures."""
     output_dir.mkdir(parents=True, exist_ok=True)
     figures_dir = output_dir / "figures"
     figures_dir.mkdir(parents=True, exist_ok=True)
+    metrics_dir = output_dir / "metrics"
+    metrics_dir.mkdir(parents=True, exist_ok=True)
 
     base_name = f"{model_name.lower()}_{dataset_name.lower()}"
-    json_path = output_dir / f"{base_name}_results.json"
-    csv_path = output_dir / f"{base_name}_history.csv"
+    json_path = metrics_dir / f"{base_name}_results.json"
+    csv_path = metrics_dir / f"{base_name}_history.csv"
     md_path = output_dir / f"{base_name}_report.md"
     fig_path = figures_dir / f"{base_name}_training_curves.png"
 
@@ -251,42 +270,67 @@ def export_full_benchmark_report(
     if best_epoch is not None and history:
         best_entry = next((e for e in history if e.get("epoch") == best_epoch), {})
     else:
-        best_entry = max(history, key=lambda x: x.get("f1", x.get("entity_f1", 0.0))) if history else {}
+        best_entry = max(history, key=lambda x: x.get("f1", 0.0)) if history else {}
         best_epoch = best_entry.get("epoch", 1)
 
-    precision = best_entry.get("precision", best_entry.get("entity_precision", 0.0))
-    recall = best_entry.get("recall", best_entry.get("entity_recall", 0.0))
-    f1 = best_entry.get("f1", best_entry.get("entity_f1", 0.0))
+    val_precision = float(best_entry.get("precision", 0.0))
+    val_recall = float(best_entry.get("recall", 0.0))
+    val_f1 = float(best_entry.get("f1", 0.0))
+    val_lat = float(best_entry.get("latency", 0.0))
+
+    metrics_val = {
+        "precision": val_precision,
+        "recall": val_recall,
+        "f1": val_f1,
+        "train_loss": float(best_entry.get("train_loss", 0.0)),
+        "val_loss": float(best_entry.get("val_loss", 0.0)),
+        "latency": val_lat,
+    }
+
+    metrics_test = None
+    if test_metrics is not None:
+        t_perf = test_metrics.get("perf", {})
+        metrics_test = {
+            "precision": float(test_metrics.get("precision", 0.0)),
+            "recall": float(test_metrics.get("recall", 0.0)),
+            "f1": float(test_metrics.get("f1", 0.0)),
+            "latency": float(test_metrics.get("latency", t_perf.get("latency", 0.0))),
+        }
+
+    # Primary reported metrics: Prefer TEST set if available, fallback to VAL
+    primary_metrics = metrics_test if metrics_test is not None else metrics_val
+    split_used = "TEST" if metrics_test is not None else "VAL"
 
     # Per-type entity stats
     per_type = (
-        final_val_metrics.get("entity_metrics", {}).get("per_type")
-        or final_val_metrics.get("per_type")
-        or final_val_metrics.get("token_metrics", {}).get("per_class")
+        final_val_metrics.get("per_type")
+        or final_val_metrics.get("entity_metrics", {}).get("per_type")
         or {}
     )
 
     summary_data = {
         "model": model_name,
         "dataset": dataset_name,
-        "device": metadata.get("device", "CPU"),
-        "total_params": metadata.get("total_params", 0),
         "best_epoch": best_epoch,
-        "train_loss": best_entry.get("train_loss", 0.0),
-        "val_loss": best_entry.get("val_loss", 0.0),
-        "precision": precision,
-        "recall": recall,
-        "f1": f1,
-        "latency_ms": best_entry.get("latency_ms", 0.0),
-        "peak_vram_mb": best_entry.get("peak_vram_mb", 0.0),
-        "entity_per_type": per_type,
+        "split": split_used,
+        "train_loss": metrics_val["train_loss"],
+        "val_loss": metrics_val["val_loss"],
+        "precision": primary_metrics["precision"],
+        "recall": primary_metrics["recall"],
+        "f1": primary_metrics["f1"],
+        "latency": primary_metrics["latency"],
+        "total_params": metadata.get("total_params", 0),
+        "device": metadata.get("device", "CPU"),
         "history": history,
+        "per_type": per_type,
         "metadata": metadata,
+        "metrics_val": metrics_val,
+        "metrics_test": metrics_test,
     }
 
     # 1. Save JSON
     with json_path.open("w", encoding="utf-8") as fh:
-        json.dump(summary_data, fh, indent=2, ensure_ascii=False)
+        json.dump(summary_data, fh, indent=2)
 
     # 2. Save CSV
     save_training_history_csv(csv_path, history)
@@ -304,21 +348,12 @@ def export_full_benchmark_report(
     fig_list = [generated_fig] if generated_fig else []
     save_markdown_report(md_path, summary_data, figure_paths=fig_list)
 
-    # 5. Automatically update global cross-model benchmark summary & comparative charts
-    summary_res = generate_benchmark_summary(output_dir)
-
-    result_dict: dict[str, Path] = {
+    return {
         "json": json_path,
         "csv": csv_path,
         "markdown": md_path,
         "figure": fig_path,
     }
-    if summary_res.get("markdown"):
-        result_dict["benchmark_summary"] = summary_res["markdown"]
-    if summary_res.get("figure"):
-        result_dict["benchmark_figure"] = summary_res["figure"]
-
-    return result_dict
 
 
 
@@ -327,13 +362,16 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
 
     Exports:
       - reports/benchmark_summary.md (comprehensive cross-model comparison table)
-      - reports/figures/benchmark_comparison.png (grouped bar charts of F1 and Latency/VRAM)
+      - reports/figures/benchmark_comparison.png (grouped bar charts of F1 and Latency)
     """
     reports_dir.mkdir(parents=True, exist_ok=True)
     figures_dir = reports_dir / "figures"
     figures_dir.mkdir(parents=True, exist_ok=True)
+    metrics_dir = reports_dir / "metrics"
 
-    json_files = sorted(reports_dir.glob("*_results.json"))
+    json_files = sorted(metrics_dir.glob("*_results.json")) if metrics_dir.is_dir() else []
+    if not json_files:
+        json_files = sorted(reports_dir.glob("*_results.json"))
     if not json_files:
         return {"markdown": None, "figure": None}
 
@@ -357,41 +395,41 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
     md_lines = [
         "# Bảng So Sánh Tổng Hợp Các Mô Hình",
         "",
-        "Tổng hợp kết quả thực nghiệm từ các file trong thư mục `reports/`:",
+        "Tổng hợp kết quả thực nghiệm từ các file trong thư mục `reports/` (ưu tiên đánh giá trên tập **TEST** độc lập):",
         "",
         "## 1. Kết Quả Tổng Hợp",
         "",
-        "| Mô hình | Bộ dữ liệu | Epoch | Precision (%) | Recall (%) | F1 (%) | Latency (ms) | VRAM (MB) |",
-        "|---|---|---|---|---|---|---|---|",
+        "| Mô hình | Bộ dữ liệu | Tập | Epoch | Precision (%) | Recall (%) | F1 (%) | Latency (ms) |",
+        "|---|---|:---:|:---:|---|---|---|---|",
     ]
 
     for r in records:
         model = r.get("model", "Unknown")
         dataset = r.get("dataset", "Unknown").upper()
         best_ep = r.get("best_epoch", 1)
-        prec = (r.get("precision") or r.get("entity_precision", 0.0)) * 100
-        rec = (r.get("recall") or r.get("entity_recall", 0.0)) * 100
-        f1_val = (r.get("f1") or r.get("entity_f1", 0.0)) * 100
-        lat = r.get("latency_ms", 0.0)
-        vram = r.get("peak_vram_mb", 0.0)
+        split = r.get("split", "TEST" if r.get("metrics_test") else "VAL")
+        prec = float(r.get("precision", 0.0)) * 100
+        rec = float(r.get("recall", 0.0)) * 100
+        f1_val = float(r.get("f1", 0.0)) * 100
+        lat = r.get("latency", 0.0)
 
         md_lines.append(
-            f"| **{model}** | `{dataset}` | {best_ep} | {prec:.2f}% | {rec:.2f}% | **{f1_val:.2f}%** | {lat:.2f} ms | {vram:.1f} MB |"
+            f"| **{model}** | `{dataset}` | `{split}` | {best_ep} | {prec:.2f}% | {rec:.2f}% | **{f1_val:.2f}%** | {lat:.2f} ms |"
         )
 
     fig_path = figures_dir / "benchmark_comparison.png"
     has_fig = False
 
-    # 2. Generate Comparative Bar Chart if matplotlib is available
+    # 2. Generate Comparative Bar Chart if matplotlib is available (supports N models dynamically)
     if plt is not None and len(records) >= 1:
         try:
-            labels = [f"{r.get('model', '')}\n({r.get('dataset', '').upper()})" for r in records]
-            f1s = [(r.get("f1") or r.get("entity_f1", 0.0)) * 100 for r in records]
-            latencies = [r.get("latency_ms", 0.0) for r in records]
-            vrams = [r.get("peak_vram_mb", 0.0) for r in records]
+            labels = [f"{r.get('model', '')}\n({r.get('dataset', '').upper()} - {r.get('split', 'TEST' if r.get('metrics_test') else 'VAL')})" for r in records]
+            f1s = [float(r.get("f1", 0.0)) * 100 for r in records]
+            latencies = [r.get("latency", 0.0) for r in records]
 
-            fig, axes = plt.subplots(1, 3, figsize=(16, 5.2), dpi=300)
-            fig.suptitle("So Sánh Hiệu Năng Các Mô Hình", fontsize=14, fontweight="bold", y=0.98)
+            fig_width = max(11.0, len(labels) * 1.8)
+            fig, axes = plt.subplots(1, 2, figsize=(fig_width, 5.0), dpi=300)
+            fig.suptitle("So Sánh Hiệu Năng Các Mô Hình (Đánh Giá Tập TEST)", fontsize=14, fontweight="bold", y=0.98)
 
             x = np.arange(len(labels))
 
@@ -420,7 +458,7 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
             ax2 = axes[1]
             bars_lat = ax2.bar(x, latencies, width=0.45, color="#1f77b4", edgecolor="black", linewidth=0.5)
             ax2.set_title("Latency (ms)", fontsize=11, fontweight="bold")
-            ax2.set_ylabel("Latency (ms / doc)", fontsize=10)
+            ax2.set_ylabel("Latency (ms)", fontsize=10)
             ax2.set_xticks(x)
             ax2.set_xticklabels(labels, fontsize=9)
             max_lat = max(latencies) if latencies else 1.0
@@ -432,28 +470,6 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
                     bar.get_x() + bar.get_width() / 2,
                     h + (max_lat * 0.02 + 0.1),
                     f"{h:.1f} ms",
-                    ha="center",
-                    va="bottom",
-                    fontsize=8.5,
-                    fontweight="semibold",
-                )
-
-            # Subplot 3: VRAM
-            ax3 = axes[2]
-            bars_vram = ax3.bar(x, vrams, width=0.45, color="#d62728", edgecolor="black", linewidth=0.5)
-            ax3.set_title("VRAM (MB)", fontsize=11, fontweight="bold")
-            ax3.set_ylabel("VRAM (MB)", fontsize=10)
-            ax3.set_xticks(x)
-            ax3.set_xticklabels(labels, fontsize=9)
-            max_vram = max(vrams) if vrams else 100.0
-            ax3.set_ylim(0, max_vram * 1.25 + 10.0)
-            ax3.grid(True, linestyle="--", alpha=0.5, axis="y")
-            for bar in bars_vram:
-                h = bar.get_height()
-                ax3.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    h + (max_vram * 0.02 + 1.0),
-                    f"{h:.1f} MB",
                     ha="center",
                     va="bottom",
                     fontsize=8.5,
@@ -488,9 +504,9 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Generate benchmark summary report from JSON results.")
     default_dir = Path("reports") if Path("reports").exists() else Path("reconia/reports")
-    parser.add_argument("--reports-dir", type=Path, default=default_dir, help="Path to reports directory")
+    parser.add_argument("--report-dir", type=Path, default=default_dir, help="Path to reports directory")
     args = parser.parse_args()
-    summary = generate_benchmark_summary(args.reports_dir)
+    summary = generate_benchmark_summary(args.report_dir)
     print(f"[SUCCESS] Markdown summary: {summary['markdown']}")
     print(f"[SUCCESS] Figure comparison: {summary['figure']}")
 

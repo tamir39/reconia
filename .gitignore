@@ -10,6 +10,7 @@ venv/
 .cache/
 *.cache
 *.log
+reports/logs/
 
 # Env & secrets
 .env
@@ -23,6 +24,7 @@ data/private/
 
 # DL Model weights & artifacts (repo root only — must not match app/models/)
 /models/
+checkpoints/
 *.pt
 *.pth
 *.bin

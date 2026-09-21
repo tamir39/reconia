@@ -21,6 +21,16 @@ import torch.nn as nn
 from transformers import RobertaConfig, RobertaModel
 
 
+DEFAULT_LOCAL_PRETRAINED_DIR = Path(__file__).resolve().parents[2] / "checkpoints" / "pretrained" / "roberta-base"
+
+
+def get_default_roberta_model_path() -> str:
+    """Return local pre-trained roberta-base path if present, otherwise 'roberta-base'."""
+    if DEFAULT_LOCAL_PRETRAINED_DIR.exists() and (DEFAULT_LOCAL_PRETRAINED_DIR / "config.json").exists():
+        return str(DEFAULT_LOCAL_PRETRAINED_DIR)
+    return "roberta-base"
+
+
 @dataclass
 class RoBERTaWithLayoutConfig:
     """Configuration for RoBERTaWithLayoutForTokenClassification."""
@@ -93,7 +103,7 @@ class LayoutEmbedding(nn.Module):
             + self.w_emb(w)
             + self.h_emb(h)
         )
-        return self.dropout(self.layer_norm(spatial_emb))
+        return self.dropout(spatial_emb)
 
 
 class RoBERTaWithLayoutForTokenClassification(nn.Module):
@@ -103,6 +113,7 @@ class RoBERTaWithLayoutForTokenClassification(nn.Module):
         self,
         config: RoBERTaWithLayoutConfig | None = None,
         roberta_model: RobertaModel | None = None,
+        allow_random_init: bool = False,
     ) -> None:
         super().__init__()
         self.custom_config = config or RoBERTaWithLayoutConfig()
@@ -111,12 +122,30 @@ class RoBERTaWithLayoutForTokenClassification(nn.Module):
         if roberta_model is not None:
             self.roberta = roberta_model
         else:
+            model_source = self.custom_config.model_name_or_path
+            if model_source == "roberta-base":
+                model_source = get_default_roberta_model_path()
+
             try:
-                self.roberta = RobertaModel.from_pretrained(self.custom_config.model_name_or_path)
-            except Exception:
-                # Offline / test fallback
+                self.roberta = RobertaModel.from_pretrained(model_source)
+                print(f"[RoBERTa] Successfully loaded pre-trained weights from '{model_source}'.")
+            except Exception as err:
+                if not allow_random_init:
+                    raise RuntimeError(
+                        f"CRITICAL: Failed to load pre-trained weights for '{model_source}': {err}.\n"
+                        f"An active internet connection or local pre-trained cache is required for valid RoBERTa fine-tuning.\n"
+                        f"If you intentionally want an uninitialized model for offline synthetic testing, set allow_random_init=True."
+                    ) from err
+                import sys
+                print(
+                    f"[WARNING] Could not load pre-trained weights from '{model_source}' ({err}). "
+                    f"Falling back to randomly initialized architecture for offline tests.",
+                    file=sys.stderr,
+                )
                 roberta_cfg = RobertaConfig(
                     hidden_size=self.custom_config.hidden_size,
+                    max_position_embeddings=514,
+                    type_vocab_size=1,
                     num_attention_heads=12,
                     num_hidden_layers=12,
                 )
@@ -135,14 +164,16 @@ class RoBERTaWithLayoutForTokenClassification(nn.Module):
 
         # Initialize weights of newly added layout and classifier heads
         self._init_weights(self.classifier)
+        self.layout_embeddings.apply(self._init_weights)
 
     def _init_weights(self, module: nn.Module) -> None:
+        init_range = getattr(self.roberta.config, "initializer_range", 0.02)
         if isinstance(module, nn.Linear):
-            module.weight.data.normal_(mean=0.0, std=self.roberta.config.initializer_range if hasattr(self.roberta.config, "initializer_range") else 0.02)
+            module.weight.data.normal_(mean=0.0, std=init_range)
             if module.bias is not None:
                 module.bias.data.zero_()
         elif isinstance(module, nn.Embedding):
-            module.weight.data.normal_(mean=0.0, std=0.02)
+            module.weight.data.normal_(mean=0.0, std=init_range)
         elif isinstance(module, nn.LayerNorm):
             module.bias.data.zero_()
             module.weight.data.fill_(1.0)

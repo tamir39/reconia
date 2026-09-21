@@ -105,10 +105,20 @@ def prepare(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset", default="docile", choices=sorted(ADAPTERS))
+    parser.add_argument(
+        "--dataset",
+        default="all",
+        choices=["all", "sroie", "cord", "docile"],
+        help="Dataset to prepare: 'all' (default), 'sroie', 'cord', or 'docile'",
+    )
     parser.add_argument("--root", default=None, help="dataset directory override")
-    parser.add_argument("--cache", default=str(DEFAULT_CACHE))
-    parser.add_argument("--splits", nargs="+", default=["train", "val"])
+    parser.add_argument("--cache-dir", default=str(DEFAULT_CACHE), help="Path to cache directory")
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        default=["all"],
+        help="Splits to prepare: 'all' (default: train, val/validation, test), or specific splits",
+    )
     parser.add_argument("--limit", type=int, default=None, help="documents per split")
     parser.add_argument("--rebuild", action="store_true", help="ignore cached graphs")
     parser.add_argument("--no-knn", action="store_true")
@@ -123,14 +133,40 @@ def main(argv: list[str] | None = None) -> int:
         use_vertical=not args.no_vertical,
         k=args.k,
     )
-    prepare(
-        get_adapter(args.dataset, args.root),
-        Path(args.cache),
-        args.splits,
-        config,
-        limit=args.limit,
-        rebuild=args.rebuild,
-    )
+
+    target_datasets = ["sroie", "cord", "docile"] if args.dataset == "all" else [args.dataset]
+
+    for ds in target_datasets:
+        adapter = get_adapter(ds, args.root)
+        avail_splits = adapter.splits()
+        actual_splits: list[str] = []
+
+        if "all" in args.splits:
+            # Prepare all ground-truth splits for this dataset
+            for s in ("train", "validation", "val", "test"):
+                if s in avail_splits and s not in actual_splits:
+                    actual_splits.append(s)
+        else:
+            # Map requested splits to adapter splits (e.g. 'val' -> 'validation' on CORD)
+            for s in args.splits:
+                if s in avail_splits and s not in actual_splits:
+                    actual_splits.append(s)
+                elif s == "val" and "validation" in avail_splits and "validation" not in actual_splits:
+                    actual_splits.append("validation")
+                elif s == "validation" and "val" in avail_splits and "val" not in actual_splits:
+                    actual_splits.append("val")
+
+        print(f"\n========================================================")
+        print(f"  PREPARING DATASET: {ds.upper()} ({', '.join(actual_splits)})")
+        print(f"========================================================")
+        prepare(
+            adapter,
+            Path(args.cache_dir),
+            actual_splits,
+            config,
+            limit=args.limit,
+            rebuild=args.rebuild,
+        )
     return 0
 
 
