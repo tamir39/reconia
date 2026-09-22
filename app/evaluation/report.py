@@ -423,60 +423,96 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
     # 2. Generate Comparative Bar Chart if matplotlib is available (supports N models dynamically)
     if plt is not None and len(records) >= 1:
         try:
-            labels = [f"{r.get('model', '')}\n({r.get('dataset', '').upper()} - {r.get('split', 'TEST' if r.get('metrics_test') else 'VAL')})" for r in records]
-            f1s = [float(r.get("f1", 0.0)) * 100 for r in records]
-            latencies = [r.get("latency", 0.0) for r in records]
+            datasets = sorted(list(dict.fromkeys(r.get("dataset", "Unknown").upper() for r in records)))
+            models = sorted(list(dict.fromkeys(r.get("model", "Unknown") for r in records)))
+            rec_map = {(r.get("dataset", "Unknown").upper(), r.get("model", "Unknown")): r for r in records}
 
-            fig_width = max(11.0, len(labels) * 1.8)
-            fig, axes = plt.subplots(1, 2, figsize=(fig_width, 5.0), dpi=300)
-            fig.suptitle("So Sánh Hiệu Năng Các Mô Hình (Đánh Giá Tập TEST)", fontsize=14, fontweight="bold", y=0.98)
+            num_datasets = len(datasets)
+            num_models = len(models)
 
-            x = np.arange(len(labels))
+            model_palette = {
+                "GNN": "#2ca02c",         # Green
+                "RoBERTa": "#1f77b4",     # Blue
+                "LayoutLMv3": "#d62728",  # Red
+                "LiLT": "#8c564b",        # Brown
+            }
+            default_colors = [
+                "#2ca02c", "#1f77b4", "#ff7f0e", "#d62728",
+                "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",
+                "#bcbd22", "#17becf"
+            ]
 
-            # Subplot 1: F1
-            ax1 = axes[0]
-            bars_f1 = ax1.bar(x, f1s, width=0.45, color="#2ca02c", edgecolor="black", linewidth=0.5)
-            ax1.set_title("F1 (%)", fontsize=11, fontweight="bold")
-            ax1.set_ylabel("F1 (%)", fontsize=10)
-            ax1.set_xticks(x)
-            ax1.set_xticklabels(labels, fontsize=9)
+            fig_width = max(10.5, num_datasets * num_models * 0.85 + 2.0)
+            fig, axes = plt.subplots(1, 2, figsize=(fig_width, 5.5), dpi=300)
+            fig.suptitle("Model Performance Comparison (TEST Set)", fontsize=14, fontweight="bold", y=0.98)
+
+            total_group_width = 0.80
+            bar_width = total_group_width / max(num_models, 1)
+
+            ax1, ax2 = axes[0], axes[1]
+
+            # Subplot 1: F1-Score
+            ax1.set_title("F1-Score (%)", fontsize=11, fontweight="bold", pad=10)
+            ax1.set_ylabel("F1-Score (%)", fontsize=10, fontweight="semibold")
             ax1.set_ylim(0, 115)
-            ax1.grid(True, linestyle="--", alpha=0.5, axis="y")
-            for bar in bars_f1:
-                h = bar.get_height()
-                ax1.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    h + 1.5,
-                    f"{h:.1f}%",
-                    ha="center",
-                    va="bottom",
-                    fontsize=8.5,
-                    fontweight="semibold",
-                )
+            ax1.grid(True, linestyle="--", alpha=0.4, axis="y")
 
             # Subplot 2: Latency
-            ax2 = axes[1]
-            bars_lat = ax2.bar(x, latencies, width=0.45, color="#1f77b4", edgecolor="black", linewidth=0.5)
-            ax2.set_title("Latency (ms)", fontsize=11, fontweight="bold")
-            ax2.set_ylabel("Latency (ms)", fontsize=10)
-            ax2.set_xticks(x)
-            ax2.set_xticklabels(labels, fontsize=9)
-            max_lat = max(latencies) if latencies else 1.0
-            ax2.set_ylim(0, max_lat * 1.28 + 0.5)
-            ax2.grid(True, linestyle="--", alpha=0.5, axis="y")
-            for bar in bars_lat:
-                h = bar.get_height()
-                ax2.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    h + (max_lat * 0.02 + 0.1),
-                    f"{h:.1f} ms",
-                    ha="center",
-                    va="bottom",
-                    fontsize=8.5,
-                    fontweight="semibold",
-                )
+            ax2.set_title("Latency (ms)", fontsize=11, fontweight="bold", pad=10)
+            ax2.set_ylabel("Average Latency (ms)", fontsize=10, fontweight="semibold")
+            max_lat = max((float(r.get("latency", 0.0)) for r in records), default=1.0)
+            ax2.set_ylim(0, max_lat * 1.28 + 2.0)
+            ax2.grid(True, linestyle="--", alpha=0.4, axis="y")
 
-            plt.tight_layout(rect=[0, 0.03, 1, 0.94])
+            x = np.arange(num_datasets)
+            val_font = 7.0 if num_models >= 4 else 8.5
+
+            for j, m in enumerate(models):
+                offset = (j - (num_models - 1) / 2) * bar_width
+                color = model_palette.get(m, default_colors[j % len(default_colors)])
+
+                for i, d in enumerate(datasets):
+                    rec = rec_map.get((d, m))
+                    if rec is None:
+                        continue
+
+                    f1_val = float(rec.get("f1", 0.0)) * 100
+                    lat_val = float(rec.get("latency", 0.0))
+                    pos = i + offset
+
+                    ax1.bar(pos, f1_val, width=bar_width * 0.88, label=m if i == 0 else "", color=color, edgecolor="black", linewidth=0.6, alpha=0.9)
+                    ax2.bar(pos, lat_val, width=bar_width * 0.88, label=m if i == 0 else "", color=color, edgecolor="black", linewidth=0.6, alpha=0.9)
+
+                    if f1_val > 0:
+                        ax1.text(pos, f1_val + 1.5, f"{f1_val:.1f}%", ha="center", va="bottom", fontsize=val_font, fontweight="semibold", rotation=0)
+                    if lat_val > 0:
+                        lat_text = f"{lat_val:.1f}" if num_models >= 4 else f"{lat_val:.1f} ms"
+                        ax2.text(pos, lat_val + (max_lat * 0.015 + 0.2), lat_text, ha="center", va="bottom", fontsize=val_font, fontweight="semibold", rotation=0)
+
+            for ax in [ax1, ax2]:
+                ax.set_xticks(x)
+                ax.set_xticklabels(datasets, fontsize=10.5, fontweight="bold")
+                ax.tick_params(axis="x", pad=6)
+
+            legend_elements = [
+                plt.Rectangle((0, 0), 1, 1, facecolor=model_palette.get(m, default_colors[j % len(default_colors)]), edgecolor="black", linewidth=0.5, label=m)
+                for j, m in enumerate(models)
+            ]
+            ncol_val = min(len(models), 6)
+            fig.legend(
+                handles=legend_elements,
+                loc="upper center",
+                bbox_to_anchor=(0.5, 0.935),
+                ncol=ncol_val,
+                frameon=True,
+                facecolor="#f9f9f9",
+                edgecolor="#cccccc",
+                fontsize=9,
+                title="Model",
+                title_fontsize=9.5,
+            )
+
+            plt.tight_layout(rect=[0, 0.04, 1, 0.86])
             plt.savefig(fig_path, format="png", bbox_inches="tight")
             plt.close(fig)
             has_fig = True

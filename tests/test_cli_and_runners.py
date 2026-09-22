@@ -76,12 +76,12 @@ def test_prepare_cli_defaults():
     assert mapped_specific == ["validation"]
 
 
-def test_predict_cli_defaults():
+def test_predict_cli_defaults(tmp_path: Path):
     """Verify predict.py parser defaults and resolution behavior."""
     from app.evaluation.predict import main as predict_main
 
-    # Invoking predict_main with --dataset all should gracefully run and return 0
-    ret = predict_main(["--dataset", "all", "--limit", "2"])
+    # Invoking predict_main with --dataset all into isolated tmp_path
+    ret = predict_main(["--dataset", "all", "--limit", "2", "--report-dir", str(tmp_path)])
     assert ret == 0
 
 
