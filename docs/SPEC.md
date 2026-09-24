@@ -9,7 +9,7 @@ Tài liệu này đặc tả phạm vi, bài toán, kiến trúc và phương ph
 đã được cập nhật trên hệ thống ELIT.
 
 > **Trọng tâm đề tài:** Đánh giá, cài đặt và so sánh thực nghiệm 6 mô hình (GNN, RoBERTa,
-> LayoutLMv3, LiLT và hai mô hình thị giác–ngôn ngữ; tên cụ thể đang chờ nhóm xác nhận) trên 3 bộ dữ liệu hóa đơn chuẩn (DocILE, CORD-v2, SROIE) dưới một khung đo lường thống nhất.
+> LayoutLMv3, LiLT, Qwen2.5-VL và InternVL) trên 3 bộ dữ liệu hóa đơn chuẩn (DocILE, CORD-v2, SROIE) dưới một khung đo lường thống nhất.
 
 ---
 
@@ -18,7 +18,7 @@ Tài liệu này đặc tả phạm vi, bài toán, kiến trúc và phương ph
 Đề tài thực hiện **đánh giá và so sánh các phương pháp học sâu** cho bài toán trích xuất thông
 tin từ hóa đơn (Document Information Extraction), theo yêu cầu cốt lõi:
 
-1. So sánh sáu mô hình: GNN, RoBERTa, LayoutLMv3, LiLT và hai VLM theo phạm vi đã thống nhất sau buổi họp. Hai VLM chưa được ghi nhận tên cụ thể; không coi là đã hiện thực.
+1. So sánh sáu mô hình: GNN, RoBERTa, LayoutLMv3, LiLT, Qwen2.5-VL và InternVL. Hai họ VLM theo tin nhắn đề xuất của Thịnh được cung cấp ngày 25/09; cấu hình checkpoint dưới đây là đề xuất triển khai, chưa hiện thực.
 2. Chuẩn hóa và thực nghiệm trên 3 bộ dữ liệu: DocILE (hóa đơn thương mại đa trang, phức tạp), CORD-v2 (biên lai ẩm thực, đa trường) và SROIE (biên lai bán lẻ).
 3. Cài đặt hoặc huấn luyện lại các mô hình dưới **điều kiện thực nghiệm thống nhất** (cùng tập train/val, cùng chất lượng OCR, cùng pipeline tính chỉ số).
 4. Đánh giá theo giá trị trường trên cả sáu mô hình; báo cáo riêng chỉ số BIO ở mức từ và chỉ số định vị chính thức của DocILE. Xem [EVALUATION.md](EVALUATION.md).
@@ -44,8 +44,8 @@ liệu, cách tiền xử lý và cách tính chỉ số. Đề tài đưa các 
 | **Đa phương thức** | LayoutLMv3-base | Multimodal Transformer kết hợp Text, 2D Layout và Visual Patches | Cloud GPU (Kaggle / Colab) |
 | **Đa phương thức nhẹ** | LiLT-base | Language-Independent Layout Transformer (tách biệt luồng văn bản và luồng bố cục) | Cloud GPU (Kaggle / Colab) |
 
-| **Thị giác–ngôn ngữ** | VLM 1 — chờ xác nhận tên | Sinh các trường từ ảnh và chỉ dẫn | Chốt sau khi chọn kích thước mô hình |
-| **Thị giác–ngôn ngữ** | VLM 2 — chờ xác nhận tên | Sinh các trường từ ảnh và chỉ dẫn | Chốt sau khi chọn kích thước mô hình |
+| **Thị giác–ngôn ngữ** | Qwen2.5-VL, đề xuất 3B-Instruct | Sinh các trường từ ảnh và chỉ dẫn | Kaggle, cần thử bộ nhớ trước fine-tune |
+| **Thị giác–ngôn ngữ** | InternVL, đề xuất InternVL2.5-2B | Sinh các trường từ ảnh và chỉ dẫn | Kaggle, cần thử bộ nhớ trước fine-tune |
 
 Hiện có mã nguồn GNN và RoBERTa. LayoutLMv3, LiLT và hai VLM chưa hiện thực.
 

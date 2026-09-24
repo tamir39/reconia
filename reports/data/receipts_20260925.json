@@ -1,0 +1,79 @@
+{
+  "sources": {
+    "sroie": {
+      "url": "https://github.com/NjoyimPeguy/ICDAR-2019-RRC-SROIE/releases/download/v2.0/SROIE2019.zip",
+      "archive_sha256": "aebb3e33a5ed0aaf644a5855dee97ca8ae80114e5b43ae96d431ab771c851941",
+      "mapping_policy": "canonical-source-ids-sorted-to-000-625-v1",
+      "legacy_mapping_verified": false,
+      "note": "Numeric split slots preserved; correspondence to Thinh's older receipts is unverified.",
+      "split_sha256": "4f205eef65eb57fdfd56a5862411386ffe8ca0976c3747be3e3248fed6ee348a"
+    },
+    "cord": {
+      "repo": "naver-clova-ix/cord-v2",
+      "revision": "7f0115a4b758a71d6473b8d085751692da2fef98"
+    }
+  },
+  "datasets": {
+    "sroie": {
+      "splits": {
+        "train": {
+          "documents": 500,
+          "images": 500,
+          "words": 58249,
+          "fields": 2904,
+          "documents_without_fields": 0,
+          "missing_raw_key_fields": 0
+        },
+        "val": {
+          "documents": 63,
+          "images": 63,
+          "words": 7116,
+          "fields": 379,
+          "documents_without_fields": 0,
+          "missing_raw_key_fields": 0
+        },
+        "test": {
+          "documents": 63,
+          "images": 63,
+          "words": 7025,
+          "fields": 352,
+          "documents_without_fields": 0,
+          "missing_raw_key_fields": 1
+        }
+      },
+      "duplicate_images_across_splits": 0
+    },
+    "cord": {
+      "splits": {
+        "train": {
+          "documents": 800,
+          "images": 800,
+          "words": 19367,
+          "fields": 10987,
+          "documents_without_fields": 0
+        },
+        "val": {
+          "documents": 100,
+          "images": 100,
+          "words": 2186,
+          "fields": 1219,
+          "documents_without_fields": 0
+        },
+        "test": {
+          "documents": 100,
+          "images": 100,
+          "words": 2356,
+          "fields": 1309,
+          "documents_without_fields": 0
+        }
+      },
+      "duplicate_images_across_splits": 0
+    }
+  },
+  "training_started": false,
+  "evaluation_notes": [
+    "SROIE 500/63/63 is an internal split of the original training receipts, not the official test.",
+    "SROIE OCR BIO fields are heuristically aligned fragments; use raw four-field targets and aggregate predictions for VLM comparisons. That scoring integration is still pending.",
+    "CORD inputs use annotated transcripts/boxes; describe this as post-OCR parsing, not an end-to-end OCR benchmark."
+  ]
+}

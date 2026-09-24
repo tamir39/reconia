@@ -35,11 +35,13 @@ căn lại theo vùng chữ. Việc dùng chung kết quả OCR này cho mọi m
 sai khác khi so sánh: chênh lệch giữa các mô hình không bị lẫn với chênh lệch do chất
 lượng nhận dạng đầu vào.
 
-### 1.2. Bộ dữ liệu bổ sung (dự kiến)
+### 1.2. Bộ dữ liệu bổ sung
 
-Mô tả đề tài yêu cầu thực nghiệm trên *một số bộ dữ liệu*. Dự kiến bổ sung **SROIE** và
-**CORD**, đều là hóa đơn bán lẻ, tải về tự do. Việc bổ sung chỉ yêu cầu hiện thực giao
-thức `DatasetAdapter`; phần dựng đồ thị, mô hình và đánh giá không thay đổi.
+Đã có adapter và chuẩn bị cục bộ ảnh/nhãn của **SROIE** (626 receipt, split nội bộ
+500/63/63) và **CORD-v2** (800/100/100 theo nguồn). Xem
+[nguồn, mapping SROIE, kiểm tra và bundle Kaggle](RECEIPT_PREPARATION.md).
+Đây là dữ liệu đầu vào, chưa phải kết quả huấn luyện mới. Mapping numeric ID của
+SROIE cũ chưa được xác nhận; so sánh VLM cần tích hợp chấm key gốc thay vì đoạn OCR.
 
 ---
 

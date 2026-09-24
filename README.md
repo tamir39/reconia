@@ -19,10 +19,12 @@ Mục tiêu của đề tài là xây dựng **khung thực nghiệm thống nh�
 2. **Chuỗi tuần tự 1D (Text-only Sequence LM)**: RoBERTa-base bổ sung nhúng tọa độ hộp bao 2D.
 3. **Đa phương thức hợp nhất (Multimodal 2D Transformer)**: LayoutLMv3-base kết hợp đồng thời Văn bản, Bố cục 2D và Ảnh thị giác.
 4. **Đa phương thức tách rời (Decoupled Layout Transformer)**: LiLT-base tách biệt luồng xử lý văn bản và bố cục.
-5. **VLM 1**: chờ nhóm xác nhận tên và cấu hình.
-6. **VLM 2**: chờ nhóm xác nhận tên và cấu hình.
+5. **Qwen2.5-VL**: theo đề xuất của Thịnh; checkpoint 3B-Instruct đề xuất để thử trên Kaggle, chưa hiện thực.
+6. **InternVL**: theo đề xuất của Thịnh; checkpoint InternVL2.5-2B đề xuất để thử trên Kaggle, chưa hiện thực.
 
 GNN và RoBERTa đã có mã nguồn. Bốn mô hình còn lại chưa hiện thực.
+
+Chuẩn bị ảnh/nhãn SROIE và CORD-v2: [hướng dẫn và giới hạn đánh giá](docs/RECEIPT_PREPARATION.md), [notebook GNN receipt](notebooks/kaggle_gnn_receipts.ipynb) mặc định smoke; chưa chạy Kaggle.
 
 Xem [quy trình đánh giá](docs/EVALUATION.md) và [kế hoạch giữa kỳ](docs/MIDTERM.md). Các kết quả trước ngày 24/09 cần tái lập; GNN cũ dùng hàm băm phụ thuộc tiến trình, nên phải huấn luyện lại trước khi sử dụng với bộ mã hóa mới.
 

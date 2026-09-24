@@ -6,11 +6,11 @@ Tuần 5: 21–27/09. Tuần 6: 28/09–04/10. Theo kế hoạch hiện có, h�
 
 | Hạng mục | Trạng thái và bằng chứng |
 |---|---|
-| Chuẩn hóa dữ liệu | Có adapter cho 3 bộ và manifest chia tập; cục bộ có DocILE, chưa tìm thấy SROIE/CORD |
+| Chuẩn hóa dữ liệu | Có adapter cho 3 bộ; đã tải ảnh/nhãn SROIE và CORD-v2 ngày 25/09, xem [chuẩn bị receipt](RECEIPT_PREPARATION.md). Mapping SROIE mới được lưu rõ, chưa đối chiếu mapping cũ của Thịnh |
 | GNN và RoBERTa | GNN/DocILE đã train đủ 20 epochs, test đủ 500 tài liệu: entity F1 66,82%, field-value F1 56,87%, đã đối chiếu hash và tái chấm giá trị trường. RoBERTa đang chuẩn bị chạy Kaggle với toàn bộ cửa sổ tài liệu; các bộ khác còn chờ dữ liệu |
 | Độ tin cậy | Đã sửa băm GNN, nạp checkpoint, nhãn/trang khi chấm và metadata xuất dự đoán; đang chờ peer review/merge |
 | LayoutLMv3 và LiLT | Chưa hiện thực |
-| Hai VLM | Chưa có tên/cấu hình được ghi nhận; chưa hiện thực |
+| Hai VLM | Thịnh đề xuất Qwen2.5-VL và InternVL. Đề xuất thử 3B-Instruct / InternVL2.5-2B; chưa hiện thực hoặc fine-tune |
 | Demo | Có khung web và danh sách tài liệu; chưa có luồng upload → suy luận → highlight hoàn chỉnh |
 | Tích hợp | Nhánh dev còn ở PR #5; thay đổi của Thịnh và bản sửa phải qua PR, không tính là đã hoàn thành theo POLICY trước khi được duyệt/merge |
 
