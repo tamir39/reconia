@@ -1,0 +1,54 @@
+{
+  "001": [
+    {
+      "fieldtype": "company",
+      "text": "& HOME SOLD THANK SOLD DEALING IN WHOLESALE AND RETAIL."
+    },
+    {
+      "fieldtype": "address",
+      "text": "DEDAP JOHOR JAYA, JOHOR BAHRU,JOHOR."
+    }
+  ],
+  "011": [
+    {
+      "fieldtype": "address",
+      "text": "AIK SEKSYEN ARE"
+    },
+    {
+      "fieldtype": "company",
+      "text": "15/06/2017 STRETCH SOLD NOT REFONDABLE, THANK YOU CHOOSING BILL 1 WEEK BE BE"
+    },
+    {
+      "fieldtype": "total",
+      "text": "US. IN"
+    }
+  ],
+  "048": [
+    {
+      "fieldtype": "company",
+      "text": "SOLD NOT 13/03/2018 USER"
+    },
+    {
+      "fieldtype": "address",
+      "text": "PERJIRANAN"
+    }
+  ],
+  "057": [
+    {
+      "fieldtype": "address",
+      "text": "UNIHAKKA PERINDUSTRIAN BAHRU,JOHOR"
+    },
+    {
+      "fieldtype": "company",
+      "text": "29 MAR THANK YOU & COME AND FOLLOW"
+    },
+    {
+      "fieldtype": "date",
+      "text": "AGAIN!"
+    },
+    {
+      "fieldtype": "total",
+      "text": "LIKE US"
+    }
+  ]
+}

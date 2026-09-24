@@ -24,7 +24,7 @@ Mục tiêu của đề tài là xây dựng **khung thực nghiệm thống nh�
 
 GNN và RoBERTa đã có mã nguồn. Bốn mô hình còn lại chưa hiện thực.
 
-Chuẩn bị ảnh/nhãn SROIE và CORD-v2: [hướng dẫn và giới hạn đánh giá](docs/RECEIPT_PREPARATION.md), [notebook GNN receipt](notebooks/kaggle_gnn_receipts.ipynb) mặc định smoke. Cả hai smoke đã qua trên Kaggle; GNN full run đã khởi chạy, kết quả đang chờ kiểm chứng.
+Chuẩn bị ảnh/nhãn SROIE và CORD-v2: [hướng dẫn và giới hạn đánh giá](docs/RECEIPT_PREPARATION.md), [notebook GNN receipt](notebooks/kaggle_gnn_receipts.ipynb) mặc định smoke. GNN đã hoàn tất và kiểm chứng trên cả hai bộ. [Notebook RoBERTa receipt](notebooks/kaggle_roberta_receipts.ipynb) dùng cùng split và mặc định smoke.
 
 Xem [quy trình đánh giá](docs/EVALUATION.md) và [kế hoạch giữa kỳ](docs/MIDTERM.md). Các kết quả trước ngày 24/09 cần tái lập; GNN cũ dùng hàm băm phụ thuộc tiến trình, nên phải huấn luyện lại trước khi sử dụng với bộ mã hóa mới.
 

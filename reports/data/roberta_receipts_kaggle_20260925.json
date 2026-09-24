@@ -1,0 +1,87 @@
+{
+  "date": "2026-09-25",
+  "dataset": "phvngtngtm/reconia-sroie-cord-training-bundle",
+  "dataset_version": 3,
+  "is_private": true,
+  "backbone_repo": "FacebookAI/roberta-base",
+  "backbone_revision": "e2da8e2f811d1448a5b465c236feacd80ffbac7b",
+  "window_policy": "all-windows-first-subword-v1",
+  "tests_passed": 122,
+  "source_bundle_sha256": "de35784934445923053ddebcf5dc4377e98c114e19af3e45882f69e32572087e",
+  "smoke_runs": {
+    "sroie": {
+      "notebook": "phvngtngtm/reconia-roberta-sroie",
+      "version": 1,
+      "train_documents": 8,
+      "validation_documents": 4,
+      "epochs": 1,
+      "gpu": "Tesla T4",
+      "checkpoint_reloaded_for_inference": true,
+      "prediction_hash_verified": true,
+      "source_hashes_verified": true,
+      "evidence_directory": "reports/runs/roberta_receipts_kaggle_20260925/sroie-smoke",
+      "original_four_field_scoring_verified": true,
+      "status": "complete"
+    },
+    "cord": {
+      "notebook": "phvngtngtm/reconia-roberta-cord",
+      "version": 1,
+      "train_documents": 8,
+      "validation_documents": 4,
+      "epochs": 1,
+      "gpu": "Tesla T4",
+      "checkpoint_reloaded_for_inference": true,
+      "prediction_hash_verified": true,
+      "source_hashes_verified": true,
+      "evidence_directory": "reports/runs/roberta_receipts_kaggle_20260925/cord-smoke",
+      "status": "complete"
+    }
+  },
+  "full_runs": {
+    "sroie": {
+      "notebook": "phvngtngtm/reconia-roberta-sroie",
+      "mode": "train",
+      "max_epochs": 20,
+      "patience": 5,
+      "seed": 42,
+      "counts": {
+        "train": 500,
+        "val": 63,
+        "test": 63
+      },
+      "resume_from": "",
+      "status": "running",
+      "version": 2,
+      "remote_source_and_private_setting_verified": true,
+      "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
+      "submitted_code_sha256": "ce81dbcc97a6479eb25f0f0aab3f2ce570aa5fb106eead882809c90b682d71cd",
+      "full_training_counts_confirmed": true,
+      "launch_log_sha256": "6a33a21eac51436ba60c156e318c3a476751c84c22d82a5bcf166c8cc8fabca7"
+    },
+    "cord": {
+      "notebook": "phvngtngtm/reconia-roberta-cord",
+      "mode": "train",
+      "max_epochs": 20,
+      "patience": 5,
+      "seed": 42,
+      "counts": {
+        "train": 800,
+        "val": 100,
+        "test": 100
+      },
+      "resume_from": "",
+      "status": "running",
+      "version": 2,
+      "remote_source_and_private_setting_verified": true,
+      "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
+      "submitted_code_sha256": "0e7e9badc48a4c31c809774a409caec1b6a87da8955522a8af2121d9bc6b6c4f",
+      "full_training_counts_confirmed": true,
+      "launch_log_sha256": "af120630019cb80e6b941135d9c0159a71cd9ce5389d9edd90492a7976570c78"
+    }
+  },
+  "limitations": [
+    "Smoke scores are not benchmark results.",
+    "Full-run test outputs remain pending verification.",
+    "VLM inference adapters are not implemented; shared SROIE four-field scoring is available."
+  ]
+}

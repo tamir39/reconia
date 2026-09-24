@@ -5,11 +5,11 @@ Các lần chạy DocILE đã hoàn tất và được giữ riêng.
 
 ## Trạng thái Kaggle ngày 25/09
 
-- Dataset private: [Reconia SROIE CORD Training Bundle](https://www.kaggle.com/datasets/phvngtngtm/reconia-sroie-cord-training-bundle), version 2.
-- [GNN SROIE](https://www.kaggle.com/code/phvngtngtm/reconia-gnn-sroie): smoke version 2 thành công; full run version 3 đang chạy, log xác nhận 500 train / 63 val.
-- [GNN CORD](https://www.kaggle.com/code/phvngtngtm/reconia-gnn-cord): smoke version 1 thành công; full run version 2 đang chạy, log xác nhận 800 train / 100 val.
+- Dataset private: [Reconia SROIE CORD Training Bundle](https://www.kaggle.com/datasets/phvngtngtm/reconia-sroie-cord-training-bundle), version 2 cho GNN; version 3 thêm scorer bốn key cho RoBERTa.
+- [GNN SROIE](https://www.kaggle.com/code/phvngtngtm/reconia-gnn-sroie): smoke version 2 thành công; full run version 3 hoàn tất 20 epochs, best 15; 63 test đã kiểm chứng, entity F1 80,77%.
+- [GNN CORD](https://www.kaggle.com/code/phvngtngtm/reconia-gnn-cord): smoke version 1 thành công; full run version 2 hoàn tất 20 epochs, best 19; 100 test đã kiểm chứng, entity F1 69,73%.
 - Smoke dùng 16 train / 4 val, một epoch trên Tesla T4, nạp checkpoint ở tiến trình mới và xuất predictions. Full run học mới với seed 42, tối đa 20 epochs, patience 5; không resume checkpoint smoke.
-- **117 tests passed**. Bằng chứng và cấu hình smoke: [receipts_kaggle_20260925.json](../reports/data/receipts_kaggle_20260925.json).
+- **122 tests passed** sau bổ sung scorer bốn key (117 ở lần chạy GNN). Bằng chứng và cấu hình smoke GNN: [receipts_kaggle_20260925.json](../reports/data/receipts_kaggle_20260925.json).
 
 Upload trực tiếp bundle 2,7 GB qua mạng cục bộ quá chậm nên đã dừng trước khi tạo
 dataset. Bundle private thay thế khoảng 2 MB gồm mã nguồn, manifest đối chiếu và
@@ -22,8 +22,24 @@ Smoke SROIE lần đầu dừng trước training do JSON mapping sinh trên Win
 CRLF, còn Linux dùng LF. Đã sửa riêng digest metadata mapping bằng JSON chuẩn hóa,
 thêm regression test và chạy lại thành công. Không nới kiểm tra ảnh/OCR/key gốc.
 
-Chưa đưa điểm smoke vào bảng benchmark. Kết quả full run cần tải về và kiểm chứng;
-batch này chỉ khởi chạy GNN, chưa khởi chạy RoBERTa trên receipt.
+Không đưa điểm smoke vào bảng benchmark. Kết quả GNN full run đã được tải về và
+kiểm chứng; xem [bảng so sánh](../reports/verified_comparison.md). Notebook
+[RoBERTa receipt](../notebooks/kaggle_roberta_receipts.ipynb) dùng cùng split và
+backbone RoBERTa-base đã pin như DocILE, smoke 8 train / 4 val trước full run.
+
+## RoBERTa receipt
+
+[RoBERTa SROIE](https://www.kaggle.com/code/phvngtngtm/reconia-roberta-sroie) và
+[RoBERTa CORD](https://www.kaggle.com/code/phvngtngtm/reconia-roberta-cord) đều private.
+Smoke version 1 đã qua train/reload/inference trên 8 train / 4 val; SROIE chạy thêm
+scorer bốn key thành công. Full version 2 đã khởi chạy cho cả hai bộ, seed 42,
+tối đa 20 epochs, patience 5, batch 4 × accumulation 4. Backbone
+`FacebookAI/roberta-base` pin revision `e2da8e2f811d1448a5b465c236feacd80ffbac7b`,
+LR backbone 5e-5 / head 2e-4; xử lý toàn bộ cửa sổ OCR. Full run học mới, không
+resume smoke. Best/latest và tokenizer được giữ trong output ZIP; không cần tải
+ZIP smoke lớn để dùng cho benchmark. Bằng chứng:
+[roberta_receipts_kaggle_20260925.json](../reports/data/roberta_receipts_kaggle_20260925.json).
+Kết quả full run cần kiểm chứng sau khi Kaggle hoàn tất.
 
 ## Nguồn và split
 
@@ -112,7 +128,8 @@ Checkpoint đề xuất để thử bộ nhớ Kaggle: `Qwen/Qwen2.5-VL-3B-Instr
 
 `field-value-targets.json` của SROIE giữ các giá trị key gốc. Adapter BIO hiện tại
 gán nhãn theo heuristic và có thể chia địa chỉ/công ty thành nhiều đoạn OCR.
-**Trước khi so VLM với GNN/RoBERTa trên SROIE phải nối dự đoán theo trường và tích hợp
-chấm với key gốc cho tất cả mô hình.** Điểm field-value hiện tại từ các đoạn OCR
-không tự động tương đương điểm bốn trường này. CORD dùng transcript và box có chú
+Đã bổ sung `app/evaluation/sroie_values.py`: ghép đoạn dự đoán theo thứ tự OCR và
+chấm với key gốc, dùng cùng schema cho VLM. GNN đạt F1 bốn key 54,70%, đã đối chiếu
+trực tiếp với nhãn gốc. Điểm field-value từ các đoạn OCR vẫn tách riêng; xem
+[quy tắc bốn key](EVALUATION.md#sroie-bốn-key-gốc-dùng-chung). CORD dùng transcript và box có chú
 giải; cần ghi rõ đây là post-OCR parsing khi so với VLM đọc trực tiếp ảnh.

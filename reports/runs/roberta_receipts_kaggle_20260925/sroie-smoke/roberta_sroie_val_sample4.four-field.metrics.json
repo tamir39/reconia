@@ -1,0 +1,45 @@
+{
+  "protocol": "sroie-four-field-nfkc-casefold-v1",
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "support": 16,
+  "macro_f1": 0.0,
+  "per_type": {
+    "address": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 4
+    },
+    "company": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 4
+    },
+    "date": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 4
+    },
+    "total": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 4
+    }
+  },
+  "num_documents": 4,
+  "aggregation": "join-nonempty-fragments-in-input-order",
+  "target_source": "original-SROIE-key-annotations",
+  "unannotated_field_slots": 0,
+  "missing_annotation_policy": "exclude-unannotated-keys-from-scoring",
+  "split": "val",
+  "expected_num_documents": 63,
+  "complete": false,
+  "prediction_sha256": "3fc0ff9bbc107722bba1611c2a19d70de423660bb42d822867a00b207ef81dde",
+  "raw_targets_sha256": "ddbdfd6c68352dcda1d9545afb0bacba6cfafef816d9da3cf6a0c95f80aa0102",
+  "aggregated_prediction_sha256": "99aa6c14c927ab24d63fed671bccba04aa0bc8aaf42e8174179028f34d8a0fbe"
+}

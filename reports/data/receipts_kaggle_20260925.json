@@ -76,13 +76,14 @@
         "val": 63,
         "test": 63
       },
-      "status": "running",
+      "status": "complete",
       "resume_from": "",
       "dataset_version": 2,
       "full_training_counts_confirmed": true,
       "remote_source_and_private_setting_verified": true,
       "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
-      "launch_log_sha256": "064c0a8ba6d7c662dec763fa5b00197baa023423d42133408e6ef3345b9812a2"
+      "launch_log_sha256": "064c0a8ba6d7c662dec763fa5b00197baa023423d42133408e6ef3345b9812a2",
+      "verification_file": "reports/runs/gnn_sroie_20260925/verification.json"
     },
     "cord": {
       "notebook": "phvngtngtm/reconia-gnn-cord",
@@ -96,20 +97,20 @@
         "val": 100,
         "test": 100
       },
-      "status": "running",
+      "status": "complete",
       "resume_from": "",
       "dataset_version": 2,
       "full_training_counts_confirmed": true,
       "remote_source_and_private_setting_verified": true,
       "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
-      "launch_log_sha256": "61ff5d2a4a648bf5bb3a8d007c8f73634752d2fae958b8a8cc0331ef0dc5e049"
+      "launch_log_sha256": "61ff5d2a4a648bf5bb3a8d007c8f73634752d2fae958b8a8cc0331ef0dc5e049",
+      "verification_file": "reports/runs/gnn_cord_20260925/verification.json"
     }
   },
   "limitations": [
     "Smoke metrics are not benchmark results.",
-    "Full-run results are pending download and verification.",
-    "SROIE field-value scoring uses OCR fragments; common four-key VLM scoring remains pending.",
-    "RoBERTa receipt runs are not launched by this GNN batch."
+    "Original-key SROIE scores are separate from OCR-fragment scores; see sroie-four-field-nfkc-casefold-v1.",
+    "This evidence records the GNN batch; RoBERTa receipt runs are tracked separately."
   ],
   "sroie_first_attempt": {
     "version": 1,
@@ -117,5 +118,6 @@
     "cause": "Generated source-id-map.json digest depended on Windows/Linux line endings",
     "fix": "Canonical JSON digest for generated mapping metadata only; byte-exact checks retained for receipt files",
     "verified_by": "SROIE smoke version 2 passed"
-  }
+  },
+  "completed_results_verified_on": "2026-09-25"
 }

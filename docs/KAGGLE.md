@@ -1,4 +1,14 @@
-# Huấn luyện GNN trên Kaggle
+# Huấn luyện mô hình trên Kaggle
+
+## SROIE và CORD
+
+GNN đã hoàn tất và kiểm chứng trên cả hai bộ. Notebook
+[`kaggle_roberta_receipts.ipynb`](../notebooks/kaggle_roberta_receipts.ipynb) dùng
+cùng split, backbone pin giống DocILE, smoke 8 train / 4 val trước full training.
+Cả hai smoke RoBERTa version 1 đã qua; full version 2 đang chạy private. SROIE xuất
+thêm chỉ số bốn key gốc, tách riêng với điểm đoạn OCR. Xem
+[receipt preparation](RECEIPT_PREPARATION.md#roberta-receipt) và
+[bảng kết quả đã kiểm chứng](../reports/verified_comparison.md).
 
 ## RoBERTa trên cùng DocILE split
 

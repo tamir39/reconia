@@ -1,0 +1,65 @@
+{
+  "verified_on": "2026-09-25",
+  "source_archive": "gnn-sroie-seed42-receipts-v1.zip",
+  "archive_sha256": "cf7d9a8a559011e6f884a7a0d1d60babc96d9a095c129e71f5ce34a8fb87535e",
+  "zip_crc_ok": true,
+  "checkpoint_hash_matches": true,
+  "prediction_hash_matches": true,
+  "source_hashes_match_uploaded_bundle": true,
+  "receipt_reference_hash_matches": true,
+  "test_ids_match": true,
+  "train_test_overlap": 0,
+  "val_test_overlap": 0,
+  "num_test_documents": 63,
+  "completed_epochs": 20,
+  "best_epoch": 15,
+  "test_entity_f1": 0.8076923076923076,
+  "field_value_metrics_independently_recomputed": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.7872340425531915,
+    "recall": 0.8409090909090909,
+    "f1": 0.8131868131868132,
+    "support": 352,
+    "macro_f1": 0.7797898975424422,
+    "per_type": {
+      "address": {
+        "precision": 0.8802395209580839,
+        "recall": 0.9130434782608695,
+        "f1": 0.8963414634146342,
+        "support": 161
+      },
+      "company": {
+        "precision": 0.7945205479452054,
+        "recall": 0.8285714285714286,
+        "f1": 0.8111888111888111,
+        "support": 70
+      },
+      "date": {
+        "precision": 0.855072463768116,
+        "recall": 0.9672131147540983,
+        "f1": 0.9076923076923077,
+        "support": 61
+      },
+      "total": {
+        "precision": 0.47761194029850745,
+        "recall": 0.5333333333333333,
+        "f1": 0.5039370078740157,
+        "support": 60
+      }
+    },
+    "num_documents": 63
+  },
+  "scope": "Entity F1 is exported run metric; field-value scores were independently recomputed from local annotations; no new inference.",
+  "original_four_field_score": {
+    "protocol": "sroie-four-field-nfkc-casefold-v1",
+    "f1": 0.5469728601252609,
+    "precision": 0.5745614035087719,
+    "recall": 0.5219123505976095,
+    "support": 251,
+    "unannotated_field_slots": 1,
+    "independently_checked_against_raw_key_files": true,
+    "true_positives": 131,
+    "false_positives": 97,
+    "false_negatives": 120
+  }
+}

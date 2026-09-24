@@ -41,7 +41,7 @@ lượng nhận dạng đầu vào.
 500/63/63) và **CORD-v2** (800/100/100 theo nguồn). Xem
 [nguồn, mapping SROIE, kiểm tra và bundle Kaggle](RECEIPT_PREPARATION.md).
 Đây là dữ liệu đầu vào, chưa phải kết quả huấn luyện mới. Mapping numeric ID của
-SROIE cũ chưa được xác nhận; so sánh VLM cần tích hợp chấm key gốc thay vì đoạn OCR.
+SROIE cũ chưa được xác nhận. Phép chấm key gốc dùng chung đã có trong `app/evaluation/sroie_values.py`; phải báo cáo riêng với điểm đoạn OCR, xem [quy trình đánh giá](EVALUATION.md).
 
 ---
 

@@ -1,0 +1,1040 @@
+{
+  "006": [
+    {
+      "fieldtype": "company",
+      "text": "MACHINERY ENTERPRISE"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO.53 JALAN PUTRA 1, TAMAN SRIPUTRA, 81200 JOHOR BAHRU JOHOR 80.00"
+    },
+    {
+      "fieldtype": "date",
+      "text": "11/01/2019"
+    },
+    {
+      "fieldtype": "total",
+      "text": "36.00"
+    }
+  ],
+  "025": [
+    {
+      "fieldtype": "company",
+      "text": "TEO HENG STATIONERY & BOOKS"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO. 53, JALAN BESAR, 45600 BATANG BERJUNTAI SELANGOR DARUL EHSAN"
+    },
+    {
+      "fieldtype": "date",
+      "text": "23/01/2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "18.00 18.00"
+    }
+  ],
+  "027": [
+    {
+      "fieldtype": "company",
+      "text": "MR. D.I.Y. (M) SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 1851-A & 1851-B, JALAN KPB 6, KAWASAN PERINDUSTRIAN BALAKONG, 43300 SERI KEMBANGAN, SELANGOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "12.90"
+    },
+    {
+      "fieldtype": "date",
+      "text": "14-03-18"
+    }
+  ],
+  "030": [
+    {
+      "fieldtype": "company",
+      "text": "UNIHAKKA INTERNATIONAL SDN BHD"
+    },
+    {
+      "fieldtype": "date",
+      "text": "2018"
+    },
+    {
+      "fieldtype": "address",
+      "text": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "$8.20"
+    }
+  ],
+  "032": [
+    {
+      "fieldtype": "company",
+      "text": "UNIHAKKA INTERNATIONAL SDN BHD"
+    },
+    {
+      "fieldtype": "date",
+      "text": "2018"
+    },
+    {
+      "fieldtype": "address",
+      "text": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "$8.20"
+    }
+  ],
+  "044": [
+    {
+      "fieldtype": "company",
+      "text": "UNIHAKKA INTERNATIONAL SDN BHD"
+    },
+    {
+      "fieldtype": "date",
+      "text": "2018"
+    },
+    {
+      "fieldtype": "address",
+      "text": "12,JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "$8.60"
+    }
+  ],
+  "046": [
+    {
+      "fieldtype": "company",
+      "text": "PASAR MINI JIN SENG"
+    },
+    {
+      "fieldtype": "address",
+      "text": "379,JALAN PERMAS SATU, BANOAR BARU PERMAS JAYA 81750 PLENTONG,JOHOR."
+    },
+    {
+      "fieldtype": "total",
+      "text": "71.40"
+    }
+  ],
+  "071": [
+    {
+      "fieldtype": "company",
+      "text": "AEON CO. (M) BHD (126926-H)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "3RD FLR, AEON TAMAN MALURI SC JLN JEJAKA, TAMAN MALURI CHERAS, 55100 KUALA LUMPUR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "19/02/2018"
+    }
+  ],
+  "080": [
+    {
+      "fieldtype": "company",
+      "text": "HON HWA HARDWARE TRADING"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO 37, JALAN MANIS 7, TAMAN SEGAR, 56100 CHERAS, KUALA LUMPUR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "21/09/2017"
+    },
+    {
+      "fieldtype": "total",
+      "text": "10.40"
+    }
+  ],
+  "081": [
+    {
+      "fieldtype": "company",
+      "text": "MR. D.I.Y. SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 1851-A & 1851-B, JALAN KPB 6, KAWASAN PERINDUSTRIAN BALAKONG, 43300 SERI KEMBANGAN, SELANGOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "3.90"
+    },
+    {
+      "fieldtype": "date",
+      "text": "24-11-17"
+    }
+  ],
+  "089": [
+    {
+      "fieldtype": "company",
+      "text": "FY EAGLE ENTERPRISE"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO. 42, JALAN PBS 14/11, TAMAN PERINDUSTRIAN BUKIT SERDANG, 43300 SERI KEMBANGAN, SELANGOR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "04/12/2017"
+    }
+  ],
+  "094": [
+    {
+      "fieldtype": "company",
+      "text": "AEON CO. (M) BHD (126926-H)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "3RD FLR, AEON TAMAN MALURI SC JLN JEJAKA, TAMAN MALURI CHERAS, 55100 KUALA LUMPUR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "09/02/2018"
+    }
+  ],
+  "095": [
+    {
+      "fieldtype": "company",
+      "text": "POPULAR BOOK SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO 8, JALAN 7/118B, DESA TUN RAZAK 56000 KUALA LUMPUR, MALAYSIA"
+    },
+    {
+      "fieldtype": "date",
+      "text": "07/01/18"
+    },
+    {
+      "fieldtype": "total",
+      "text": "31.45"
+    }
+  ],
+  "099": [
+    {
+      "fieldtype": "company",
+      "text": "SYARIKAT PERNIAGAAN GIN KEE"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO 290, JALAN AIR PANAS, SETAPAK, 53200, KUALA LUMPUR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "04/12/2017"
+    },
+    {
+      "fieldtype": "total",
+      "text": "47.70 47.70"
+    }
+  ],
+  "103": [
+    {
+      "fieldtype": "company",
+      "text": "SYARIKAT PERNIAGAAN GIN KEE"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO 290. JALAN AIR PANAS. SETAPAK, 53200, KUALA LUMPUR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "28/12/2017"
+    },
+    {
+      "fieldtype": "total",
+      "text": "148.40 148.40"
+    }
+  ],
+  "104": [
+    {
+      "fieldtype": "total",
+      "text": "87.80"
+    }
+  ],
+  "114": [
+    {
+      "fieldtype": "company",
+      "text": "SYARIKAT PERNIAGAAN GIN KEE"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO 290, JALAN AIR PANAS, SETAPAK, 53200, KUALA LUMPUR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "04/01/2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "44.73 44.73"
+    }
+  ],
+  "127": [
+    {
+      "fieldtype": "company",
+      "text": "SYARIKAT PERNIAGAAN GIN KEE"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO 290, JALAN AIR PANAS, STAPAK, 53200, KUALA LUMPUR,"
+    },
+    {
+      "fieldtype": "date",
+      "text": "12/01/2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "7.95 7.95"
+    }
+  ],
+  "142": [
+    {
+      "fieldtype": "company",
+      "text": "RESTORAN WAN SHENG"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO.2, JALAN TEMENGGUNG 19/9, SEKSYEN 9, BANDAR MAHKOTA CHERAS, 43200 CHERAS, SELANGOR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "14-03-2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "2.30"
+    }
+  ],
+  "159": [
+    {
+      "fieldtype": "address",
+      "text": ", JALAN 6/37A , TAMAN BUKIT MALURI , 52100 KUALA LUMPUR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "05/01/2018"
+    }
+  ],
+  "163": [
+    {
+      "fieldtype": "company",
+      "text": "99 SPEED MART S/B (519537-X)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT P. 2811, JALAN ANGSA, TAMAN BERKELEY 41150 KLANG, SELANGOR 1362-JLN"
+    },
+    {
+      "fieldtype": "date",
+      "text": "17-02-18"
+    },
+    {
+      "fieldtype": "total",
+      "text": "41.50"
+    }
+  ],
+  "166": [
+    {
+      "fieldtype": "company",
+      "text": "THE STORE (MALAYSIA) SDN BHD KOK LIAN"
+    },
+    {
+      "fieldtype": "address",
+      "text": "BATU AMBAR TAMAN 51200 KUALA LUMPUR,"
+    },
+    {
+      "fieldtype": "date",
+      "text": "14-01-2018 2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "14.20"
+    }
+  ],
+  "196": [
+    {
+      "fieldtype": "company",
+      "text": "POPULAR BOOK CO. (M) SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO 8, JALAN 7/118B, DESA TUN RAZAK 56000 KUALA LUMPUR, MALAYSI ."
+    },
+    {
+      "fieldtype": "date",
+      "text": "11/03/18"
+    },
+    {
+      "fieldtype": "total",
+      "text": "44.25"
+    }
+  ],
+  "203": [
+    {
+      "fieldtype": "company",
+      "text": "MR. D.I.Y. (M) SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 1851-A & 1851-B, JALAN KPB 6, KAWASAN PERINDUSTRIAN BALAKONG, 43300 SERI KEMBANGAN, SELANGOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "28.00"
+    },
+    {
+      "fieldtype": "date",
+      "text": "26-03-18"
+    }
+  ],
+  "220": [
+    {
+      "fieldtype": "company",
+      "text": "PRINT EXPERT SDN BHD ELYN"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO 18, 20, 22, JALAN BUNGA TANJONG 2/16, 40000 SHAH ALAM, SELANGOR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "12/01/2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "4.25"
+    }
+  ],
+  "223": [
+    {
+      "fieldtype": "company",
+      "text": "POPULAR BOOK CO. (M) SDN BHD GALLERY"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO 8, JALAN 7/118B, DESA TUN RAZAK 56000 KUALA LUMPUR, MALAYSIA"
+    },
+    {
+      "fieldtype": "date",
+      "text": "05/03/18 31/05/18"
+    },
+    {
+      "fieldtype": "total",
+      "text": "9.90"
+    }
+  ],
+  "225": [
+    {
+      "fieldtype": "date",
+      "text": "30/03/2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "12.00"
+    }
+  ],
+  "228": [
+    {
+      "fieldtype": "company",
+      "text": "TONYMOLY VIVA CITY"
+    },
+    {
+      "fieldtype": "address",
+      "text": "UNIT L1-044B, VIVACITY MEGAMALL, JALAN WAN ALWI, 93350 KUCHING, SARAWAK."
+    },
+    {
+      "fieldtype": "date",
+      "text": "29/03/2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "48.95 48.95 20.97"
+    }
+  ],
+  "233": [
+    {
+      "fieldtype": "company",
+      "text": "S/B (81497-P)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 1504, BATU 8 1/2, JALAN KLANG LAMA, 46000 PETALING JAYA, SELANGOR."
+    },
+    {
+      "fieldtype": "total",
+      "text": "362.50 37.50"
+    },
+    {
+      "fieldtype": "date",
+      "text": "9/2/2017"
+    }
+  ],
+  "238": [
+    {
+      "fieldtype": "company",
+      "text": "OLIVE9 PHARMACY SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "U5/N, SEKSYEN U5 SUBANG BE"
+    },
+    {
+      "fieldtype": "date",
+      "text": "31/03/2017"
+    }
+  ],
+  "250": [
+    {
+      "fieldtype": "company",
+      "text": "GL HANDICRAFT & TAII ORING"
+    },
+    {
+      "fieldtype": "address",
+      "text": "19, JALAN KANCIL, OFF JALAN PUDU, 55100 KUALA LUMPUR MALAYSIA"
+    },
+    {
+      "fieldtype": "date",
+      "text": "09/04/2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "104.00 104.00"
+    }
+  ],
+  "270": [
+    {
+      "fieldtype": "company",
+      "text": "ELKEN SERVICE ELKEN SERVICE SDN BHD (310184-X) EMAIL . WONG HAR"
+    },
+    {
+      "fieldtype": "address",
+      "text": "3/137B BATU 5 JALAN KELANG LAMA 58000 KUALA LUMPUR TUE JALAN JINJANG INDAH 1, JINJANG UTARA, 52000 KEPONG, KUALA LUMPUR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "2017"
+    }
+  ],
+  "281": [
+    {
+      "fieldtype": "company",
+      "text": "RESTAURANT"
+    },
+    {
+      "fieldtype": "address",
+      "text": "5,JALAN PERMAS 10/5, BANDAR BARU PERMAS 81750 JOHOR BAHRU,JOHOR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "07/04/2018 07/04/2018-18:11:05"
+    },
+    {
+      "fieldtype": "total",
+      "text": "35.00 55.00 33.00"
+    }
+  ],
+  "284": [
+    {
+      "fieldtype": "company",
+      "text": "UNIHAKKA INTERNATIONAL SDN BHD"
+    },
+    {
+      "fieldtype": "date",
+      "text": "2018"
+    },
+    {
+      "fieldtype": "address",
+      "text": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "$7.10"
+    }
+  ],
+  "296": [
+    {
+      "fieldtype": "company",
+      "text": "DOMINO'S PIZZA DOMINO'S PIZZA PERMAS"
+    },
+    {
+      "fieldtype": "address",
+      "text": "JAYA NO.12, JALAN PERMAS JAYA 10, BANDAR BARU PERMAS JAYA, 81750 MASAI"
+    },
+    {
+      "fieldtype": "date",
+      "text": ":17/04/18"
+    }
+  ],
+  "300": [
+    {
+      "fieldtype": "company",
+      "text": "AEON CO. (M) BHD (126926-H)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "3RD FLR, AEON TAMAN MALURI SC JLN JEJAKA, TAMAN MALURI CHERAS, 55100 KUALA LUMPUR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "1.80"
+    },
+    {
+      "fieldtype": "date",
+      "text": "18/04/2018"
+    }
+  ],
+  "344": [
+    {
+      "fieldtype": "company",
+      "text": "GARDENIA BAKERIES (KL) SDN BHD (139386 X)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 3, JALAN PELABUR 23/1, 40300 SHAH ALAM, SELANGOR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "05/09/2017"
+    },
+    {
+      "fieldtype": "total",
+      "text": "54.15"
+    }
+  ],
+  "348": [
+    {
+      "fieldtype": "company",
+      "text": "GARDENIA BAKERIES (KL) SDN BHD (139386 X)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 3, JALAN PELABUR 23/1, 40300 SHAH ALAM, SELANGOR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "28/09/2017"
+    }
+  ],
+  "352": [
+    {
+      "fieldtype": "address",
+      "text": "LOT 3, JALAN PELABUR 23/1, 40300 SHAH ALAM, SELANGOR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "19/09/2017"
+    },
+    {
+      "fieldtype": "company",
+      "text": "GARDENIA BAKERIES (KL) SDN BHD"
+    }
+  ],
+  "367": [
+    {
+      "fieldtype": "company",
+      "text": "GARDENIA BAKERIES (KL) SDN BHD (139386 X)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 3, JALAN PELABUR 23/1, 40300 SHAH ALAM, SELANGOR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "17/10/2017"
+    },
+    {
+      "fieldtype": "total",
+      "text": "110.46"
+    }
+  ],
+  "370": [
+    {
+      "fieldtype": "company",
+      "text": "GARDENIA BAKERIES (KL) SDN BHD (139386 X)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 3, JALAN PELABUR 23/1, 40300 SHAH ALAM, SELANGOR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "12/10/2017"
+    }
+  ],
+  "373": [
+    {
+      "fieldtype": "company",
+      "text": "GARDENIA BAKERIES (KL) SDN BHD (139386 X)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 3, JALAN PELABUR 23/1, 40300 SHAH ALAM, SELANGOR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "08/10/2017"
+    },
+    {
+      "fieldtype": "total",
+      "text": "46.82 46.82"
+    }
+  ],
+  "379": [
+    {
+      "fieldtype": "company",
+      "text": "MR. D.I.Y. (KUCHAI) SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 1851-A & 1851-B, JALAN KPB 6, KAWASAN PERINDUSTRIAN BALAKONG, 43300 SERI KEMBANGAN, SELANGOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "22.90"
+    },
+    {
+      "fieldtype": "date",
+      "text": "17-04-16"
+    }
+  ],
+  "387": [
+    {
+      "fieldtype": "company",
+      "text": "99 SPEED MART S/B (519537-X)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT P.T. 33198, BATU 4 JALAN KAPAR, MUKIM KAPAR 42100 KLANG, SELANGOR 1320-TMN BATU"
+    },
+    {
+      "fieldtype": "date",
+      "text": "03-02-16"
+    },
+    {
+      "fieldtype": "total",
+      "text": "82.80 82.80"
+    }
+  ],
+  "389": [
+    {
+      "fieldtype": "company",
+      "text": "MR. D.I.Y. (M) SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 1851-A & 1851-B, JALAN KPB 6, KAWASAN PERINDUSTRIAN BALAKONG, 43300 SERI KEMBANGAN, SELANGOR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "25-01-16"
+    }
+  ],
+  "429": [
+    {
+      "fieldtype": "company",
+      "text": "UNIHAKKA INTERNATIONAL SDN BHD"
+    },
+    {
+      "fieldtype": "date",
+      "text": "2018"
+    },
+    {
+      "fieldtype": "address",
+      "text": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "$8.90"
+    }
+  ],
+  "432": [
+    {
+      "fieldtype": "company",
+      "text": "UNIHAKKA INTERNATIONAL SDN BHD"
+    },
+    {
+      "fieldtype": "date",
+      "text": "2018 $6.60"
+    },
+    {
+      "fieldtype": "address",
+      "text": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "$6.60 $6.60"
+    }
+  ],
+  "459": [
+    {
+      "fieldtype": "company",
+      "text": "UNIHAKKA INTERNATIONAL SDN BHD"
+    },
+    {
+      "fieldtype": "date",
+      "text": "2018"
+    },
+    {
+      "fieldtype": "address",
+      "text": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR"
+    },
+    {
+      "fieldtype": "total",
+      "text": "$8.10 $8.70"
+    }
+  ],
+  "464": [
+    {
+      "fieldtype": "address",
+      "text": "BUKIT INDAH NO 35,JALAN INDAH 15/2,BUKIT INDAH 81200 JOHOR BAHRU,JOHOR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "06/05/2018 06/05/2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "85.00"
+    }
+  ],
+  "470": [
+    {
+      "fieldtype": "company",
+      "text": "SANYU STATIONERY SHOP"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO. 31G&33G, JALAN SETIA INDAH X ,U13/X 40170 SETIA ALAM"
+    },
+    {
+      "fieldtype": "total",
+      "text": "14.90 14.90"
+    },
+    {
+      "fieldtype": "date",
+      "text": "05/09/2017"
+    }
+  ],
+  "517": [
+    {
+      "fieldtype": "address",
+      "text": "PUSAT UNIT 105, BLOCK A,PUSAT NO.9, JALAN 16/11,,46350,PETALING JAYA,SELANGOR"
+    },
+    {
+      "fieldtype": "company",
+      "text": "MYNEWS RETAIL STORES SB"
+    },
+    {
+      "fieldtype": "total",
+      "text": "44.00"
+    },
+    {
+      "fieldtype": "date",
+      "text": "28/06/2018"
+    }
+  ],
+  "549": [
+    {
+      "fieldtype": "company",
+      "text": "RESTORAN WAN SHENG"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO.2, JALAN TEMENGGUNG 19/9, SEKSYEN 9, BANDAR MAHKOTA CHERAS, 43200 CHERAS, SELANGOR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "02-04-2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "6.70 6.70"
+    }
+  ],
+  "558": [
+    {
+      "fieldtype": "company",
+      "text": "RESTORAN WAN SHENG"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO.2, JALAN TEMENGGUNG 19/9, SEKSYEN 9, BANDAR MAHKOTA CHERAS, 43200 CHERAS, SELANGOR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "18-06-2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "6.50"
+    }
+  ],
+  "565": [
+    {
+      "fieldtype": "company",
+      "text": "RESTORAN WAN SHENG"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO.2, JALAN TEMENGGUNG 19/9, SEKSYEN 9, BANDAR MAHKOTA CHERAS, 43200 CHERAS, SELANGOR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "01-06-2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "4.80"
+    }
+  ],
+  "574": [
+    {
+      "fieldtype": "company",
+      "text": "99 SPEED MART S/B (519537-X)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT P.T. 2811, JALAN ANGSA, TAMAN BERKELEY 41150 KLANG, SELANGOR 1237-TMN INDAH PERDANA"
+    },
+    {
+      "fieldtype": "date",
+      "text": "02-05-18"
+    }
+  ],
+  "590": [
+    {
+      "fieldtype": "company",
+      "text": "OGN GROUP SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO.29M,JALAN DINAR G U3/G,SEKSYEN U3, SUBANG PERDANA, 40150 SHAH ALAM"
+    },
+    {
+      "fieldtype": "date",
+      "text": "17/06/2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "28.30 21.70"
+    }
+  ],
+  "596": [
+    {
+      "fieldtype": "company",
+      "text": "ONE ONE THREE SEAFOOD RESTAURANT SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO.1, TAMAN SRI DENGKIL, JALAN AIR HITAM 43800 DENGKIL, SELANGOR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "05-06-2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "52.00 52.00"
+    }
+  ],
+  "601": [
+    {
+      "fieldtype": "company",
+      "text": "99 SPEED MART S/B (519537-X)"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT P.T. 2811, JALAN ANGSA, TAMAN BERKELEY 41150 KLANG, SELANGOR 1225-DENGKIL"
+    },
+    {
+      "fieldtype": "date",
+      "text": "28-11-18"
+    },
+    {
+      "fieldtype": "total",
+      "text": "28.00"
+    }
+  ],
+  "604": [
+    {
+      "fieldtype": "company",
+      "text": "KEDAI PAPAN YEW CHUAN"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 276 JALAN BANTING 43800 DENGKIL, SELANGOR. DENGKIL SELANGOR"
+    },
+    {
+      "fieldtype": "date",
+      "text": "26/05/2018"
+    }
+  ],
+  "610": [
+    {
+      "fieldtype": "company",
+      "text": "GHEE HIANG GH DISTRIBUTOR & MARKETING SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "216, MACALISTER ROAD, 10400 PENANG. 10400 PENANG."
+    },
+    {
+      "fieldtype": "date",
+      "text": "20/06/2018 20/06/2018 20/06/2018"
+    }
+  ],
+  "615": [
+    {
+      "fieldtype": "company",
+      "text": "MR. D.I.Y. (M) SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "LOT 1851-A & 1851-B, JALAN KPB 6, KAWASAN PERINDUSTRIAN BALAKONG, 43300 SERI KEMBANGAN, SELANGOR (PUSAT PERNIAGAAN BUNGA RAYA,"
+    }
+  ],
+  "618": [
+    {
+      "fieldtype": "company",
+      "text": "ONE ONE THREE SEAFOOD RESTAURANT SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO.1, TAMAN SRI DENGKIL, JALAN AIR HITAM 43800 DENGKIL, SELANGOR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "13-06-2018 13-06-2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "35.00"
+    }
+  ],
+  "619": [
+    {
+      "fieldtype": "company",
+      "text": "ONE ONE THREE SEAFOOD RESTAURANT SDN BHD"
+    },
+    {
+      "fieldtype": "address",
+      "text": "NO.1, TAMAN SRI DENGKIL, JALAN AIR HITAM 43800 DENGKIL, SELANGOR."
+    },
+    {
+      "fieldtype": "date",
+      "text": "30-05-2018 30-05-2018"
+    },
+    {
+      "fieldtype": "total",
+      "text": "82.50"
+    }
+  ]
+}
