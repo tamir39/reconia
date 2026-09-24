@@ -12,8 +12,6 @@ import os
 from pathlib import Path
 from typing import Iterator
 
-from datasets import load_from_disk
-
 from app.data.paths import REPO_ROOT, WORKSPACE_ROOT, resolve_dataset_path
 from app.data.schema import BBox, Document, Field, Word
 
@@ -36,6 +34,7 @@ class CordAdapter:
             explicit_path=root,
         )
 
+        from datasets import load_from_disk
         self._dataset = load_from_disk(str(self.root))
 
     def _normalize_split(self, split: str) -> str:

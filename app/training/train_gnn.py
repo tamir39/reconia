@@ -39,7 +39,8 @@ from app.evaluation import (
 from app.graph.builder import DocumentGraph
 from app.graph.cache import BuildConfig, GraphCache, build_vocabulary, load_vocabulary, save_vocabulary
 from app.graph.edges import compute_spatial_edge_features
-from app.models_dl.gnn import InvoiceGNN, InvoiceGNNConfig
+from app.graph.labels import label_document
+from app.models_dl.gnn import InvoiceGNN, InvoiceGNNConfig, TEXT_HASH_VERSION, validate_gnn_checkpoint
 
 DEFAULT_CACHE = Path(__file__).resolve().parents[2] / ".cache"
 DEFAULT_CHECKPOINTS = Path(__file__).resolve().parents[2] / "checkpoints"
@@ -165,7 +166,7 @@ def evaluate_model(
         all_targets.extend(targets_np)
 
         pred_tags = [id_to_tag.get(p, "O") for p in preds]
-        true_tags = [id_to_tag.get(t, "O") for t in targets_np]
+        true_tags, _ = label_document(doc)
 
         pred_spans = extract_entities_from_bio(pred_tags, graph.texts, graph.pages)
         true_spans = extract_entities_from_bio(true_tags, graph.texts, graph.pages)
@@ -349,6 +350,7 @@ def train_single_gnn_dataset(args: argparse.Namespace, dataset_name: str, device
     best_val_metrics: dict[str, Any] = {}
     val_metrics: dict[str, Any] = {}
     history: list[dict[str, Any]] = []
+    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=args.lr * 0.05)
 
     if args.resume is not None:
         if not args.resume.exists():
@@ -356,6 +358,9 @@ def train_single_gnn_dataset(args: argparse.Namespace, dataset_name: str, device
             return 1
         print(f"Loading checkpoint from: {args.resume}")
         checkpoint = torch.load(args.resume, map_location=device, weights_only=False)
+        validate_gnn_checkpoint(checkpoint)
+        if checkpoint.get("vocabulary") != vocabulary:
+            raise ValueError("Checkpoint vocabulary differs from the dataset vocabulary")
         model.load_state_dict(checkpoint["model_state_dict"])
         if "optimizer_state_dict" in checkpoint:
             optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
@@ -363,6 +368,7 @@ def train_single_gnn_dataset(args: argparse.Namespace, dataset_name: str, device
             scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
         start_epoch = checkpoint.get("epoch", 0) + 1
         history = checkpoint.get("history", [])
+        best_epoch = checkpoint.get("best_epoch", 1)
         if "best_score" in checkpoint:
             best_score = checkpoint["best_score"]
         elif "metrics" in checkpoint:
@@ -379,13 +385,6 @@ def train_single_gnn_dataset(args: argparse.Namespace, dataset_name: str, device
             f"To train further, specify a larger --epochs (e.g. --epochs {start_epoch + 5})."
         )
         return 0
-
-    scheduler = CosineAnnealingLR(
-        optimizer,
-        T_max=args.epochs,
-        eta_min=args.lr * 0.05,
-        last_epoch=(start_epoch - 2) if start_epoch > 1 else -1,
-    )
 
     patience_counter = 0
 
@@ -473,6 +472,7 @@ def train_single_gnn_dataset(args: argparse.Namespace, dataset_name: str, device
             )
 
             checkpoint_state = {
+                "text_hash_version": TEXT_HASH_VERSION,
                 "epoch": epoch,
                 "best_epoch": best_epoch,
                 "model_state_dict": model.state_dict(),
@@ -544,7 +544,11 @@ def train_single_gnn_dataset(args: argparse.Namespace, dataset_name: str, device
     if not is_debug and (best_val_metrics or val_metrics) and history:
         metadata = {
             "device": str(device),
-            "gpu_name": "CUDA GPU" if device.type == "cuda" else "CPU",
+            "gpu_name": torch.cuda.get_device_name(device) if device.type == "cuda" else "CPU",
+            "text_hash_version": TEXT_HASH_VERSION,
+            "train_documents": len(train_docs),
+            "val_documents": len(val_docs),
+            "weighted_loss": args.weighted_loss,
             "total_params": total_params,
             "trainable_params": total_params,
             "epochs_trained": len(history),

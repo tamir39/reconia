@@ -178,8 +178,8 @@ def evaluate_roberta_model(
             logits = model(inp_ids, bb, att_m)
             doc_preds = torch.argmax(logits, dim=-1).squeeze(0).cpu().numpy()
 
-        word_texts, _, word_gt_labels = extract_word_bboxes_and_labels(doc, vocab)
-        word_gt_tags = [inv_vocab.get(lbl, "O") for lbl in word_gt_labels]
+        word_texts, _, _ = extract_word_bboxes_and_labels(doc, vocab)
+        word_gt_tags, _ = label_document(doc)
         word_pred_tags = ["O"] * len(word_texts)
 
         valid_indices = np.where(lbls != -100)[0]
@@ -187,8 +187,9 @@ def evaluate_roberta_model(
             if i < len(word_texts):
                 word_pred_tags[i] = inv_vocab.get(int(doc_preds[tok_idx]), "O")
 
-        gt_ents = extract_entities_from_bio(word_gt_tags, texts=word_texts)
-        pred_ents = extract_entities_from_bio(word_pred_tags, texts=word_texts)
+        pages = [word.page for word in doc.words]
+        gt_ents = extract_entities_from_bio(word_gt_tags, texts=word_texts, pages=pages)
+        pred_ents = extract_entities_from_bio(word_pred_tags, texts=word_texts, pages=pages)
 
         true_entities_batch.append(gt_ents)
         pred_entities_batch.append(pred_ents)
@@ -299,7 +300,7 @@ def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, de
 
     # 3. Tokenizer & Dataset
     model_source = get_default_roberta_model_path()
-    tokenizer = AutoTokenizer.from_pretrained(model_source)
+    tokenizer = AutoTokenizer.from_pretrained(model_source, add_prefix_space=True)
 
     train_dataset = RoBERTaInvoiceDataset(train_docs, tokenizer=tokenizer, label_vocabulary=vocab)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
@@ -509,6 +510,8 @@ def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, de
                 "optimizer_state_dict": optimizer.state_dict(),
                 "scheduler_state_dict": scheduler.state_dict(),
                 "config": model_cfg.to_dict(),
+                "backbone_config": model.roberta.config.to_dict(),
+                "vocabulary": vocab,
                 "best_score": current_monitor if is_improvement else best_monitor_val,
                 "best_monitor_val": current_monitor if is_improvement else best_monitor_val,
                 "history": train_history,
@@ -574,7 +577,10 @@ def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, de
     if not is_debug and (best_eval_metrics or val_metrics) and train_history:
         metadata = {
             "device": str(device),
-            "gpu_name": "CUDA GPU" if device.type == "cuda" else "CPU",
+            "gpu_name": torch.cuda.get_device_name(device) if device.type == "cuda" else "CPU",
+            "train_documents": len(train_docs),
+            "val_documents": len(val_docs),
+            "weighted_loss": args.weighted_loss,
             "total_params": total_params,
             "trainable_params": trainable_params,
             "epochs_trained": len(train_history),

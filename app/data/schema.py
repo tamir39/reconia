@@ -11,7 +11,7 @@ different sizes and resolutions are directly comparable.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Iterator, Protocol
+from typing import Any, Iterator, Protocol
 
 
 @dataclass(frozen=True, slots=True)

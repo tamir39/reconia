@@ -199,6 +199,9 @@ def compute_entity_metrics(
     per_type_fn: dict[str, int] = {}
     all_types: set[str] = set()
 
+    if len(pred_entities_batch) != len(true_entities_batch):
+        raise ValueError("Predictions and ground truth must contain the same number of documents")
+
     for pred_list, true_list in zip(pred_entities_batch, true_entities_batch):
         if match_mode == "exact":
             true_keys = [e.key for e in true_list]

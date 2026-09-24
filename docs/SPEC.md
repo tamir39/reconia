@@ -8,8 +8,8 @@ từ hóa đơn (ĐA161)
 Tài liệu này đặc tả phạm vi, bài toán, kiến trúc và phương pháp thực nghiệm, theo đề tài nghiên cứu
 đã được cập nhật trên hệ thống ELIT.
 
-> **Trọng tâm đề tài:** Đánh giá, cài đặt và so sánh thực nghiệm 4 mô hình học sâu (GNN, RoBERTa,
-> LayoutLMv3, LiLT) trên 3 bộ dữ liệu hóa đơn chuẩn (DocILE, CORD-v2, SROIE) dưới một khung đo lường thống nhất.
+> **Trọng tâm đề tài:** Đánh giá, cài đặt và so sánh thực nghiệm 6 mô hình (GNN, RoBERTa,
+> LayoutLMv3, LiLT và hai mô hình thị giác–ngôn ngữ; tên cụ thể đang chờ nhóm xác nhận) trên 3 bộ dữ liệu hóa đơn chuẩn (DocILE, CORD-v2, SROIE) dưới một khung đo lường thống nhất.
 
 ---
 
@@ -18,10 +18,10 @@ Tài liệu này đặc tả phạm vi, bài toán, kiến trúc và phương ph
 Đề tài thực hiện **đánh giá và so sánh các phương pháp học sâu** cho bài toán trích xuất thông
 tin từ hóa đơn (Document Information Extraction), theo yêu cầu cốt lõi:
 
-1. Khảo sát và lựa chọn 4 mô hình học sâu đại diện cho các trường phái tiếp cận: Đồ thị (GNN), Mô hình chuỗi văn bản (RoBERTa), Đa phương thức hoàn chỉnh (LayoutLMv3) và Đa phương thức tách biệt (LiLT).
+1. So sánh sáu mô hình: GNN, RoBERTa, LayoutLMv3, LiLT và hai VLM theo phạm vi đã thống nhất sau buổi họp. Hai VLM chưa được ghi nhận tên cụ thể; không coi là đã hiện thực.
 2. Chuẩn hóa và thực nghiệm trên 3 bộ dữ liệu: DocILE (hóa đơn thương mại đa trang, phức tạp), CORD-v2 (biên lai ẩm thực, đa trường) và SROIE (biên lai bán lẻ).
 3. Cài đặt hoặc huấn luyện lại các mô hình dưới **điều kiện thực nghiệm thống nhất** (cùng tập train/val, cùng chất lượng OCR, cùng pipeline tính chỉ số).
-4. Đánh giá bằng Precision, Recall và F1-score ở cấp độ thực thể (entity-level Exact Match).
+4. Đánh giá theo giá trị trường trên cả sáu mô hình; báo cáo riêng chỉ số BIO ở mức từ và chỉ số định vị chính thức của DocILE. Xem [EVALUATION.md](EVALUATION.md).
 5. So sánh và phân tích ưu/nhược điểm, tốc độ suy luận (Latency ms) và thời gian huấn luyện/suy luận của từng phương pháp.
 
 Bài toán trích xuất được định nghĩa theo chuẩn DocILE Benchmark:
@@ -44,6 +44,11 @@ liệu, cách tiền xử lý và cách tính chỉ số. Đề tài đưa các 
 | **Đa phương thức** | LayoutLMv3-base | Multimodal Transformer kết hợp Text, 2D Layout và Visual Patches | Cloud GPU (Kaggle / Colab) |
 | **Đa phương thức nhẹ** | LiLT-base | Language-Independent Layout Transformer (tách biệt luồng văn bản và luồng bố cục) | Cloud GPU (Kaggle / Colab) |
 
+| **Thị giác–ngôn ngữ** | VLM 1 — chờ xác nhận tên | Sinh các trường từ ảnh và chỉ dẫn | Chốt sau khi chọn kích thước mô hình |
+| **Thị giác–ngôn ngữ** | VLM 2 — chờ xác nhận tên | Sinh các trường từ ảnh và chỉ dẫn | Chốt sau khi chọn kích thước mô hình |
+
+Hiện có mã nguồn GNN và RoBERTa. LayoutLMv3, LiLT và hai VLM chưa hiện thực.
+
 ### 1.2. Môi trường huấn luyện
 
 - **Môi trường cục bộ (Local):** GPU tiêu chuẩn hỗ trợ PyTorch CUDA. Dùng để phát triển, tiền xử lý dữ liệu, huấn luyện mô hình GNN và chạy khung đánh giá thống nhất.
@@ -56,7 +61,7 @@ liệu, cách tiền xử lý và cách tính chỉ số. Đề tài đưa các 
 ### 2.1. Bộ dữ liệu DocILE (ICDAR 2023)
 - **Quy mô:** Tập `annotated-trainval` gồm 5.680 tài liệu có nhãn đầy đủ (`app/data/docile_splits.json`: 4.680 train, 500 val, 500 test local có nhãn) và tập `test_official` gồm 1.000 tài liệu phục vụ suy luận nộp bài thi ICDAR RRC.
 - **Đặc trưng:** Hóa đơn thương mại doanh nghiệp thực tế (B2B), đa trang (77% 1 trang, 19% 2 trang, 4% 3 trang trở lên). Bố cục dạng bảng phức tạp, biến thiên cao.
-- **Số loại trường:** 55 loại trường (36 trường KILE và 18 trường LIR).
+- **Số loại trường:** 55 loại trường quan sát được (36 trường KILE và 19 trường LIR).
 - **Thành phần:** PDF vector gốc, kết quả OCR có sẵn kèm hộp bao từng từ, nhãn chú giải chính xác.
 
 ### 2.2. Bộ dữ liệu CORD-v2 (Consolidated Receipt Dataset)
@@ -72,7 +77,7 @@ liệu, cách tiền xử lý và cách tính chỉ số. Đề tài đưa các 
 - **Thành phần:** Ảnh JPG gốc, kết quả OCR từng dòng văn bản, nhãn thực thể chính xác.
 
 ### 2.4. Kết quả khảo sát và chuẩn hóa đầu vào chung
-- **Giới hạn trần OCR:** Mức độ khớp giữa trường chú giải và từ OCR đạt ~95.6% trên DocILE, ~98-100% trên SROIE. Đây là giới hạn lý thuyết trên đối với các mô hình phân loại nhãn nút/token.
+- **Giới hạn trần OCR:** Khảo sát trước đây trên toàn bộ tập train gốc của DocILE ghi nhận 94,42% trường khớp ít nhất một từ OCR. Đây là độ phủ của phép gán nhãn đang dùng, không phải trần F1 chính thức; cần đo lại theo cách chia tập hiện tại. Xem [DATA.md](DATA.md).
 - **Ranh giới từ đa phần (Multi-word fields):** Khoảng 26% trường trên DocILE và đa số trường `address`/`company` trên SROIE trải dài trên nhiều từ liên tiếp. Do đó, tất cả dữ liệu được chuẩn hóa theo định dạng đánh nhãn chuỗi **BIO (Beginning - Inside - Outside)**.
 - **Không gian tọa độ thống nhất:** Tất cả tọa độ hộp bao từ được chuẩn hóa kép:
   1. Tọa độ thực $[x_0, y_0, x_1, y_1]$ (pixel / PDF points) phục vụ trích xuất đặc trưng hình học đồ thị.
@@ -154,9 +159,9 @@ Nội dung báo cáo kết quả:
 
 ## 7. Lớp Giao Diện Web Minh Họa (Web Demo Layer)
 
-Bên cạnh khung thực nghiệm dòng lệnh (CLI), hệ thống tích hợp lớp ứng dụng web minh họa (`app/main.py`, `app/ui/routes.py`, `app/models/`):
-- **Công nghệ nền tảng:** FastAPI, Jinja2 template, HTMX cho tương tác bất đồng bộ không cần SPA phức tạp, và TailwindCSS cho giao diện hiển thị.
-- **Trực quan hóa tài liệu và OCR:** Hiển thị trực quan trang tài liệu hóa đơn/biên lai cùng hệ thống hộp bao tọa độ từ OCR, phân biệt trực quan các vùng trường thông tin.
-- **Đối chiếu thực thể trích xuất:** Hỗ trợ đối chiếu trực quan kết quả dự đoán của từng mô hình học sâu với nhãn thực tế (ground-truth), phục vụ công tác nghiệm thu và phân tích định tính các ca lỗi (Error Analysis).
+Bên cạnh khung thực nghiệm dòng lệnh (CLI), dự án có khung ứng dụng web minh họa (`app/main.py`, `app/ui/routes.py`, `app/models/`):
+- **Công nghệ nền tảng:** FastAPI, Jinja2 template, HTMX cho tương tác bất đồng bộ không cần SPA phức tạp, và CSS cục bộ cho giao diện hiển thị.
+- **Chưa hiện thực — trực quan hóa tài liệu và OCR:** Dự kiến hiển thị trực quan trang tài liệu hóa đơn/biên lai cùng hệ thống hộp bao tọa độ từ OCR, phân biệt trực quan các vùng trường thông tin.
+- **Chưa hiện thực — đối chiếu thực thể trích xuất:** Hỗ trợ đối chiếu trực quan kết quả dự đoán của từng mô hình học sâu với nhãn thực tế (ground-truth), phục vụ công tác nghiệm thu và phân tích định tính các ca lỗi (Error Analysis).
 - **Quản trị và tra cứu chứng từ:** Sử dụng SQLAlchemy ORM và Alembic migration quản lý cơ sở dữ liệu chứng từ, hỗ trợ tìm kiếm và lọc theo loại chứng từ.
 

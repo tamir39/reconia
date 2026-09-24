@@ -23,9 +23,22 @@ Key Architecture Components:
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 from typing import Any
 
 import numpy as np
+
+TEXT_HASH_VERSION = "blake2b-64-v1"
+
+
+def validate_gnn_checkpoint(checkpoint: dict[str, Any]) -> None:
+    """Refuse weights trained against Python's process-dependent hash table."""
+    if checkpoint.get("text_hash_version") != TEXT_HASH_VERSION:
+        raise ValueError(
+            "This GNN checkpoint uses an unversioned or incompatible text hash. "
+            "Retrain with the stable text encoder; legacy weights cannot be "
+            "safely converted without their original hash mapping."
+        )
 
 try:
     import torch
@@ -74,13 +87,12 @@ if torch is not None:
         def _hash_string(self, text: str) -> list[int]:
             """Extract character 3-grams and hash them deterministically."""
             clean = f"<{text.strip().lower()}>"
-            if len(clean) < 3:
-                return [abs(hash(clean)) % self.vocab_size]
-            hashes: list[int] = []
-            for i in range(len(clean) - 2):
-                ngram = clean[i : i + 3]
-                hashes.append(abs(hash(ngram)) % self.vocab_size)
-            return hashes
+            ngrams = [clean] if len(clean) < 3 else [clean[i:i + 3] for i in range(len(clean) - 2)]
+            return [
+                int.from_bytes(hashlib.blake2b(ngram.encode("utf-8"), digest_size=8).digest(), "big")
+                % self.vocab_size
+                for ngram in ngrams
+            ]
 
         def forward(self, texts: list[str], device: torch.device) -> torch.Tensor:
             """Encode a list of N strings into a tensor of shape (N, embedding_dim)."""

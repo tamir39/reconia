@@ -1,5 +1,7 @@
 # Báo Cáo Thực Nghiệm: RoBERTa trên Bộ Dữ Liệu DOCILE
 
+> Kết quả lịch sử chưa được tái lập bằng quy trình sửa ngày 24/09/2026. Các file dự đoán GNN và RoBERTa/SROIE chỉ có 2 tài liệu. Không dùng bảng này làm kết luận cuối cùng; xem [quy trình đánh giá](../docs/EVALUATION.md).
+
 ## 1. Kết Quả Thực Nghiệm Tối Ưu
 
 | Chỉ số | Tập Validation | Tập Test |

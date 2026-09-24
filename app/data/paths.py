@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Root of the reconia repository (e.g. .../DACNTT/reconia)
 REPO_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(REPO_ROOT / ".env", override=False)
 
 # Workspace root containing reconia and its sibling directories (e.g. .../DACNTT)
 WORKSPACE_ROOT = REPO_ROOT.parent

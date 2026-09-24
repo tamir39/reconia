@@ -15,6 +15,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -27,7 +28,7 @@ try:
     import torch
     import torch.nn as nn
     import torch.nn.functional as F
-    from transformers import AutoTokenizer
+    from transformers import AutoTokenizer, RobertaConfig, RobertaModel
 except ImportError:
     torch = None
     nn = object
@@ -37,6 +38,7 @@ from app.data import CordAdapter, DocileAdapter, SroieAdapter
 from app.data.paths import WORKSPACE_ROOT
 from app.data.roberta_dataset import encode_document_for_roberta, extract_word_bboxes_and_labels
 from app.data.schema import DatasetAdapter, Document
+from app.evaluation.values import compute_value_metrics
 from app.evaluation.metrics import (
     EntitySpan,
     InferenceProfiler,
@@ -47,7 +49,8 @@ from app.evaluation.metrics import (
 from app.graph.builder import build_graph
 from app.graph.cache import load_vocabulary
 from app.graph.edges import compute_spatial_edge_features
-from app.models_dl.gnn import InvoiceGNN, InvoiceGNNConfig
+from app.graph.labels import label_document
+from app.models_dl.gnn import InvoiceGNN, InvoiceGNNConfig, validate_gnn_checkpoint
 from app.models_dl.roberta import (
     RoBERTaWithLayoutConfig,
     RoBERTaWithLayoutForTokenClassification,
@@ -142,7 +145,9 @@ def predict_document_roberta(
             word_pred_tags[i] = inv_vocab.get(pred_id, "O")
             word_confidences[i] = float(probs[tok_idx, pred_id])
 
-    pred_spans = extract_entities_from_bio(word_pred_tags, texts=word_texts)
+    pred_spans = extract_entities_from_bio(
+        word_pred_tags, texts=word_texts, pages=[word.page for word in doc.words]
+    )
     docile_predictions = spans_to_docile_predictions(doc, pred_spans, word_confidences)
     return pred_spans, docile_predictions
 
@@ -196,6 +201,8 @@ def run_prediction_pipeline(
     """Execute prediction pipeline across RoBERTa or GNN models."""
     if torch is None:
         raise RuntimeError("PyTorch is required for prediction.")
+    if limit is not None and limit <= 0:
+        raise ValueError("limit must be a positive number of documents")
 
     device = torch.device(
         "cuda" if (device_str == "auto" and torch.cuda.is_available()) or device_str == "cuda" else "cpu"
@@ -211,13 +218,14 @@ def run_prediction_pipeline(
 
     cache_dir = cache_dir or Path(__file__).resolve().parents[2] / ".cache"
     vocab_file = cache_dir / f"{dataset_name}-vocabulary.json"
-    if not vocab_file.exists():
-        raise FileNotFoundError(f"Vocabulary cache {vocab_file} not found. Please train model or run vocab builder first.")
-
-    vocab, _ = load_vocabulary(vocab_file)
-    inv_vocab = {idx: name for name, idx in vocab.items()}
-
     ckpt = torch.load(model_path, map_location=device, weights_only=False)
+    if "vocabulary" in ckpt:
+        vocab = ckpt["vocabulary"]
+    elif vocab_file.exists():
+        vocab, _ = load_vocabulary(vocab_file)
+    else:
+        raise FileNotFoundError(f"Checkpoint has no vocabulary and cache is missing: {vocab_file}")
+    inv_vocab = {idx: name for name, idx in vocab.items()}
 
     # Detect model type
     detected_model = model_type
@@ -230,6 +238,7 @@ def run_prediction_pipeline(
 
     tokenizer = None
     if detected_model == "gnn":
+        validate_gnn_checkpoint(ckpt)
         raw_cfg = ckpt["config"]
         gnn_config = raw_cfg if isinstance(raw_cfg, InvoiceGNNConfig) else InvoiceGNNConfig(**raw_cfg)
         model = InvoiceGNN(gnn_config)
@@ -238,13 +247,24 @@ def run_prediction_pipeline(
         model.eval()
     else:
         config = RoBERTaWithLayoutConfig.from_dict(ckpt["config"])
-        model = RoBERTaWithLayoutForTokenClassification(config=config)
+        backbone = (
+            RobertaModel(RobertaConfig.from_dict(ckpt["backbone_config"]))
+            if "backbone_config" in ckpt else None
+        )
+        model = RoBERTaWithLayoutForTokenClassification(config=config, roberta_model=backbone)
         model.load_state_dict(ckpt["model_state_dict"])
         model.to(device)
         model.eval()
-        tokenizer = AutoTokenizer.from_pretrained(config.model_name_or_path or "roberta-base")
+        tokenizer = AutoTokenizer.from_pretrained(
+            config.model_name_or_path or "roberta-base", add_prefix_space=True
+        )
 
     doc_ids = adapter.document_ids(split)
+    expected_doc_ids = list(doc_ids)
+    if len(set(doc_ids)) != len(doc_ids):
+        raise ValueError("Dataset split contains duplicate document IDs")
+    if not doc_ids:
+        raise ValueError(f"Dataset split '{split}' is empty")
     if limit is not None:
         doc_ids = doc_ids[:limit]
 
@@ -254,6 +274,7 @@ def run_prediction_pipeline(
     all_docile_predictions: dict[str, list[dict[str, Any]]] = {}
     pred_entities_batch: list[list[EntitySpan]] = []
     true_entities_batch: list[list[EntitySpan]] = []
+    target_values: dict[str, list[dict[str, Any]]] = {}
 
     for doc_id in doc_ids:
         doc = adapter.load(doc_id)
@@ -276,11 +297,17 @@ def run_prediction_pipeline(
             )
         all_docile_predictions[doc_id] = docile_preds
 
-        if has_gt and doc.fields:
+        if has_gt:
+            target_values[doc_id] = [
+                {"fieldtype": field.fieldtype, "text": field.text} for field in doc.fields
+            ]
             pred_entities_batch.append(pred_spans)
-            word_texts, _, word_gt_labels = extract_word_bboxes_and_labels(doc, vocab)
-            word_gt_tags = [inv_vocab.get(lbl, "O") for lbl in word_gt_labels]
-            gt_spans = extract_entities_from_bio(word_gt_tags, texts=word_texts)
+            # Preserve unseen field types instead of silently mapping them to O.
+            word_gt_tags, _ = label_document(doc)
+            gt_spans = extract_entities_from_bio(
+                word_gt_tags, texts=[word.text for word in doc.words],
+                pages=[word.page for word in doc.words],
+            )
             true_entities_batch.append(gt_spans)
 
     perf = profiler.stop(num_documents=len(doc_ids))
@@ -290,6 +317,11 @@ def run_prediction_pipeline(
         "dataset": dataset_name,
         "split": split,
         "num_documents": len(doc_ids),
+        "expected_num_documents": len(expected_doc_ids),
+        "complete": len(doc_ids) == len(expected_doc_ids),
+        "protocol": "ocr-bio-exact-span-v2",
+        "split_sha256": hashlib.sha256(json.dumps(expected_doc_ids).encode()).hexdigest(),
+        "checkpoint_sha256": file_sha256(model_path),
         "has_ground_truth": has_gt,
         "latency": perf["latency"],
         "throughput": perf.get("throughput", 0.0),
@@ -300,6 +332,7 @@ def run_prediction_pipeline(
         output_json.parent.mkdir(parents=True, exist_ok=True)
         with output_json.open("w", encoding="utf-8") as fh:
             json.dump(all_docile_predictions, fh, indent=2)
+        results["prediction_sha256"] = file_sha256(output_json)
 
     if has_gt and true_entities_batch:
         entity_metrics = compute_entity_metrics(
@@ -311,8 +344,25 @@ def run_prediction_pipeline(
         results["recall"] = float(entity_metrics["recall"])
         results["f1"] = float(entity_metrics["f1"])
         results["entity_metrics"] = entity_metrics
+        results["value_metrics"] = compute_value_metrics(all_docile_predictions, target_values)
+
+    if output_json:
+        output_json.with_suffix(".metrics.json").write_text(
+            json.dumps(results, indent=2), encoding="utf-8"
+        )
 
     return results
+
+
+def file_sha256(path: Path) -> str:
+    with path.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def prediction_filename(model: str, dataset: str, split: str, limit: int | None) -> str:
+    """Keep quick checks from overwriting a full benchmark export."""
+    suffix = f"_sample{limit}" if limit is not None else ""
+    return f"predictions_{model}_{dataset}_{split}{suffix}.json"
 
 
 def print_prediction_summary(results: dict[str, Any], output_path: Path | None = None) -> None:
@@ -347,10 +397,11 @@ def _resolve_checkpoint(model_name: str, dataset_name: str, checkpoints_dir: Pat
     candidate_patterns = [
         f"{prefix}_{dataset_name}_best.pt",
         f"{dataset_name}_{prefix}_best.pt",
-        f"*{dataset_name}*best*.pt",
     ]
+    if model_name == "auto":
+        candidate_patterns.append(f"*{dataset_name}*best*.pt")
     for pat in candidate_patterns:
-        matches = list(ckpt_dir.glob(pat))
+        matches = sorted(ckpt_dir.glob(pat))
         if matches:
             return matches[0]
     return None
@@ -385,7 +436,7 @@ def main(argv: list[str] | None = None) -> int:
                 if not ckpt:
                     print(f"[SKIP] No checkpoint found for {m.upper()} on {d.upper()}")
                     continue
-                out_json = pred_dir / f"predictions_{m}_{d}_{args.split}.json"
+                out_json = pred_dir / prediction_filename(m, d, args.split, args.limit)
                 print(f"\n>>> Running {m.upper()} on {d.upper()} [{args.split.upper()}] with {ckpt.name}...")
                 try:
                     res = run_prediction_pipeline(
@@ -438,7 +489,7 @@ def main(argv: list[str] | None = None) -> int:
             detected_model = "roberta"
 
     model_tag = detected_model.lower() if detected_model != "auto" else "model"
-    default_output = args.output or (pred_dir / f"predictions_{model_tag}_{args.dataset}_{args.split}.json")
+    default_output = args.output or (pred_dir / prediction_filename(model_tag, args.dataset, args.split, args.limit))
 
     results = run_prediction_pipeline(
         model_path=checkpoint_path,

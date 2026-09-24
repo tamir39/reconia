@@ -85,6 +85,11 @@ def save_markdown_report(
         f"# Báo Cáo Thực Nghiệm: {model_name} trên Bộ Dữ Liệu {dataset_name}",
         "",
     ]
+    provenance = summary_data.get("evaluation_provenance", {})
+    if not provenance.get("protocol"):
+        lines.extend(["> Kết quả lịch sử chưa có đủ thông tin để tái lập; cần chạy lại quy trình đánh giá mới.", ""])
+    else:
+        lines.extend([f"Giao thức: `{provenance['protocol']}`. Đây là chỉ số nội bộ, không phải điểm DocILE chính thức.", ""])
     sec_idx = 1
     lines.append(f"## {sec_idx}. Kết Quả Thực Nghiệm Tối Ưu")
     lines.append("")
@@ -288,6 +293,8 @@ def export_full_benchmark_report(
     }
 
     metrics_test = None
+    if test_metrics is not None and test_metrics.get("complete") is False:
+        raise ValueError("A partial prediction run cannot be published as a full test benchmark")
     if test_metrics is not None:
         t_perf = test_metrics.get("perf", {})
         metrics_test = {
@@ -302,9 +309,10 @@ def export_full_benchmark_report(
     split_used = "TEST" if metrics_test is not None else "VAL"
 
     # Per-type entity stats
+    primary_source = test_metrics if test_metrics is not None else final_val_metrics
     per_type = (
-        final_val_metrics.get("per_type")
-        or final_val_metrics.get("entity_metrics", {}).get("per_type")
+        primary_source.get("per_type")
+        or primary_source.get("entity_metrics", {}).get("per_type")
         or {}
     )
 
@@ -326,6 +334,12 @@ def export_full_benchmark_report(
         "metadata": metadata,
         "metrics_val": metrics_val,
         "metrics_test": metrics_test,
+        "evaluation_provenance": {
+            key: primary_source[key] for key in (
+                "protocol", "complete", "num_documents", "expected_num_documents",
+                "split_sha256", "checkpoint_sha256", "prediction_sha256",
+            ) if key in primary_source
+        },
     }
 
     # 1. Save JSON
@@ -402,6 +416,11 @@ def generate_benchmark_summary(reports_dir: Path) -> dict[str, Path | None]:
         "| Mô hình | Bộ dữ liệu | Tập | Epoch | Precision (%) | Recall (%) | F1 (%) | Latency (ms) |",
         "|---|---|:---:|:---:|---|---|---|---|",
     ]
+    if any(not r.get("evaluation_provenance", {}).get("protocol") for r in records):
+        md_lines[2:2] = [
+            "> Có kết quả lịch sử chưa được tái lập bằng quy trình mới. Không dùng bảng này làm kết luận cuối cùng.",
+            "",
+        ]
 
     for r in records:
         model = r.get("model", "Unknown")

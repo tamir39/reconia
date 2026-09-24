@@ -100,7 +100,14 @@ def test_roberta_with_layout_forward_and_backward():
 
 
 def test_roberta_dataset_encoding(tmp_path):
-    tokenizer = AutoTokenizer.from_pretrained("roberta-base")
+    from tokenizers import ByteLevelBPETokenizer
+    from transformers import RobertaTokenizerFast
+    local = ByteLevelBPETokenizer()
+    local.train_from_iterator(["TOTAL RM150.00 2023-10-15 invoice date"], vocab_size=270,
+                              special_tokens=["<s>", "<pad>", "</s>", "<unk>", "<mask>"])
+    local.save_model(str(tmp_path))
+    tokenizer = RobertaTokenizerFast(vocab_file=str(tmp_path / "vocab.json"),
+                                    merges_file=str(tmp_path / "merges.txt"), add_prefix_space=True)
     label_vocab = {"O": 0, "B-total": 1, "I-total": 2, "B-date": 3, "I-date": 4}
 
     doc = Document(
@@ -161,3 +168,11 @@ def test_roberta_model_serialization(tmp_path):
 
     assert (save_dir / "reconia_roberta_config.json").exists()
     assert (save_dir / "model_weights.pt").exists()
+
+    model.eval()
+    restored = RoBERTaWithLayoutForTokenClassification.from_pretrained(save_dir)
+    ids = torch.tensor([[0, 4, 2]])
+    boxes = torch.zeros((1, 3, 4), dtype=torch.long)
+    mask = torch.ones_like(ids)
+    with torch.no_grad():
+        assert torch.equal(model(ids, boxes, mask), restored(ids, boxes, mask))

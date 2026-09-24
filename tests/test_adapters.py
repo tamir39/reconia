@@ -7,8 +7,16 @@ from app.graph.builder import build_graph, collect_fieldtypes
 from app.graph.labels import build_label_vocabulary, label_document
 
 
+def available_adapter(adapter_class):
+    """External dataset tests skip only when that dataset is absent."""
+    try:
+        return adapter_class()
+    except FileNotFoundError as exc:
+        pytest.skip(str(exc))
+
+
 def test_docile_adapter_splits_and_load():
-    adapter = DocileAdapter()
+    adapter = available_adapter(DocileAdapter)
     splits = adapter.splits()
     assert "train" in splits
     assert "val" in splits
@@ -52,7 +60,7 @@ def test_docile_adapter_splits_and_load():
 
 
 def test_cord_adapter_splits_and_load():
-    adapter = CordAdapter()
+    adapter = available_adapter(CordAdapter)
     splits = adapter.splits()
     assert set(splits) == {"train", "validation", "test"}
     assert len(adapter.document_ids("train")) == 800
@@ -76,7 +84,7 @@ def test_cord_adapter_splits_and_load():
 
 
 def test_sroie_adapter_splits_and_load():
-    adapter = SroieAdapter()
+    adapter = available_adapter(SroieAdapter)
     splits = adapter.splits()
     assert set(splits) == {"train", "val", "test"}
 
@@ -111,9 +119,9 @@ def test_sroie_adapter_splits_and_load():
 
 def test_adapters_compatible_with_graph_pipeline():
     """Verify that all three adapters produce Document objects fully compatible with GNN builder."""
-    docile_doc = DocileAdapter().load("009bdcdec5c04cd3b2e31555")
-    cord_doc = CordAdapter().load("train_0")
-    sroie_doc = SroieAdapter().load("000")
+    docile_doc = available_adapter(DocileAdapter).load("009bdcdec5c04cd3b2e31555")
+    cord_doc = available_adapter(CordAdapter).load("train_0")
+    sroie_doc = available_adapter(SroieAdapter).load("000")
 
     for doc in (docile_doc, cord_doc, sroie_doc):
         # 1. Labeling
@@ -133,7 +141,7 @@ def test_adapters_compatible_with_graph_pipeline():
 
 def test_docile_reading_order_preservation():
     """Verify that DocILE OCR words are loaded in top-to-bottom forward reading order."""
-    doc = DocileAdapter().load("00134dd365a24343b35b78c6")
+    doc = available_adapter(DocileAdapter).load("00134dd365a24343b35b78c6")
     # In forward order, the first words should be near the top of the page
     # while the last words are near the bottom of the page.
     top_words_y = [w.bbox.y0 for w in doc.words[:10]]
@@ -146,7 +154,7 @@ def test_docile_reading_order_preservation():
 
 def test_sroie_label_quality_no_bleeding():
     """Verify SROIE has no giant bounding boxes and does not mislabel item lines as address."""
-    adapter = SroieAdapter()
+    adapter = available_adapter(SroieAdapter)
     doc = adapter.load("000")
     tags, stats = label_document(doc)
 
@@ -165,9 +173,9 @@ def test_adapters_get_image_api():
     """Verify that get_image method returns a valid PIL Image across all three adapters."""
     from PIL import Image
 
-    docile_adapter = DocileAdapter()
-    cord_adapter = CordAdapter()
-    sroie_adapter = SroieAdapter()
+    docile_adapter = available_adapter(DocileAdapter)
+    cord_adapter = available_adapter(CordAdapter)
+    sroie_adapter = available_adapter(SroieAdapter)
 
     img_docile = docile_adapter.get_image("00134dd365a24343b35b78c6")
     assert isinstance(img_docile, Image.Image)

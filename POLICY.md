@@ -115,7 +115,8 @@ docs change — starts as a branch and reaches `dev` through a reviewed pull req
 - **Reproducibility first:** All training and splitting scripts must explicitly fix random seeds (default `42`).
 - **Portability:** Never hardcode absolute file paths (e.g. `D:/...`). Always resolve dataset directories dynamically using `app.data.paths` or environment variables (`DOCILE_DIR`, `SROIE_DIR`, `CORD_DIR`).
 - **Device independence:** PyTorch tensors and models must support agnostic device dispatch via `.to(device)` (`cuda` if available, otherwise `cpu`).
-- **Strictly unified evaluation:** Metrics (Precision, Recall, F1) must be computed using identical evaluation logic and format matching the DocILE benchmark standards (evaluating at the entity level with exact/overlap matching).
+- **Strictly unified evaluation:** Follow `docs/EVALUATION.md`. Compare all six models with the same document splits and field-value metric. Report OCR BIO span metrics separately; they are not official DocILE scores. Only the upstream DocILE evaluator establishes official KILE/LIR metrics.
+- **Traceable results:** Save complete predictions, split/checkpoint/prediction hashes, metric version, seed, and hardware. Partial smoke runs and legacy results without provenance cannot establish final benchmark claims. GNN checkpoints must declare their stable text-hash version.
 - **Documentation:** Code and comments in English. Technical documentation and research reports in Vietnamese.
 
 ### Legacy ERP Demo Rules

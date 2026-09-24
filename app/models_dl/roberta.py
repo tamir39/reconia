@@ -249,6 +249,9 @@ class RoBERTaWithLayoutForTokenClassification(nn.Module):
         config_path = save_path / "reconia_roberta_config.json"
         with open(config_path, "w", encoding="utf-8") as f:
             json.dump(self.custom_config.to_dict(), f, indent=2)
+        (save_path / "backbone_config.json").write_text(
+            self.roberta.config.to_json_string(), encoding="utf-8"
+        )
 
         weights_path = save_path / "model_weights.pt"
         torch.save(self.state_dict(), weights_path)
@@ -266,12 +269,17 @@ class RoBERTaWithLayoutForTokenClassification(nn.Module):
             config_dict = json.load(f)
 
         config = RoBERTaWithLayoutConfig.from_dict(config_dict)
-        model = cls(config=config)
+        backbone_path = save_path / "backbone_config.json"
+        backbone = (
+            RobertaModel(RobertaConfig.from_dict(json.loads(backbone_path.read_text(encoding="utf-8"))))
+            if backbone_path.exists() else None
+        )
+        model = cls(config=config, roberta_model=backbone)
 
         weights_path = save_path / "model_weights.pt"
-        if weights_path.exists():
-            state_dict = torch.load(weights_path, map_location=device)
-            model.load_state_dict(state_dict)
+        state_dict = torch.load(weights_path, map_location=device, weights_only=True)
+        model.load_state_dict(state_dict)
 
         model.to(device)
+        model.eval()
         return model

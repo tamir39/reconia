@@ -10,15 +10,21 @@
 
 ## 1. Giới Thiệu & Dữ Liệu Thực Nghiệm
 
-Mục tiêu của đề tài là xây dựng **khung thực nghiệm thống nhất** nhằm huấn luyện, đánh giá và so sánh khách quan 4 trường phái học sâu tiêu biểu cho 2 bài toán cốt lõi trong Document AI:
+Mục tiêu của đề tài là xây dựng **khung thực nghiệm thống nhất** nhằm huấn luyện, đánh giá và so sánh khách quan sáu mô hình thuộc các nhóm phương pháp khác nhau cho 2 bài toán cốt lõi trong Document AI:
 * **KILE (Key Information Localization and Extraction)**: Định vị hộp bao và trích xuất các trường thông tin then chốt (tên công ty, ngày phát hành, tổng tiền, thuế, địa chỉ,...).
 * **LIR (Line Item Recognition)**: Nhận dạng cấu trúc bảng và gom nhóm các trường chi tiết (mô tả sản phẩm, số lượng, đơn giá, thành tiền) thành từng dòng hàng sản phẩm hoàn chỉnh (`line_item_id`).
 
-### Bốn mô hình học sâu so sánh:
+### Sáu mô hình trong phạm vi so sánh:
 1. **Đồ thị không gian (Spatial Relational GNN)**: Kết hợp ngữ nghĩa văn bản, 17 đặc trưng hình học nút và vector quan hệ không gian cạnh $r_{ij} \in \mathbb{R}^6$.
 2. **Chuỗi tuần tự 1D (Text-only Sequence LM)**: RoBERTa-base bổ sung nhúng tọa độ hộp bao 2D.
 3. **Đa phương thức hợp nhất (Multimodal 2D Transformer)**: LayoutLMv3-base kết hợp đồng thời Văn bản, Bố cục 2D và Ảnh thị giác.
 4. **Đa phương thức tách rời (Decoupled Layout Transformer)**: LiLT-base tách biệt luồng xử lý văn bản và bố cục.
+5. **VLM 1**: chờ nhóm xác nhận tên và cấu hình.
+6. **VLM 2**: chờ nhóm xác nhận tên và cấu hình.
+
+GNN và RoBERTa đã có mã nguồn. Bốn mô hình còn lại chưa hiện thực.
+
+Xem [quy trình đánh giá](docs/EVALUATION.md) và [kế hoạch giữa kỳ](docs/MIDTERM.md). Các kết quả trước ngày 24/09 cần tái lập; GNN cũ dùng hàm băm phụ thuộc tiến trình, nên phải huấn luyện lại trước khi sử dụng với bộ mã hóa mới.
 
 ### Phân chia dữ liệu thực nghiệm (Train / Val / Test)
 

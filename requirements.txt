@@ -15,7 +15,8 @@ httpx==0.28.1
 pytest==8.3.4
 
 # --- Xử lý Dữ liệu & Đọc Tài liệu (DocILE, CORD, SROIE) ---
-numpy>=1.26.0
+numpy==2.3.5
+pandas==3.0.1
 pillow>=10.0.0
 pypdf>=4.0.0
 datasets>=2.18.0
@@ -27,5 +28,5 @@ matplotlib>=3.8.0
 # Lưu ý: Với môi trường có GPU NVIDIA, khuyến nghị cài PyTorch hỗ trợ CUDA:
 # pip install torch --index-url https://download.pytorch.org/whl/cu124
 torch>=2.0.0
-transformers>=4.38.0
+transformers>=4.38.0,<5
 accelerate>=0.28.0
