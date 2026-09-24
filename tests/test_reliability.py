@@ -109,6 +109,34 @@ def test_prediction_counts_blank_docs_and_unseen_types_and_keeps_pages(tmp_path,
     assert sample["expected_num_documents"] == 3
 
 
+@pytest.mark.parametrize("requested,actual", [("val", "validation"), ("validation", "val")])
+def test_prediction_resolves_validation_alias(tmp_path, monkeypatch, requested, actual):
+    import app.evaluation.predict as predict
+
+    class Adapter:
+        def splits(self): return ["train", actual, "test"]
+        def document_ids(self, split):
+            assert split == actual
+            return ["receipt"]
+        def has_ground_truth(self, split):
+            assert split == actual
+            return True
+        def load(self, doc_id): return Document(doc_id, [], [])
+
+    monkeypatch.setattr(predict, "load_adapter", lambda *args: Adapter())
+    cfg = InvoiceGNNConfig(text_dim=4, hidden_dim=4, edge_dim=4, num_layers=1, num_classes=3)
+    checkpoint = tmp_path / "gnn.pt"
+    torch.save({"config": cfg, "model_state_dict": InvoiceGNN(cfg).state_dict(),
+                "vocabulary": {"O": 0, "B-total": 1, "I-total": 2},
+                "text_hash_version": TEXT_HASH_VERSION}, checkpoint)
+    result = run_prediction_pipeline(checkpoint, "cord", "gnn", split=requested, device_str="cpu")
+    assert result["split"] == requested
+    assert result["source_split"] == actual
+    assert result["complete"] and result["num_documents"] == 1
+    with pytest.raises(ValueError, match="not found"):
+        run_prediction_pipeline(checkpoint, "cord", "gnn", split="unknown", device_str="cpu")
+
+
 def test_report_uses_test_per_type_instead_of_validation(tmp_path, monkeypatch):
     import app.evaluation.report as report
     monkeypatch.setattr(report, "plt", None)

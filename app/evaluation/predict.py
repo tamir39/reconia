@@ -203,10 +203,14 @@ def run_prediction_pipeline(
     adapter_cls = ADAPTERS[dataset_name]
     adapter = load_adapter(dataset_name, adapter_cls)
 
-    if split not in adapter.splits():
+    source_split = split
+    aliases = {"val": "validation", "validation": "val"}
+    if source_split not in adapter.splits() and aliases.get(split) in adapter.splits():
+        source_split = aliases[split]
+    if source_split not in adapter.splits():
         raise ValueError(f"Split '{split}' not found in dataset '{dataset_name}'. Available: {adapter.splits()}")
 
-    has_gt = getattr(adapter, "has_ground_truth", lambda s: True)(split)
+    has_gt = getattr(adapter, "has_ground_truth", lambda s: True)(source_split)
 
     cache_dir = cache_dir or Path(__file__).resolve().parents[2] / ".cache"
     vocab_file = cache_dir / f"{dataset_name}-vocabulary.json"
@@ -253,7 +257,7 @@ def run_prediction_pipeline(
             add_prefix_space=True,
         )
 
-    doc_ids = adapter.document_ids(split)
+    doc_ids = adapter.document_ids(source_split)
     expected_doc_ids = list(doc_ids)
     if len(set(doc_ids)) != len(doc_ids):
         raise ValueError("Dataset split contains duplicate document IDs")
@@ -310,6 +314,7 @@ def run_prediction_pipeline(
         "model": detected_model.upper(),
         "dataset": dataset_name,
         "split": split,
+        "source_split": source_split,
         "num_documents": len(doc_ids),
         "expected_num_documents": len(expected_doc_ids),
         "complete": len(doc_ids) == len(expected_doc_ids),

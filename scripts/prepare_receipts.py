@@ -18,6 +18,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 SROIE_URL = "https://github.com/NjoyimPeguy/ICDAR-2019-RRC-SROIE/releases/download/v2.0/SROIE2019.zip"
+SROIE_SHA256 = "aebb3e33a5ed0aaf644a5855dee97ca8ae80114e5b43ae96d431ab771c851941"
 CORD_REPO = "naver-clova-ix/cord-v2"
 CORD_REVISION = "7f0115a4b758a71d6473b8d085751692da2fef98"
 EXPECTED = {"sroie": {"train": 500, "val": 63, "test": 63},
@@ -61,6 +62,8 @@ def download(cache: Path) -> None:
 def prepare_sroie(cache: Path) -> dict:
     """Keep only canonical receipts, excluding release files named X...(1).txt."""
     source_path = cache / "SROIE2019.zip"
+    if sha256(source_path) != SROIE_SHA256:
+        raise ValueError("SROIE release differs from the reviewed archive")
     target = cache / "sroie"
     prefixes = {"box": "0325updated.task1train(626p)",
                 "key": "0325updated.task2train(626p)",
@@ -171,13 +174,45 @@ def validate(cache: Path, provenance: dict) -> dict:
     return report
 
 
+def receipt_files(cache: Path, name: str) -> list[Path]:
+    """Reject unreviewed files instead of recursively uploading arbitrary content."""
+    root = cache / name
+    if name == "sroie":
+        mapping = json.loads((root / "source-id-map.json").read_text(encoding="utf-8"))
+        ids = mapping["source_ids"]
+        if set(ids) != {f"{i:03d}" for i in range(626)}:
+            raise ValueError("Unexpected receipt mapping")
+        allowed = {root / folder / f"{doc_id}{suffix}" for doc_id in ids
+                   for folder, suffix in (("img", ".jpg"), ("box", ".csv"), ("key", ".json"))}
+        allowed.update(root / f for f in ("source-id-map.json", "splits.json", "field-value-targets.json"))
+    elif name == "cord":
+        allowed = {root / "dataset_dict.json", root / "field-value-targets.json"}
+        for split in ("train", "validation", "test"):
+            allowed.update(root / split / f for f in ("dataset_info.json", "state.json"))
+            state = json.loads((root / split / "state.json").read_text(encoding="utf-8"))
+            for shard in state["_data_files"]:
+                filename = shard["filename"]
+                if not re.fullmatch(r"data-\d+-of-\d+\.arrow", filename):
+                    raise ValueError("Unexpected CORD shard path")
+                allowed.add(root / split / filename)
+    else:
+        raise ValueError(f"Unknown dataset: {name}")
+    actual = {p for p in root.rglob("*") if p.is_file()}
+    if actual != allowed:
+        raise ValueError(f"Unreviewed or missing files in {name}: "
+                         f"{sorted(str(p.relative_to(root)) for p in actual ^ allowed)}")
+    if any(p.is_symlink() or not p.resolve().is_relative_to(root.resolve()) for p in allowed):
+        raise ValueError("Dataset files must stay within the dataset directory")
+    return sorted(allowed)
+
+
 def bundle(cache: Path) -> None:
-    """Build data-only archives; credentials, code, and model weights cannot enter."""
+    """Build allowlisted data and source archives, never credentials or weights."""
     out = cache / "kaggle"
     out.mkdir(parents=True, exist_ok=True)
     hashes = {}
     for name in EXPECTED:
-        files = sorted(p for p in (cache / name).rglob("*") if p.is_file())
+        files = receipt_files(cache, name)
         manifest = {p.relative_to(cache).as_posix(): sha256(p) for p in files}
         archive_path = out / f"{name}-receipts.bin"
         # Kaggle recursively expands .zip files; .bin preserves a verifiable container.

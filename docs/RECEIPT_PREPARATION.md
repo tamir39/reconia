@@ -41,7 +41,7 @@ Windows hiện tại bị Application Control chặn DLL; bản 23.0.1 đã nạ
 Các archive không chứa API key, `.env` hoặc trọng số mô hình.
 
 Kết quả kiểm tra ngày 25/09: **1.626/1.626 receipt** đọc được ảnh, OCR và nhãn;
-không có ảnh giống hệt giữa các split trong từng dataset. **107 tests passed** khi
+không có ảnh giống hệt giữa các split trong từng dataset. **112 tests passed** sau rà soát lần hai khi
 cấu hình đủ dữ liệu cục bộ. Bằng chứng: [validation report](../reports/data/receipts_20260925.json).
 Bundle SROIE khoảng 357 MB, CORD khoảng 2,32 GB; dữ liệu ảnh chiếm phần lớn dung lượng.
 
@@ -59,6 +59,28 @@ riêng, chọn `DATASET`, bật GPU và Internet. Notebook kiểm tra hash dữ 
 chạy smoke trên validation và nạp lại checkpoint. Chỉ sau khi smoke thành công mới
 chọn `train`; full run kiểm tra đủ 63 hoặc 100 dự đoán test. Notebook chưa được chạy
 trên Kaggle trong bước chuẩn bị này. Bundle hiện lưu cục bộ, chưa upload.
+
+### Rà soát trước upload
+
+Đã đối chiếu hash toàn bộ archive và từng file bên trong, đồng thời so byte của cả
+626 cặp ảnh/OCR/key SROIE với release nguồn. Trình đóng gói từ chối file ngoài danh
+sách cho phép và từ chối archive SROIE khác hash đã kiểm tra. Notebook kiểm tra hash
+container, split SROIE, bỏ biến export cũ có thể ghi đè dataset, và yêu cầu thư mục
+giải nén mới. Resume phải cùng dữ liệu, mã nguồn, seed và tổng epochs; không dùng
+checkpoint smoke làm điểm bắt đầu cho benchmark đầy đủ.
+
+Smoke test phát hiện và đã sửa lỗi suy luận CORD từ chối `--split val` vì nguồn
+đặt tên `validation`. Pipeline chấp nhận alias hai chiều, vẫn từ chối split không
+hợp lệ và lưu `source_split` thực tế trong metrics. Đã thêm regression test và
+đóng gói lại mã nguồn trước khi chạy lại preflight.
+
+Đã chạy các cell notebook từ bundle giải nén mới trên GPU RTX 3050 Ti cục bộ cho
+cả hai dataset: 16 train / 4 val, một epoch, nạp lại checkpoint ở tiến trình mới,
+xuất dự đoán và ZIP kết quả. Đường dẫn Kaggle được đổi sang cache cục bộ; bỏ bước
+cài pip và hiển thị IPython (dùng dependency đã cài). Lần chạy GPU trong sandbox
+bị Windows kết thúc; chạy ngoài sandbox thành công. Đây là **kiểm tra đường chạy**,
+không phải kết quả benchmark, chưa xác minh môi trường Kaggle hoặc resume đầy đủ.
+Xem [bằng chứng preflight](../reports/data/receipts_preflight_20260925.json).
 
 ## Sẵn sàng cho VLM và giới hạn đánh giá
 
