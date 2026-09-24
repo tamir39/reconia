@@ -1,0 +1,121 @@
+{
+  "date": "2026-09-25",
+  "dataset": "phvngtngtm/reconia-sroie-cord-training-bundle",
+  "is_private": true,
+  "dataset_version": 2,
+  "transport": "Pinned public source downloads on Kaggle, compared to reviewed local receipt hashes",
+  "upload_bytes": 2030809,
+  "bundle_manifest": {
+    "cord-field-value-targets.json": {
+      "bytes": 1196060,
+      "sha256": "1de2079c241158c86d9f6b692e1ff239a6066f02ac3c55962a248ba196fc4bb2"
+    },
+    "receipt-source-reference.json": {
+      "bytes": 389374,
+      "sha256": "c722c26fba93d31567ae099252bbd9f129a66ddd65be6f1b66b8a75bc476e470"
+    },
+    "reconia-code.bin": {
+      "bytes": 184844,
+      "sha256": "e7d5636172339bb74929ccedd1446a4d9b80e8c3d1ebfabb3baf187b25cdadbb"
+    },
+    "sroie-field-value-targets.json": {
+      "bytes": 259289,
+      "sha256": "ddbdfd6c68352dcda1d9545afb0bacba6cfafef816d9da3cf6a0c95f80aa0102"
+    }
+  },
+  "tests": {
+    "passed": 117,
+    "failed": 0
+  },
+  "source_verification": {
+    "sroie_receipts": 626,
+    "sroie_policy": "Images/OCR/key labels match exact bytes; generated mapping JSON uses canonical sorted JSON digest across Windows/Linux",
+    "cord_receipts": 1000,
+    "cord_policy": "Every image byte hash and canonical ground-truth hash matches by split and row position"
+  },
+  "smoke_runs": {
+    "sroie": {
+      "notebook": "phvngtngtm/reconia-gnn-sroie",
+      "version": 2,
+      "dataset_version": 2,
+      "status": "complete",
+      "train_documents": 16,
+      "validation_documents": 4,
+      "epochs": 1,
+      "gpu": "Tesla T4",
+      "checkpoint_reloaded_for_inference": true,
+      "prediction_hash_matches": true,
+      "log_sha256": "4358018b7aa9ac275d262e68fce9493d2c4401a807143e49df114e0585764f93",
+      "evidence_directory": "reports/runs/receipts_kaggle_20260925/sroie-smoke"
+    },
+    "cord": {
+      "notebook": "phvngtngtm/reconia-gnn-cord",
+      "version": 1,
+      "dataset_version": 1,
+      "status": "complete",
+      "train_documents": 16,
+      "validation_documents": 4,
+      "epochs": 1,
+      "gpu": "Tesla T4",
+      "checkpoint_reloaded_for_inference": true,
+      "prediction_hash_matches": true,
+      "log_sha256": "3892c7f18541ebe2c9d0b49b13fc54d4ff585da79c1921df4d1102a83d38d924",
+      "evidence_directory": "reports/runs/receipts_kaggle_20260925/cord-smoke"
+    }
+  },
+  "full_runs": {
+    "sroie": {
+      "notebook": "phvngtngtm/reconia-gnn-sroie",
+      "version": 3,
+      "mode": "train",
+      "max_epochs": 20,
+      "patience": 5,
+      "seed": 42,
+      "counts": {
+        "train": 500,
+        "val": 63,
+        "test": 63
+      },
+      "status": "running",
+      "resume_from": "",
+      "dataset_version": 2,
+      "full_training_counts_confirmed": true,
+      "remote_source_and_private_setting_verified": true,
+      "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
+      "launch_log_sha256": "064c0a8ba6d7c662dec763fa5b00197baa023423d42133408e6ef3345b9812a2"
+    },
+    "cord": {
+      "notebook": "phvngtngtm/reconia-gnn-cord",
+      "version": 2,
+      "mode": "train",
+      "max_epochs": 20,
+      "patience": 5,
+      "seed": 42,
+      "counts": {
+        "train": 800,
+        "val": 100,
+        "test": 100
+      },
+      "status": "running",
+      "resume_from": "",
+      "dataset_version": 2,
+      "full_training_counts_confirmed": true,
+      "remote_source_and_private_setting_verified": true,
+      "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
+      "launch_log_sha256": "61ff5d2a4a648bf5bb3a8d007c8f73634752d2fae958b8a8cc0331ef0dc5e049"
+    }
+  },
+  "limitations": [
+    "Smoke metrics are not benchmark results.",
+    "Full-run results are pending download and verification.",
+    "SROIE field-value scoring uses OCR fragments; common four-key VLM scoring remains pending.",
+    "RoBERTa receipt runs are not launched by this GNN batch."
+  ],
+  "sroie_first_attempt": {
+    "version": 1,
+    "status": "failed before training",
+    "cause": "Generated source-id-map.json digest depended on Windows/Linux line endings",
+    "fix": "Canonical JSON digest for generated mapping metadata only; byte-exact checks retained for receipt files",
+    "verified_by": "SROIE smoke version 2 passed"
+  }
+}

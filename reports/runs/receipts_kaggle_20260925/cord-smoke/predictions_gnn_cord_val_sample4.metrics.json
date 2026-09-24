@@ -1,0 +1,176 @@
+{
+  "model": "GNN",
+  "dataset": "cord",
+  "split": "val",
+  "source_split": "validation",
+  "num_documents": 4,
+  "expected_num_documents": 100,
+  "complete": false,
+  "protocol": "ocr-bio-exact-span-v2",
+  "split_sha256": "10b01112c86792825eeb2131731dfd15fd3d4e194013f9ce0845403dcc279235",
+  "checkpoint_sha256": "a842b1bf64b0c0a35a0a534be1179d4e9b2952840a8b7d09b980776bfcc89d40",
+  "has_ground_truth": true,
+  "latency": 150.53768550001223,
+  "throughput": 6.642854888319103,
+  "perf": {
+    "elapsed_sec": 0.6021507420000489,
+    "latency": 150.53768550001223,
+    "throughput": 6.642854888319103
+  },
+  "prediction_sha256": "81111e88b19cee4518b106bbff45794d04455876e247646808228ebdb742d7fd",
+  "precision": 0.3157894736842105,
+  "recall": 0.14634146341463414,
+  "f1": 0.19999999999999998,
+  "entity_metrics": {
+    "precision": 0.3157894736842105,
+    "recall": 0.14634146341463414,
+    "f1": 0.19999999999999998,
+    "total_true_entities": 41,
+    "total_pred_entities": 19,
+    "per_type": {
+      "menu.cnt": {
+        "precision": 0.5555555555555556,
+        "recall": 0.8333333333333334,
+        "f1": 0.6666666666666667,
+        "support": 6
+      },
+      "menu.nm": {
+        "precision": 0.1,
+        "recall": 0.16666666666666666,
+        "f1": 0.125,
+        "support": 6
+      },
+      "menu.price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "menu.sub.nm": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "menu.unitprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "menu.vatyn": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "sub_total.subtotal_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "sub_total.tax_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 3
+      },
+      "total.cashprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 5
+      },
+      "total.changeprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      },
+      "total.total_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      }
+    }
+  },
+  "value_metrics": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.3157894736842105,
+    "recall": 0.15384615384615385,
+    "f1": 0.20689655172413793,
+    "support": 39,
+    "macro_f1": 0.07196969696969696,
+    "per_type": {
+      "menu.cnt": {
+        "precision": 0.5555555555555556,
+        "recall": 0.8333333333333334,
+        "f1": 0.6666666666666666,
+        "support": 6
+      },
+      "menu.nm": {
+        "precision": 0.1,
+        "recall": 0.16666666666666666,
+        "f1": 0.125,
+        "support": 6
+      },
+      "menu.price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "menu.sub.nm": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "menu.unitprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "menu.vatyn": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "sub_total.subtotal_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "sub_total.tax_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "total.cashprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      },
+      "total.changeprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      },
+      "total.total_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      }
+    },
+    "num_documents": 4
+  }
+}

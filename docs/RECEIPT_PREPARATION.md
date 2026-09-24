@@ -1,7 +1,29 @@
 # Chuẩn bị SROIE và CORD-v2 — 25/09/2026
 
-Chuẩn bị dữ liệu cục bộ trong lúc RoBERTa/DocILE chạy trên Kaggle. Không khởi chạy
-thí nghiệm mới hoặc thay đổi notebook/dataset DocILE đang dùng.
+Đã chuẩn bị dữ liệu cục bộ và chạy smoke GNN thành công trên Kaggle cho cả hai bộ.
+Các lần chạy DocILE đã hoàn tất và được giữ riêng.
+
+## Trạng thái Kaggle ngày 25/09
+
+- Dataset private: [Reconia SROIE CORD Training Bundle](https://www.kaggle.com/datasets/phvngtngtm/reconia-sroie-cord-training-bundle), version 2.
+- [GNN SROIE](https://www.kaggle.com/code/phvngtngtm/reconia-gnn-sroie): smoke version 2 thành công; full run version 3 đang chạy, log xác nhận 500 train / 63 val.
+- [GNN CORD](https://www.kaggle.com/code/phvngtngtm/reconia-gnn-cord): smoke version 1 thành công; full run version 2 đang chạy, log xác nhận 800 train / 100 val.
+- Smoke dùng 16 train / 4 val, một epoch trên Tesla T4, nạp checkpoint ở tiến trình mới và xuất predictions. Full run học mới với seed 42, tối đa 20 epochs, patience 5; không resume checkpoint smoke.
+- **117 tests passed**. Bằng chứng và cấu hình smoke: [receipts_kaggle_20260925.json](../reports/data/receipts_kaggle_20260925.json).
+
+Upload trực tiếp bundle 2,7 GB qua mạng cục bộ quá chậm nên đã dừng trước khi tạo
+dataset. Bundle private thay thế khoảng 2 MB gồm mã nguồn, manifest đối chiếu và
+nhãn trường. `scripts/fetch_kaggle_receipts.py` tải nguồn public đã pin ngay trên
+Kaggle. Mọi ảnh/OCR/key SROIE phải khớp byte; mọi ảnh và annotation CORD phải khớp
+hash theo từng split và vị trí receipt. Arrow có thể khác cách tuần tự hóa giữa
+máy, nên so nội dung ảnh/nhãn trước khi lưu checksum cho lần chạy.
+
+Smoke SROIE lần đầu dừng trước training do JSON mapping sinh trên Windows dùng
+CRLF, còn Linux dùng LF. Đã sửa riêng digest metadata mapping bằng JSON chuẩn hóa,
+thêm regression test và chạy lại thành công. Không nới kiểm tra ảnh/OCR/key gốc.
+
+Chưa đưa điểm smoke vào bảng benchmark. Kết quả full run cần tải về và kiểm chứng;
+batch này chỉ khởi chạy GNN, chưa khởi chạy RoBERTa trên receipt.
 
 ## Nguồn và split
 
@@ -57,8 +79,8 @@ Notebook [kaggle_gnn_receipts.ipynb](../notebooks/kaggle_gnn_receipts.ipynb) chu
 đường chạy GNN cho từng dataset, mặc định `RUN_MODE="smoke"`. Attach bundle receipt
 riêng, chọn `DATASET`, bật GPU và Internet. Notebook kiểm tra hash dữ liệu/mã nguồn,
 chạy smoke trên validation và nạp lại checkpoint. Chỉ sau khi smoke thành công mới
-chọn `train`; full run kiểm tra đủ 63 hoặc 100 dự đoán test. Notebook chưa được chạy
-trên Kaggle trong bước chuẩn bị này. Bundle hiện lưu cục bộ, chưa upload.
+chọn `train`; full run kiểm tra đủ 63 hoặc 100 dự đoán test. Các bundle ảnh đầy đủ
+vẫn lưu cục bộ; Kaggle sử dụng bundle nhỏ và tải nguồn trực tiếp như mô tả ở trên.
 
 ### Rà soát trước upload
 
