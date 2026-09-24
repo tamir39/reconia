@@ -125,6 +125,40 @@ def encode_document_for_roberta(
     }
 
 
+WINDOW_POLICY = "all-windows-first-subword-v1"
+
+
+def encode_document_windows(document, tokenizer, label_vocabulary, max_seq_length=512, include_line_items=True):
+    """Cover every OCR word, supervising its first subword exactly once."""
+    texts, boxes, labels = extract_word_bboxes_and_labels(document, label_vocabulary, include_line_items)
+    if not texts:
+        return []
+    encoded = tokenizer(texts, is_split_into_words=True, max_length=max_seq_length,
+                        padding="max_length", truncation=True, return_overflowing_tokens=True,
+                        stride=0, return_tensors="pt")
+    windows, seen = [], set()
+    for i in range(len(encoded["input_ids"])):
+        word_ids = encoded.word_ids(batch_index=i)
+        window_boxes, window_labels, word_indices = [], [], []
+        for word_id in word_ids:
+            window_boxes.append(boxes[word_id] if word_id is not None else [0, 0, 0, 0])
+            first = word_id is not None and word_id not in seen
+            window_labels.append(labels[word_id] if first else -100)
+            word_indices.append(word_id if first else -1)
+            if word_id is not None:
+                seen.add(word_id)
+        if all(idx == -1 for idx in word_indices):
+            continue
+        windows.append({"input_ids": encoded["input_ids"][i],
+                        "attention_mask": encoded["attention_mask"][i],
+                        "bbox": torch.tensor(window_boxes, dtype=torch.long),
+                        "labels": torch.tensor(window_labels, dtype=torch.long),
+                        "word_indices": torch.tensor(word_indices, dtype=torch.long)})
+    if seen != set(range(len(texts))):
+        raise ValueError("Tokenizer failed to cover every OCR word")
+    return windows
+
+
 class RoBERTaInvoiceDataset(Dataset):
     """PyTorch Dataset caching encoded documents for fast batch iteration."""
 
@@ -143,15 +177,17 @@ class RoBERTaInvoiceDataset(Dataset):
         self.include_line_items = include_line_items
 
         self.encoded_items: list[dict[str, torch.Tensor]] = []
-        for doc in documents:
-            encoded = encode_document_for_roberta(
+        for doc_index, doc in enumerate(documents):
+            windows = encode_document_windows(
                 doc,
                 tokenizer=self.tokenizer,
                 label_vocabulary=self.label_vocabulary,
                 max_seq_length=self.max_seq_length,
                 include_line_items=self.include_line_items,
             )
-            self.encoded_items.append(encoded)
+            for encoded in windows:
+                encoded["document_index"] = torch.tensor(doc_index, dtype=torch.long)
+                self.encoded_items.append(encoded)
 
     def __len__(self) -> int:
         return len(self.encoded_items)

@@ -1,5 +1,17 @@
 # Huấn luyện GNN trên Kaggle
 
+## RoBERTa trên cùng DocILE split
+
+Notebook mới: `notebooks/kaggle_roberta_docile.ipynb`, mặc định **RUN_MODE = "train"**. Có một phiên smoke riêng để kiểm tra trước khi bắt đầu thực nghiệm đầy đủ; đọc dòng MODE và số tài liệu trong log để phân biệt.
+
+RoBERTa-base + nhúng bố cục 2D dùng checkpoint chính thức `FacebookAI/roberta-base`, revision `e2da8e2f811d1448a5b465c236feacd80ffbac7b`. Cấu hình ban đầu: 20 epochs, batch 4 × accumulation 4, backbone LR 5e-5, head LR 2e-4, seed 42, patience 5. Mọi từ OCR được xử lý qua các cửa sổ 512 token, mỗi từ nhận một nhãn ở subword đầu tiên; dự đoán được ghép theo chỉ số từ và trang. Không còn cắt bỏ phần cuối tài liệu. Chính sách cửa sổ được lưu cùng checkpoint; số bước mỗi epoch phụ thuộc số cửa sổ, không chỉ số tài liệu.
+
+Best/latest checkpoint lưu kèm tokenizer để có thể nạp lại ngoài phiên Kaggle ban đầu. Bundle dùng chung với GNN; mã được cập nhật bằng dataset version mới. Trọng số backbone được tải trực tiếp từ Hugging Face vào cache tạm. Đầu ra RoBERTa nằm trong thư mục riêng, không ghi đè kết quả GNN.
+
+GNN đã có kết quả được kiểm chứng: entity F1 66,82%, field-value F1 56,87%; xem [bảng kết quả đã kiểm chứng](../reports/verified_comparison.md). Không dùng các báo cáo RoBERTa lịch sử để kết luận so sánh với lần GNN này.
+
+## GNN
+
 Notebook: `notebooks/kaggle_gnn_docile.ipynb`. Lần chạy đầu mặc định `RUN_MODE = "smoke"` để kiểm tra GPU, dữ liệu, train 16 mẫu và nạp lại checkpoint. Sau khi thành công, đổi thành `"train"` và chọn **Save Version → Save & Run All** để chạy toàn bộ. Không dùng điểm smoke test trong báo cáo.
 
 ## Thiết lập

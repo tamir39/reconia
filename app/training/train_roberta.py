@@ -28,8 +28,10 @@ except ImportError:
 
 from app.data import CordAdapter, DocileAdapter, SroieAdapter
 from app.data.paths import WORKSPACE_ROOT
+from app.data.portable import load_adapter
 from app.data.roberta_dataset import (
     RoBERTaInvoiceDataset,
+    WINDOW_POLICY,
     encode_document_for_roberta,
     extract_word_bboxes_and_labels,
 )
@@ -113,6 +115,7 @@ def evaluate_roberta_model(
     all_targets: list[int] = []
     total_val_loss = 0.0
     val_steps = 0
+    document_predictions = [["O"] * len(doc.words) for doc in val_docs]
 
     if profiler:
         profiler.start()
@@ -134,7 +137,11 @@ def evaluate_roberta_model(
             total_val_loss += loss.item()
             val_steps += 1
 
-            preds = torch.argmax(logits, dim=-1)
+            preds = torch.argmax(logits, dim=-1).cpu()
+            for row, doc_index in enumerate(batch["document_index"].tolist()):
+                for position, word_index in enumerate(batch["word_indices"][row].tolist()):
+                    if word_index >= 0:
+                        document_predictions[doc_index][word_index] = inv_vocab.get(int(preds[row, position]), "O")
 
             flat_labels = labels.view(-1).cpu().numpy()
             flat_preds = preds.view(-1).cpu().numpy()
@@ -167,25 +174,10 @@ def evaluate_roberta_model(
     pred_entities_batch: list[list[EntitySpan]] = []
     true_entities_batch: list[list[EntitySpan]] = []
 
-    for doc in val_docs:
-        encoded = encode_document_for_roberta(doc, tokenizer=tokenizer, label_vocabulary=vocab)
-        inp_ids = encoded["input_ids"].unsqueeze(0).to(device)
-        bb = encoded["bbox"].unsqueeze(0).to(device)
-        att_m = encoded["attention_mask"].unsqueeze(0).to(device)
-        lbls = encoded["labels"].cpu().numpy()
-
-        with torch.no_grad():
-            logits = model(inp_ids, bb, att_m)
-            doc_preds = torch.argmax(logits, dim=-1).squeeze(0).cpu().numpy()
-
-        word_texts, _, _ = extract_word_bboxes_and_labels(doc, vocab)
+    for doc_index, doc in enumerate(val_docs):
+        word_texts = [word.text for word in doc.words]
         word_gt_tags, _ = label_document(doc)
-        word_pred_tags = ["O"] * len(word_texts)
-
-        valid_indices = np.where(lbls != -100)[0]
-        for i, tok_idx in enumerate(valid_indices):
-            if i < len(word_texts):
-                word_pred_tags[i] = inv_vocab.get(int(doc_preds[tok_idx]), "O")
+        word_pred_tags = document_predictions[doc_index]
 
         pages = [word.page for word in doc.words]
         gt_ents = extract_entities_from_bio(word_gt_tags, texts=word_texts, pages=pages)
@@ -281,7 +273,7 @@ def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, de
 
     # 1. Load dataset adapter
     adapter_cls = ADAPTERS[dataset_name]
-    adapter: DatasetAdapter = adapter_cls()
+    adapter: DatasetAdapter = load_adapter(dataset_name, adapter_cls)
 
     train_docs = list(adapter.iter_documents("train", limit=args.limit_train))
     val_docs = list(adapter.iter_documents("val", limit=args.limit_val))
@@ -301,6 +293,7 @@ def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, de
     # 3. Tokenizer & Dataset
     model_source = get_default_roberta_model_path()
     tokenizer = AutoTokenizer.from_pretrained(model_source, add_prefix_space=True)
+    tokenizer.save_pretrained(args.save_dir / "tokenizer")
 
     train_dataset = RoBERTaInvoiceDataset(train_docs, tokenizer=tokenizer, label_vocabulary=vocab)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
@@ -357,10 +350,16 @@ def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, de
     best_monitor_val = float("-inf") if args.monitor_metric != "val_loss" else float("inf")
     patience_counter = 0
     train_history: list[dict[str, Any]] = []
+    best_epoch_num = 1
+    best_eval_metrics: dict[str, Any] = {}
 
-    if args.resume and args.resume.exists():
+    if args.resume:
+        if not args.resume.is_file():
+            raise FileNotFoundError(args.resume)
         print(f"Resuming training from checkpoint: {args.resume}")
-        ckpt = torch.load(args.resume, map_location=device)
+        ckpt = torch.load(args.resume, map_location=device, weights_only=False)
+        if ckpt.get("vocabulary") != vocab or ckpt.get("window_policy") != WINDOW_POLICY:
+            raise ValueError("Resume requires the same vocabulary and full-document window policy")
         model.load_state_dict(ckpt["model_state_dict"])
         if "optimizer_state_dict" in ckpt:
             optimizer.load_state_dict(ckpt["optimizer_state_dict"])
@@ -369,6 +368,9 @@ def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, de
         start_epoch = ckpt.get("epoch", 0) + 1
         best_monitor_val = ckpt.get("best_monitor_val", best_monitor_val)
         train_history = ckpt.get("train_history", [])
+        best_epoch_num = ckpt.get("best_epoch", 1)
+        best_eval_metrics = ckpt.get("best_metrics", {})
+        patience_counter = ckpt.get("patience_counter", 0)
         print(f"Resumed at Epoch {start_epoch} with prior best {args.monitor_metric}: {best_monitor_val:.4f}")
 
     is_debug = bool(args.limit_train is not None or args.limit_val is not None)
@@ -417,9 +419,7 @@ def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, de
     print(f"{'Epoch':<6} | {'TrainLoss':<10} | {'ValLoss':<10} | {'Precision':<10} | {'Recall':<10} | {'F1':<10} | {'Latency(ms)':<11}")
     print("=" * 80)
 
-    best_eval_metrics: dict[str, Any] = {}
     val_metrics: dict[str, Any] = {}
-    best_epoch_num = 1
 
     try:
         for epoch in range(start_epoch, args.epochs + 1):
@@ -504,6 +504,9 @@ def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, de
 
             # Unified checkpoint state
             checkpoint_state = {
+                "window_policy": WINDOW_POLICY,
+                "best_metrics": val_metrics if is_improvement else best_eval_metrics,
+                "patience_counter": 0 if is_improvement else patience_counter + 1,
                 "epoch": epoch,
                 "best_epoch": epoch if is_improvement else best_epoch_num,
                 "model_state_dict": model.state_dict(),
@@ -576,6 +579,8 @@ def train_single_roberta_dataset(args: argparse.Namespace, dataset_name: str, de
     # 6. Export comprehensive benchmark reports (Full Training only)
     if not is_debug and (best_eval_metrics or val_metrics) and train_history:
         metadata = {
+            "window_policy": WINDOW_POLICY,
+            "train_windows": len(train_dataset),
             "device": str(device),
             "gpu_name": torch.cuda.get_device_name(device) if device.type == "cuda" else "CPU",
             "train_documents": len(train_docs),

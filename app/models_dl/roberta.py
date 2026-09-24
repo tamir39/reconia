@@ -12,6 +12,7 @@ models (LayoutLMv3, LiLT).
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,8 @@ DEFAULT_LOCAL_PRETRAINED_DIR = Path(__file__).resolve().parents[2] / "checkpoint
 
 def get_default_roberta_model_path() -> str:
     """Return local pre-trained roberta-base path if present, otherwise 'roberta-base'."""
+    if os.environ.get("ROBERTA_MODEL_PATH"):
+        return os.environ["ROBERTA_MODEL_PATH"]
     if DEFAULT_LOCAL_PRETRAINED_DIR.exists() and (DEFAULT_LOCAL_PRETRAINED_DIR / "config.json").exists():
         return str(DEFAULT_LOCAL_PRETRAINED_DIR)
     return "roberta-base"

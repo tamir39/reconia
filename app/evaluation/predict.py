@@ -37,7 +37,7 @@ except ImportError:
 from app.data import CordAdapter, DocileAdapter, SroieAdapter
 from app.data.paths import WORKSPACE_ROOT
 from app.data.portable import load_adapter
-from app.data.roberta_dataset import encode_document_for_roberta, extract_word_bboxes_and_labels
+from app.data.roberta_dataset import encode_document_windows, extract_word_bboxes_and_labels, WINDOW_POLICY
 from app.data.schema import DatasetAdapter, Document
 from app.evaluation.values import compute_value_metrics
 from app.evaluation.metrics import (
@@ -114,37 +114,28 @@ def predict_document_roberta(
     if not word_texts:
         return [], []
 
-    encoded = encode_document_for_roberta(
+    windows = encode_document_windows(
         document=doc,
         tokenizer=tokenizer,
         label_vocabulary=vocab,
         max_seq_length=512,
     )
 
-    input_ids = encoded["input_ids"].unsqueeze(0).to(device)
-    bbox = encoded["bbox"].unsqueeze(0).to(device)
-    attention_mask = encoded["attention_mask"].unsqueeze(0).to(device)
-    lbls = encoded["labels"].numpy()
-
-    with torch.no_grad():
-        out = model(
-            input_ids=input_ids,
-            bbox=bbox,
-            attention_mask=attention_mask,
-        )
-        logits = out[1] if isinstance(out, tuple) else out
-        probs = F.softmax(logits, dim=-1).squeeze(0).cpu().numpy()
-        doc_preds = np.argmax(probs, axis=-1)
-
     word_pred_tags = ["O"] * len(word_texts)
     word_confidences = [1.0] * len(word_texts)
-
-    valid_indices = np.where(lbls != -100)[0]
-    for i, tok_idx in enumerate(valid_indices):
-        if i < len(word_texts):
-            pred_id = int(doc_preds[tok_idx])
-            word_pred_tags[i] = inv_vocab.get(pred_id, "O")
-            word_confidences[i] = float(probs[tok_idx, pred_id])
+    for encoded in windows:
+        with torch.no_grad():
+            out = model(input_ids=encoded["input_ids"].unsqueeze(0).to(device),
+                        bbox=encoded["bbox"].unsqueeze(0).to(device),
+                        attention_mask=encoded["attention_mask"].unsqueeze(0).to(device))
+            logits = out[1] if isinstance(out, tuple) else out
+            probs = F.softmax(logits, dim=-1).squeeze(0).cpu().numpy()
+            doc_preds = np.argmax(probs, axis=-1)
+        for tok_idx, word_idx in enumerate(encoded["word_indices"].tolist()):
+            if word_idx >= 0:
+                pred_id = int(doc_preds[tok_idx])
+                word_pred_tags[word_idx] = inv_vocab.get(pred_id, "O")
+                word_confidences[word_idx] = float(probs[tok_idx, pred_id])
 
     pred_spans = extract_entities_from_bio(
         word_pred_tags, texts=word_texts, pages=[word.page for word in doc.words]
@@ -256,8 +247,10 @@ def run_prediction_pipeline(
         model.load_state_dict(ckpt["model_state_dict"])
         model.to(device)
         model.eval()
+        tokenizer_source = model_path.parent / "tokenizer"
         tokenizer = AutoTokenizer.from_pretrained(
-            config.model_name_or_path or "roberta-base", add_prefix_space=True
+            str(tokenizer_source) if tokenizer_source.is_dir() else config.model_name_or_path or "roberta-base",
+            add_prefix_space=True,
         )
 
     doc_ids = adapter.document_ids(split)
@@ -328,6 +321,8 @@ def run_prediction_pipeline(
         "throughput": perf.get("throughput", 0.0),
         "perf": perf,
     }
+    if detected_model == "roberta":
+        results["window_policy"] = WINDOW_POLICY
 
     if output_json:
         output_json.parent.mkdir(parents=True, exist_ok=True)

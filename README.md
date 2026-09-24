@@ -28,6 +28,8 @@ Xem [quy trình đánh giá](docs/EVALUATION.md) và [kế hoạch giữa kỳ](
 
 Huấn luyện GNN/DocILE trên Kaggle: [notebook](notebooks/kaggle_gnn_docile.ipynb) và [hướng dẫn thiết lập, lưu kết quả, resume](docs/KAGGLE.md).
 
+RoBERTa/DocILE: [notebook huấn luyện đầy đủ](notebooks/kaggle_roberta_docile.ipynb). [Kết quả đã kiểm chứng](reports/verified_comparison.md): GNN test entity F1 66,82%, field-value F1 56,87%; RoBERTa đang chuẩn bị thực nghiệm cùng split.
+
 ### Phân chia dữ liệu thực nghiệm (Train / Val / Test)
 
 Dữ liệu SROIE (`sroie_splits.json`) và DocILE (`docile_splits.json`) được phân chia ngẫu nhiên cố định với `seed=42`, đảm bảo đầy đủ nhãn ground-truth trên cả 3 tập:
