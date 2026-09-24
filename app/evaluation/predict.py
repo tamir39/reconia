@@ -36,6 +36,7 @@ except ImportError:
 
 from app.data import CordAdapter, DocileAdapter, SroieAdapter
 from app.data.paths import WORKSPACE_ROOT
+from app.data.portable import load_adapter
 from app.data.roberta_dataset import encode_document_for_roberta, extract_word_bboxes_and_labels
 from app.data.schema import DatasetAdapter, Document
 from app.evaluation.values import compute_value_metrics
@@ -209,7 +210,7 @@ def run_prediction_pipeline(
     )
 
     adapter_cls = ADAPTERS[dataset_name]
-    adapter = adapter_cls()
+    adapter = load_adapter(dataset_name, adapter_cls)
 
     if split not in adapter.splits():
         raise ValueError(f"Split '{split}' not found in dataset '{dataset_name}'. Available: {adapter.splits()}")

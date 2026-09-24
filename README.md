@@ -26,6 +26,8 @@ GNN và RoBERTa đã có mã nguồn. Bốn mô hình còn lại chưa hiện th
 
 Xem [quy trình đánh giá](docs/EVALUATION.md) và [kế hoạch giữa kỳ](docs/MIDTERM.md). Các kết quả trước ngày 24/09 cần tái lập; GNN cũ dùng hàm băm phụ thuộc tiến trình, nên phải huấn luyện lại trước khi sử dụng với bộ mã hóa mới.
 
+Huấn luyện GNN/DocILE trên Kaggle: [notebook](notebooks/kaggle_gnn_docile.ipynb) và [hướng dẫn thiết lập, lưu kết quả, resume](docs/KAGGLE.md).
+
 ### Phân chia dữ liệu thực nghiệm (Train / Val / Test)
 
 Dữ liệu SROIE (`sroie_splits.json`) và DocILE (`docile_splits.json`) được phân chia ngẫu nhiên cố định với `seed=42`, đảm bảo đầy đủ nhãn ground-truth trên cả 3 tập:

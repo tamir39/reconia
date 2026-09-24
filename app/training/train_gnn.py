@@ -28,6 +28,7 @@ except ImportError:
 
 from app.data import CordAdapter, DocileAdapter, SroieAdapter
 from app.data.schema import DatasetAdapter, Document
+from app.data.portable import load_adapter
 from app.evaluation import (
     InferenceProfiler,
     compute_entity_metrics,
@@ -292,7 +293,7 @@ def train_single_gnn_dataset(args: argparse.Namespace, dataset_name: str, device
 
     # 1. Load Dataset
     adapter_cls = ADAPTERS[dataset_name]
-    adapter: DatasetAdapter = adapter_cls()
+    adapter: DatasetAdapter = load_adapter(dataset_name, adapter_cls)
 
     train_docs = list(adapter.iter_documents("train", limit=args.limit_train))
     val_docs = list(adapter.iter_documents("val", limit=args.limit_val))
