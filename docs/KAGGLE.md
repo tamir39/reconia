@@ -27,7 +27,9 @@ Khi phiên kết thúc đột ngột, checkpoint chỉ có thể khôi phục n�
 
 ```powershell
 python scripts/prepare_kaggle.py --export .cache/week5-export/docile --output .cache/kaggle/upload --owner YOUR_KAGGLE_USERNAME
-python -m kaggle datasets create -p .cache/kaggle/upload
+Push-Location .cache/kaggle/upload
+python -m kaggle datasets create -p .
+Pop-Location
 ```
 
 Không thêm `--public`. Script chỉ đóng gói mã và dữ liệu đã chọn, không lấy `.env`, API key hoặc trọng số. Khi dataset đã tồn tại, tạo version mới thay vì tạo bản trùng. Mã nguồn kèm hash trong bundle là nguồn dùng để train; thay đổi GitHub không tự cập nhật notebook đang chạy.
