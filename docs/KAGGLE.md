@@ -9,11 +9,13 @@ gốc sau làm tròn tọa độ theo định dạng export, không trùng ID gi
 Điểm field-value GNN tái chấm vẫn 56,87%. Lỗi alias `val`/`validation` của CORD không
 ảnh hưởng split `val` chuẩn của DocILE.
 
-API trả về một phiên RoBERTa đã hủy, log đến epoch 11 (val F1 74,19%), không có
-traceback/OOM và vẫn liệt kê best/latest checkpoints. Người dùng xác nhận chạy hai
-phiên và chủ động dừng một phiên; chưa xác minh độc lập trạng thái phiên còn lại.
-Đây chưa phải kết quả test hoàn tất. Lần rà soát này không thay đổi hoặc khởi động
-lại notebook từ xa; không cần train lại GNN vì bản sửa alias của CORD.
+Phiên RoBERTa version 3 bị hủy do người dùng chủ động dừng bản chạy trùng;
+version 2 đã hoàn tất. ZIP tải ngày 25/09 đã được kiểm chứng: 20 epochs, best epoch
+19, val entity F1 74,76%; đủ 500 test, entity F1 79,69%, field-value F1 66,39%.
+CRC toàn ZIP, hash checkpoint/predictions/split/manifest và mã nguồn khớp; điểm
+field-value tái chấm từ nhãn DocILE gốc khớp hoàn toàn. Xem
+[bằng chứng](../reports/runs/roberta_docile_20260925/verification.json).
+Không cần train lại do việc hủy bản chạy trùng hoặc bản sửa alias CORD.
 
 Notebook mới: `notebooks/kaggle_roberta_docile.ipynb`, mặc định **RUN_MODE = "train"**. Có một phiên smoke riêng để kiểm tra trước khi bắt đầu thực nghiệm đầy đủ; đọc dòng MODE và số tài liệu trong log để phân biệt.
 
@@ -21,7 +23,7 @@ RoBERTa-base + nhúng bố cục 2D dùng checkpoint chính thức `FacebookAI/r
 
 Best/latest checkpoint lưu kèm tokenizer để có thể nạp lại ngoài phiên Kaggle ban đầu. Bundle dùng chung với GNN; mã được cập nhật bằng dataset version mới. Trọng số backbone được tải trực tiếp từ Hugging Face vào cache tạm. Đầu ra RoBERTa nằm trong thư mục riêng, không ghi đè kết quả GNN.
 
-GNN đã có kết quả được kiểm chứng: entity F1 66,82%, field-value F1 56,87%; xem [bảng kết quả đã kiểm chứng](../reports/verified_comparison.md). Không dùng các báo cáo RoBERTa lịch sử để kết luận so sánh với lần GNN này.
+GNN đạt entity F1 66,82%, field-value F1 56,87%; RoBERTa đạt 79,69% và 66,39% trên cùng test nội bộ; xem [bảng kết quả đã kiểm chứng](../reports/verified_comparison.md). Các báo cáo SROIE/CORD lịch sử chưa có đủ provenance để đưa vào so sánh đã kiểm chứng.
 
 ## GNN
 

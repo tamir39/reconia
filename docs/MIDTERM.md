@@ -1,4 +1,4 @@
-# Kế hoạch tuần 5 và giữa kỳ — 24/09/2026
+# Kế hoạch tuần 5 và giữa kỳ — 25/09/2026
 
 Tuần 5: 21–27/09. Tuần 6: 28/09–04/10. Theo kế hoạch hiện có, hồ sơ giữa kỳ cần nộp ELIT **trước 30/09**, kèm xác nhận của GVHD. Mốc 43% trong bảng kế hoạch là mục tiêu tuần 5, chưa phải tỷ lệ hoàn thành đã kiểm chứng.
 
@@ -7,7 +7,7 @@ Tuần 5: 21–27/09. Tuần 6: 28/09–04/10. Theo kế hoạch hiện có, h�
 | Hạng mục | Trạng thái và bằng chứng |
 |---|---|
 | Chuẩn hóa dữ liệu | Có adapter cho 3 bộ; đã tải ảnh/nhãn SROIE và CORD-v2 ngày 25/09, xem [chuẩn bị receipt](RECEIPT_PREPARATION.md). Mapping SROIE mới được lưu rõ, chưa đối chiếu mapping cũ của Thịnh |
-| GNN và RoBERTa | GNN/DocILE đã train đủ 20 epochs, test đủ 500 tài liệu: entity F1 66,82%, field-value F1 56,87%, đã đối chiếu hash và tái chấm giá trị trường. RoBERTa đang chuẩn bị chạy Kaggle với toàn bộ cửa sổ tài liệu; các bộ khác còn chờ dữ liệu |
+| GNN và RoBERTa | GNN/DocILE đã train đủ 20 epochs, test đủ 500 tài liệu: entity F1 66,82%, field-value F1 56,87%, đã đối chiếu hash và tái chấm giá trị trường. RoBERTa/DocILE cũng hoàn tất 20 epochs, best epoch 19: entity F1 79,69%, field-value F1 66,39%, đã kiểm tra hash và tái chấm trên cùng 500 test. SROIE/CORD đã chuẩn bị cục bộ, chưa chạy Kaggle |
 | Độ tin cậy | Đã sửa băm GNN, nạp checkpoint, nhãn/trang khi chấm và metadata xuất dự đoán; đang chờ peer review/merge |
 | LayoutLMv3 và LiLT | Chưa hiện thực |
 | Hai VLM | Thịnh đề xuất Qwen2.5-VL và InternVL. Đề xuất thử 3B-Instruct / InternVL2.5-2B; chưa hiện thực hoặc fine-tune |
@@ -17,7 +17,7 @@ Tuần 5: 21–27/09. Tuần 6: 28/09–04/10. Theo kế hoạch hiện có, h�
 ## Ưu tiên đến hết tuần 5
 
 1. **24–25/09: khóa đường chạy đáng tin cậy.** Review/merge PR tích hợp, bàn giao checkpoint và đường dẫn SROIE/CORD, tạo lại export DocILE theo split 4.680/500/500. Không tái sử dụng train export cũ để học trước khi chấm test mới.
-2. **25–27/09: tái chạy và chấm.** GNN/DocILE đã hoàn tất lần baseline mới; tiếp tục RoBERTa/DocILE, sau đó GNN/RoBERTa trên CORD/SROIE khi có dữ liệu. Xuất đủ 500/100/63 tài liệu tương ứng. Lưu metrics sidecar và [bảng so sánh đã kiểm chứng](../reports/verified_comparison.md). Chạy DocILE evaluator cho số liệu mang nhãn chính thức.
+2. **25–27/09: tái chạy và chấm.** GNN và RoBERTa/DocILE đã hoàn tất các lần baseline mới; tiếp theo là smoke trên Kaggle và huấn luyện GNN/RoBERTa trên CORD/SROIE đã chuẩn bị. Xuất đủ 500/100/63 tài liệu tương ứng. Lưu metrics sidecar và [bảng so sánh đã kiểm chứng](../reports/verified_comparison.md). Chạy DocILE evaluator cho số liệu mang nhãn chính thức.
 3. **Trong tuần 5: chốt phạm vi sáu mô hình.** Xác nhận hai VLM, kích thước/checkpoint, tài nguyên chạy, cách prompt/giải mã và bộ dữ liệu bổ sung nếu còn ngoài ba bộ hiện có. Cập nhật lại các dòng kế hoạch đang ghi graph vision/Agent; không tự thay tên hai VLM.
 
 ## Chuẩn bị hồ sơ trước 30/09

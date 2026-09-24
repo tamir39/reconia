@@ -1,0 +1,369 @@
+{
+  "source_archive": "roberta-docile-seed42-v1.zip",
+  "archive_size_bytes": 2476812742,
+  "archive_sha256": "48ad302f55547c6655b3492d432ac37386b140bce1e2613a3895458e0c98d612",
+  "verified_on": "2026-09-25",
+  "zip_crc_ok": true,
+  "files_sha256": {
+    "requirements-freeze.txt": "52972cb9ddbaffdebf764d866ebfb2c28f55b758a3709a07b42bf672c58d2dba",
+    "run-config.json": "91968fb6374059a6c96ab12ddadd504b5bfaf04fead1fa8ac9f8e4df3c769c64",
+    "checkpoints/roberta_docile_best.pt": "4c5ce5ee12a81b2038d96b50075c1e1532d7ac1744c2425981bfebb4c02f11b0",
+    "checkpoints/roberta_docile_latest.pt": "99f66b709cb212505f60f81edda27a9e8e0b524514b8370cbcac86e49b43c61f",
+    "checkpoints/tokenizer/tokenizer_config.json": "38b4f61b73aab22f9c2bb01d0f2be28d745e1db57ef7fcfddfa33c6ac8265444",
+    "checkpoints/tokenizer/special_tokens_map.json": "06e405a36dfe4b9604f484f6a1e619af1a7f7d09e34a8555eb0b77b66318067f",
+    "checkpoints/tokenizer/tokenizer.json": "8954f883d55d8ef262cb85ca609f319c27705dc70a9e571300991c4d86282ce2",
+    "checkpoints/tokenizer/vocab.json": "ed19656ea1707df69134c4af35c8ceda2cc9860bf2c3495026153a133670ab5e",
+    "checkpoints/tokenizer/merges.txt": "1ce1664773c50f3e0cc8842619a93edc4624525b728b188a9e0be33b7726adc5",
+    "reports/roberta_docile_report.md": "b7864ec5ea3b074d7a3876f0695dbfb97d36511845f3df0531b419ae6c83543d",
+    "reports/figures/roberta_docile_training_curves.png": "729fcd8ac8c1b65325cb24b137a7b7bf035416e5c04053948b201dc36c9e22b7",
+    "reports/predictions/predictions_roberta_docile_test.metrics.json": "9551a8cf5225a5a2e45c372686b3ebefee8ca3733f7d8529fe258ec19ded3516",
+    "reports/predictions/predictions_roberta_docile_test.json": "b0f4944b26257679ca536b65b9c07467dd876f8214fd3352c59fca8c987db4e4",
+    "reports/metrics/roberta_docile_history.csv": "84c0d951301bbc0b08216ec74cafa13f72f7d877654e3dd47ed8e4bb926dd0d5",
+    "reports/metrics/roberta_docile_results.json": "412938f894d96826cff4e3744ae1b43477d387de2b788e9432401b37b0bbd074",
+    "reports/logs/train_roberta_docile_20260924_135052.log": "d1bd567a1c8e5b4627f25877e91155c70c109acc771cdf22951f93fc60e12a32"
+  },
+  "checkpoint_hash_matches": true,
+  "prediction_hash_matches": true,
+  "split_hash_matches": true,
+  "export_manifest_matches": true,
+  "uploaded_source_hashes_match": true,
+  "test_ids_match": true,
+  "train_test_overlap": 0,
+  "val_test_overlap": 0,
+  "num_test_documents": 500,
+  "completed_epochs": 20,
+  "best_epoch": 19,
+  "best_validation_entity_f1": 0.7475737423234798,
+  "test_entity_f1": 0.7968962770740731,
+  "field_value_metrics_independently_recomputed": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.6702462414464812,
+    "recall": 0.6576973974415528,
+    "f1": 0.6639125272115575,
+    "support": 20403,
+    "macro_f1": 0.4844440559172037,
+    "per_type": {
+      "account_num": {
+        "precision": 0.75,
+        "recall": 0.5294117647058824,
+        "f1": 0.6206896551724138,
+        "support": 17
+      },
+      "amount_due": {
+        "precision": 0.7760416666666666,
+        "recall": 0.5643939393939394,
+        "f1": 0.6535087719298246,
+        "support": 528
+      },
+      "amount_paid": {
+        "precision": 0.4772727272727273,
+        "recall": 0.5,
+        "f1": 0.4883720930232558,
+        "support": 42
+      },
+      "amount_total_gross": {
+        "precision": 0.6840579710144927,
+        "recall": 0.47484909456740443,
+        "f1": 0.5605700712589073,
+        "support": 497
+      },
+      "amount_total_net": {
+        "precision": 0.45161290322580644,
+        "recall": 0.345679012345679,
+        "f1": 0.3916083916083916,
+        "support": 81
+      },
+      "amount_total_tax": {
+        "precision": 0.7352941176470589,
+        "recall": 0.45454545454545453,
+        "f1": 0.5617977528089888,
+        "support": 55
+      },
+      "bank_num": {
+        "precision": 0.45454545454545453,
+        "recall": 0.29411764705882354,
+        "f1": 0.35714285714285715,
+        "support": 17
+      },
+      "bic": {
+        "precision": 0.75,
+        "recall": 0.42857142857142855,
+        "f1": 0.5454545454545454,
+        "support": 7
+      },
+      "currency_code_amount_due": {
+        "precision": 0.5909090909090909,
+        "recall": 0.07738095238095238,
+        "f1": 0.1368421052631579,
+        "support": 336
+      },
+      "customer_billing_address": {
+        "precision": 0.03929273084479371,
+        "recall": 0.044543429844097995,
+        "f1": 0.04175365344467641,
+        "support": 449
+      },
+      "customer_billing_name": {
+        "precision": 0.6223404255319149,
+        "recall": 0.6585365853658537,
+        "f1": 0.6399270738377393,
+        "support": 533
+      },
+      "customer_delivery_address": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 23
+      },
+      "customer_delivery_name": {
+        "precision": 0.5555555555555556,
+        "recall": 0.6,
+        "f1": 0.5769230769230769,
+        "support": 25
+      },
+      "customer_id": {
+        "precision": 0.7415730337078652,
+        "recall": 0.7333333333333333,
+        "f1": 0.7374301675977654,
+        "support": 180
+      },
+      "customer_order_id": {
+        "precision": 0.559322033898305,
+        "recall": 0.6,
+        "f1": 0.5789473684210527,
+        "support": 55
+      },
+      "customer_other_address": {
+        "precision": 0.06896551724137931,
+        "recall": 0.08333333333333333,
+        "f1": 0.07547169811320754,
+        "support": 24
+      },
+      "customer_other_name": {
+        "precision": 0.4788732394366197,
+        "recall": 0.5190839694656488,
+        "f1": 0.4981684981684982,
+        "support": 131
+      },
+      "customer_registration_id": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "customer_tax_id": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "date_due": {
+        "precision": 0.9452054794520548,
+        "recall": 0.8846153846153846,
+        "f1": 0.9139072847682119,
+        "support": 78
+      },
+      "date_issue": {
+        "precision": 0.8524590163934426,
+        "recall": 0.8462929475587704,
+        "f1": 0.8493647912885662,
+        "support": 553
+      },
+      "document_id": {
+        "precision": 0.8102836879432624,
+        "recall": 0.8234234234234235,
+        "f1": 0.8168007149240393,
+        "support": 555
+      },
+      "line_item_amount_gross": {
+        "precision": 0.7536436295251528,
+        "recall": 0.7673528003829584,
+        "f1": 0.7604364326375711,
+        "support": 2089
+      },
+      "line_item_amount_net": {
+        "precision": 0.6184971098265896,
+        "recall": 0.27365728900255754,
+        "f1": 0.37943262411347517,
+        "support": 391
+      },
+      "line_item_code": {
+        "precision": 0.5558475689881734,
+        "recall": 0.5388535031847134,
+        "f1": 0.5472186287192755,
+        "support": 785
+      },
+      "line_item_currency": {
+        "precision": 0.5619834710743802,
+        "recall": 0.85,
+        "f1": 0.6766169154228856,
+        "support": 80
+      },
+      "line_item_date": {
+        "precision": 0.8035939470365699,
+        "recall": 0.8582491582491583,
+        "f1": 0.8300227938782155,
+        "support": 2970
+      },
+      "line_item_description": {
+        "precision": 0.5105857445306986,
+        "recall": 0.573069306930693,
+        "f1": 0.5400261242769173,
+        "support": 2525
+      },
+      "line_item_discount_rate": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      },
+      "line_item_hts_number": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "line_item_order_id": {
+        "precision": 0.75,
+        "recall": 0.10714285714285714,
+        "f1": 0.1875,
+        "support": 28
+      },
+      "line_item_person_name": {
+        "precision": 0.5,
+        "recall": 0.4222222222222222,
+        "f1": 0.4578313253012048,
+        "support": 45
+      },
+      "line_item_position": {
+        "precision": 0.7873918417799752,
+        "recall": 0.6698212407991588,
+        "f1": 0.7238636363636364,
+        "support": 951
+      },
+      "line_item_quantity": {
+        "precision": 0.8756503642039543,
+        "recall": 0.8110843373493976,
+        "f1": 0.8421315986990243,
+        "support": 2075
+      },
+      "line_item_tax": {
+        "precision": 0.55,
+        "recall": 0.55,
+        "f1": 0.55,
+        "support": 20
+      },
+      "line_item_tax_rate": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "line_item_unit_price_gross": {
+        "precision": 0.8018575851393189,
+        "recall": 0.8283582089552238,
+        "f1": 0.8148925013109596,
+        "support": 1876
+      },
+      "line_item_unit_price_net": {
+        "precision": 0.5061728395061729,
+        "recall": 0.3445378151260504,
+        "f1": 0.41,
+        "support": 238
+      },
+      "line_item_units_of_measure": {
+        "precision": 0.4375,
+        "recall": 0.4745762711864407,
+        "f1": 0.45528455284552843,
+        "support": 59
+      },
+      "line_item_weight": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "order_id": {
+        "precision": 0.6876971608832808,
+        "recall": 0.7465753424657534,
+        "f1": 0.715927750410509,
+        "support": 292
+      },
+      "payment_reference": {
+        "precision": 0.8,
+        "recall": 0.47058823529411764,
+        "f1": 0.5925925925925926,
+        "support": 17
+      },
+      "payment_terms": {
+        "precision": 0.6181818181818182,
+        "recall": 0.6903553299492385,
+        "f1": 0.6522781774580336,
+        "support": 197
+      },
+      "tax_detail_gross": {
+        "precision": 0.47368421052631576,
+        "recall": 0.16666666666666666,
+        "f1": 0.2465753424657534,
+        "support": 54
+      },
+      "tax_detail_net": {
+        "precision": 0.4864864864864865,
+        "recall": 0.3333333333333333,
+        "f1": 0.3956043956043956,
+        "support": 54
+      },
+      "tax_detail_rate": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "support": 6
+      },
+      "tax_detail_tax": {
+        "precision": 0.6666666666666666,
+        "recall": 0.32142857142857145,
+        "f1": 0.43373493975903615,
+        "support": 56
+      },
+      "vendor_address": {
+        "precision": 0.07433380084151472,
+        "recall": 0.09013605442176871,
+        "f1": 0.08147578785549578,
+        "support": 588
+      },
+      "vendor_email": {
+        "precision": 0.23214285714285715,
+        "recall": 0.2549019607843137,
+        "f1": 0.24299065420560748,
+        "support": 51
+      },
+      "vendor_name": {
+        "precision": 0.5815602836879432,
+        "recall": 0.6269113149847095,
+        "f1": 0.6033848417954378,
+        "support": 654
+      },
+      "vendor_order_id": {
+        "precision": 0.7142857142857143,
+        "recall": 0.5357142857142857,
+        "f1": 0.6122448979591837,
+        "support": 28
+      },
+      "vendor_registration_id": {
+        "precision": 1.0,
+        "recall": 0.8333333333333334,
+        "f1": 0.9090909090909091,
+        "support": 6
+      },
+      "vendor_tax_id": {
+        "precision": 0.45588235294117646,
+        "recall": 0.484375,
+        "f1": 0.4696969696969697,
+        "support": 64
+      }
+    },
+    "num_documents": 500
+  },
+  "checkpoint_reload_performed": false,
+  "verification_scope": "ZIP CRC and SHA-256 for every file; artifact provenance; complete split membership; raw DocILE ground-truth field-value rescore. Entity F1 is the exported run metric, not recomputed inference."
+}
