@@ -28,7 +28,7 @@ Xem [quy trình đánh giá](docs/EVALUATION.md) và [kế hoạch giữa kỳ](
 
 Huấn luyện GNN/DocILE trên Kaggle: [notebook](notebooks/kaggle_gnn_docile.ipynb) và [hướng dẫn thiết lập, lưu kết quả, resume](docs/KAGGLE.md).
 
-RoBERTa/DocILE: [notebook huấn luyện đầy đủ](notebooks/kaggle_roberta_docile.ipynb). [Kết quả đã kiểm chứng](reports/verified_comparison.md): GNN test entity F1 66,82%, field-value F1 56,87%; RoBERTa đang chuẩn bị thực nghiệm cùng split.
+RoBERTa/DocILE: [notebook huấn luyện đầy đủ](notebooks/kaggle_roberta_docile.ipynb). [Kết quả đã kiểm chứng](reports/verified_comparison.md): GNN test entity F1 66,82%, field-value F1 56,87%; RoBERTa đang được huấn luyện trên Kaggle với cùng split.
 
 ### Phân chia dữ liệu thực nghiệm (Train / Val / Test)
 
