@@ -1,0 +1,11 @@
+{
+  "source_archive": "gnn-docile-seed42-v1.zip",
+  "archive_sha256": "ae6941bf01fa90dd8180b185597fbe2429e802acc506cfbe52cde563a1741e9b",
+  "zip_crc_ok": true,
+  "verified_on": "2026-09-24",
+  "checkpoint_hash_matches": true,
+  "prediction_hash_matches": true,
+  "test_ids_match": true,
+  "train_test_overlap": 0,
+  "field_value_f1_independently_recomputed": 0.5687390437768652
+}

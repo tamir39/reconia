@@ -46,6 +46,8 @@ Kiểm tra schema và tách trường KILE theo yêu cầu upstream trước khi
 
 ## Trạng thái bằng chứng hiện tại
 
+Cập nhật sau lần huấn luyện Kaggle ngày 24/09: GNN/DocILE đã có đầy đủ 500 dự đoán test, hash khớp và điểm field-value được tính lại độc lập. Entity F1 66,82%; field-value F1 56,87%. [Bảng đã kiểm chứng](../reports/verified_comparison.md) là nguồn cho tiến độ hiện tại; phần dưới mô tả phát hiện ở các bản lịch sử trước khi chạy lại.
+
 Các báo cáo do Thịnh đẩy ngày 21–22/09 có giá trị tham khảo, chưa được tái lập độc lập. Ba file dự đoán GNN và file RoBERTa/SROIE chỉ có 2 tài liệu; không chứng minh đánh giá toàn bộ test. RoBERTa/CORD có 100 và RoBERTa/DocILE có 500 tài liệu, nhưng vẫn cần checkpoint và tái chấm bằng quy trình đã sửa. Không sửa hoặc suy đoán lại các điểm số cũ.
 
 Kiểm tra GPU cục bộ với 16 train / 4 val chỉ xác nhận đường chạy, không phải kết quả thực nghiệm để đưa vào kết luận. Các bước còn thiếu được ghi trong [MIDTERM.md](MIDTERM.md).
