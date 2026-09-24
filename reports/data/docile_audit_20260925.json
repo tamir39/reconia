@@ -1,0 +1,76 @@
+{
+  "date": "2026-09-25",
+  "remote_bundle_matches_run_config": true,
+  "source_hashes_verified": true,
+  "all_export_documents_match_raw_source": true,
+  "split_overlap": 0,
+  "splits": {
+    "train": {
+      "documents": 4680,
+      "words": 1369100,
+      "fields": 192074,
+      "multipage_documents": 1183,
+      "empty_ocr_documents": 0
+    },
+    "val": {
+      "documents": 500,
+      "words": 149954,
+      "fields": 16505,
+      "multipage_documents": 105,
+      "empty_ocr_documents": 0
+    },
+    "test": {
+      "documents": 500,
+      "words": 146795,
+      "fields": 20403,
+      "multipage_documents": 131,
+      "empty_ocr_documents": 0
+    }
+  },
+  "run_status_scope": "API-reported saved version cancelled by user; other live version not yet independently verified",
+  "tokenizer_source": "saved Kaggle full-run tokenizer",
+  "uploaded_source_used": true,
+  "window_coverage_sample": {
+    "train": {
+      "documents_checked": 20,
+      "ocr_words_covered_once": 30851,
+      "windows": 103,
+      "includes_10_longest_documents": true
+    },
+    "val": {
+      "documents_checked": 20,
+      "ocr_words_covered_once": 26306,
+      "windows": 90,
+      "includes_10_longest_documents": true
+    },
+    "test": {
+      "documents_checked": 20,
+      "ocr_words_covered_once": 23182,
+      "windows": 84,
+      "includes_10_longest_documents": true
+    }
+  },
+  "gnn_archive_integrity": true,
+  "gnn_full_test_documents": 500,
+  "gnn_field_value_f1_recomputed": 0.5687390437768652,
+  "saved_roberta_run": {
+    "api_status": "CANCEL_ACKNOWLEDGED",
+    "user_explanation": "Two versions were running; user stopped one",
+    "last_logged_epoch": 11,
+    "last_validation_f1": 0.7418535222003431,
+    "tracebacks_in_retrieved_logs": 0,
+    "out_of_memory_in_retrieved_logs": 0,
+    "best_and_latest_checkpoints_listed_by_kaggle": true,
+    "checkpoint_weights_downloaded_or_validated": false,
+    "completed_test_results_present": false,
+    "other_live_version_independently_verified": false
+  },
+  "cord_alias_bug_affects_standard_docile_val": false,
+  "remote_notebook_code_matches_local_after_normalizing_source_format": true,
+  "scope_limits": [
+    "All exported documents checked against source; tokenizer coverage checked on 60 selected documents, not all 5680",
+    "Saved-version logs are available; API/browser inspection did not independently establish the other live version status",
+    "GNN field-value score independently recomputed; official DocILE localization scoring is separate",
+    "No remote run was changed, cancelled, or restarted"
+  ]
+}

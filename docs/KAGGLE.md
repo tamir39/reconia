@@ -2,6 +2,19 @@
 
 ## RoBERTa trên cùng DocILE split
 
+Rà soát ngày 25/09: [bằng chứng DocILE](../reports/data/docile_audit_20260925.json).
+Bundle tải lại từ Kaggle khớp run config và mã nguồn; cả 5.680 tài liệu khớp OCR/nhãn
+gốc sau làm tròn tọa độ theo định dạng export, không trùng ID giữa split. Tokenizer
+đã lưu phủ mỗi từ đúng một lần trên 60 mẫu (gồm 10 tài liệu dài nhất mỗi split).
+Điểm field-value GNN tái chấm vẫn 56,87%. Lỗi alias `val`/`validation` của CORD không
+ảnh hưởng split `val` chuẩn của DocILE.
+
+API trả về một phiên RoBERTa đã hủy, log đến epoch 11 (val F1 74,19%), không có
+traceback/OOM và vẫn liệt kê best/latest checkpoints. Người dùng xác nhận chạy hai
+phiên và chủ động dừng một phiên; chưa xác minh độc lập trạng thái phiên còn lại.
+Đây chưa phải kết quả test hoàn tất. Lần rà soát này không thay đổi hoặc khởi động
+lại notebook từ xa; không cần train lại GNN vì bản sửa alias của CORD.
+
 Notebook mới: `notebooks/kaggle_roberta_docile.ipynb`, mặc định **RUN_MODE = "train"**. Có một phiên smoke riêng để kiểm tra trước khi bắt đầu thực nghiệm đầy đủ; đọc dòng MODE và số tài liệu trong log để phân biệt.
 
 RoBERTa-base + nhúng bố cục 2D dùng checkpoint chính thức `FacebookAI/roberta-base`, revision `e2da8e2f811d1448a5b465c236feacd80ffbac7b`. Cấu hình ban đầu: 20 epochs, batch 4 × accumulation 4, backbone LR 5e-5, head LR 2e-4, seed 42, patience 5. Mọi từ OCR được xử lý qua các cửa sổ 512 token, mỗi từ nhận một nhãn ở subword đầu tiên; dự đoán được ghép theo chỉ số từ và trang. Không còn cắt bỏ phần cuối tài liệu. Chính sách cửa sổ được lưu cùng checkpoint; số bước mỗi epoch phụ thuộc số cửa sổ, không chỉ số tài liệu.
