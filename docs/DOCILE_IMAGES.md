@@ -8,7 +8,7 @@ Có 1.419 tài liệu nhiều trang. Không tạo lại split hoặc chạy OCR 
 
 Đã render và kiểm chứng đủ 7.394 trang ngày 25/09/2026; 133 tests passed.
 [Bằng chứng chuẩn bị](../reports/data/docile_images_20260925.json).
-Chưa upload bundle ảnh hoặc chạy GPU DocILE LayoutLMv3.
+Bundle ảnh version 1 đã upload và xác nhận private. Smoke GPU version 1 đã qua train/reload/inference; source, manifest ảnh, hash predictions, ID val và field-value đã kiểm chứng cục bộ. Full version 2 đang chạy trên Tesla T4 với đầy đủ 4.680 train / 500 val / 500 test. Chưa có kết quả full run. Xem [bằng chứng Kaggle](../reports/data/layoutlmv3_docile_kaggle_20260925.json).
 
 Không có toàn bộ tài liệu render giống hệt nhau giữa các split. Có **6 nhóm trang
 giống hệt nhau qua biên split**: năm nhóm không có trường được chú giải; một mẫu
@@ -75,5 +75,4 @@ Tiny LayoutLMv3 chạy hết train → reload → test cho cả receipt và DocI
 Kiểm tra trực quan mẫu thực tế bằng overlay OCR, gồm tài liệu nhiều trang;
 chỉ sample ảnh được xem bằng mắt, không khẳng định đã xem trực quan mọi trang.
 
-Bundle ảnh cần được cho phép upload riêng: lần cho phép DocILE OCR trước đó
-không bao gồm ảnh hóa đơn. Chuẩn bị cục bộ không tự upload hoặc khởi chạy Kaggle.
+Người dùng đã cho phép riêng việc upload ảnh, notebook private, smoke rồi full nếu smoke qua. Dataset và notebook private đã được đọc lại để xác nhận; không public hoặc gửi email.

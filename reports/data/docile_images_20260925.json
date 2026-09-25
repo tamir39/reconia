@@ -1,7 +1,7 @@
 {
   "date": "2026-09-25",
   "dataset": "docile",
-  "status": "prepared_locally_not_uploaded",
+  "status": "uploaded_privately_full_run_running",
   "image_policy": "poppler-full-page-rgb-png-longest1600-v1",
   "image_manifest_sha256": "d082dd30d5473e34af6c957797fa9f749a7d998299796c0754a182afbb5fcbcc",
   "export_manifest_sha256": "15a88e5fcc429358024f6270e26b439f5db01aec6f88d3aca84b749e4eab9915",
@@ -503,14 +503,13 @@
   "notebook_default": "smoke",
   "notebook_python_cells_compile": true,
   "notebook_sha256": "c64b4e2f033034232f4a4ac6a72231eac7ad6aec233d77fd84a9fa186d0eb1f4",
-  "kaggle_uploaded": false,
-  "gpu_smoke_passed": false,
-  "full_training_started": false,
+  "kaggle_uploaded": true,
+  "gpu_smoke_passed": true,
+  "full_training_started": true,
   "limitations": [
     "Visual QA samples only; all pages received structural/hash checks.",
     "Internal split and scores, not official DocILE evaluation.",
     "Rendered PNG longest edge is 1600; original PDFs remain unchanged.",
-    "Private image upload needs authorization beyond the previous OCR-only upload.",
     "Six groups of identical rendered pages cross split boundaries. One shared page template has annotated vendor/payment fields; this is pre-existing overlap in the fixed DocILE split, not a new split introduced by image preparation. Preserve the split for baseline comparability and disclose overlap; do not call this benchmark page-disjoint."
   ],
   "duplicate_page_analysis": [
@@ -630,5 +629,10 @@
     }
   },
   "upload_bundle_bytes": 1845425512,
-  "bundle_zip_crc_and_archived_image_hashes_verified": true
+  "bundle_zip_crc_and_archived_image_hashes_verified": true,
+  "kaggle_dataset": "phvngtngtm/reconia-docile-layoutlmv3-training-bundle",
+  "kaggle_dataset_version": 1,
+  "kaggle_private_verified": true,
+  "image_upload_authorized": true,
+  "full_training_submitted": true
 }

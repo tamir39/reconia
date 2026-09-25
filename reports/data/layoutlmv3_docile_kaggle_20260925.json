@@ -1,0 +1,70 @@
+{
+  "date": "2026-09-25",
+  "dataset": "phvngtngtm/reconia-docile-layoutlmv3-training-bundle",
+  "dataset_version": 1,
+  "is_private": true,
+  "image_manifest_sha256": "d082dd30d5473e34af6c957797fa9f749a7d998299796c0754a182afbb5fcbcc",
+  "source_bundle_sha256": "a299ec98eb6c6a760bcb01351e440017404ab098c8f35d0cfc12f9efbebf4c95",
+  "smoke_run": {
+    "version": 1,
+    "is_private": true,
+    "gpu_enabled": true,
+    "cell_types_and_sources_match": true,
+    "kaggle_added_cell_ids": true,
+    "submitted_notebook_sha256": "c64b4e2f033034232f4a4ac6a72231eac7ad6aec233d77fd84a9fa186d0eb1f4",
+    "status": "complete",
+    "notebook": "phvngtngtm/reconia-layoutlmv3-docile",
+    "train_documents": 8,
+    "validation_documents": 4,
+    "epochs": 1,
+    "gpu": "Tesla T4",
+    "fresh_process_checkpoint_reload_passed": true,
+    "source_hashes_verified": true,
+    "image_manifest_verified": true,
+    "prediction_hash_verified": true,
+    "val_split_verified": true,
+    "field_value_metrics_independently_recomputed": true
+  },
+  "full_run": {
+    "status": "running",
+    "max_epochs": 20,
+    "patience": 5,
+    "seed": 42,
+    "batch_size": 2,
+    "batch_accum": 8,
+    "counts": {
+      "train": 4680,
+      "val": 500,
+      "test": 500
+    },
+    "version": 2,
+    "is_private": true,
+    "gpu_enabled": true,
+    "cell_types_and_sources_match": true,
+    "mode": "train",
+    "submitted_notebook_sha256": "4d07b0347b04609baca4ca53b0749bb1fcd097e251901b4d590fb5aabec9e19c",
+    "notebook": "phvngtngtm/reconia-layoutlmv3-docile",
+    "gpu": "Tesla T4",
+    "input_validation_confirmed": true,
+    "full_training_command_confirmed": true,
+    "training_loop_started": true,
+    "launch_log_sha256": "15e32926f23683034d96fc4ad32786ccb249f21ced4474cf14ddc84c85d2dcc5",
+    "launch_log_local_path": ".cache/kaggle/layoutlmv3-docile-full-launch-log.json",
+    "prepared_windows": {
+      "train": 8800,
+      "val": 915
+    },
+    "completed_epochs_observed": 0
+  },
+  "limitations": [
+    "DocILE internal split, not official evaluator scores.",
+    "Existing repeated pages across splits are documented in docile_images_20260925.json.",
+    "No full-run results yet."
+  ],
+  "monitor": {
+    "automation_id": "check-layoutlmv3-training",
+    "interval_minutes": 10,
+    "status": "active",
+    "notifies_on": "completion, failure or actionable problem"
+  }
+}

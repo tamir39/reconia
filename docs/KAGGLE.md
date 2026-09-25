@@ -8,7 +8,7 @@ Full version 2 của cả SROIE và CORD đã hoàn tất và kiểm chứng; xe
 
 DocILE có [notebook ảnh riêng](../notebooks/kaggle_layoutlmv3_docile.ipynb), mặc định smoke.
 Xem [quy trình render và kiểm chứng](DOCILE_IMAGES.md); bundle này cần ảnh toàn trang,
-không tự thay ảnh thiếu bằng trang trắng. Chưa có run GPU DocILE LayoutLMv3.
+không tự thay ảnh thiếu bằng trang trắng. DocILE smoke version 1 đã qua kiểm chứng; full version 2 đang chạy private trên Tesla T4, chưa có kết quả full run.
 
 ## SROIE và CORD
 
