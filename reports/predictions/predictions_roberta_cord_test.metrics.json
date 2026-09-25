@@ -1,0 +1,333 @@
+{
+  "model": "ROBERTA",
+  "dataset": "cord",
+  "split": "test",
+  "source_split": "test",
+  "num_documents": 100,
+  "expected_num_documents": 100,
+  "complete": true,
+  "protocol": "ocr-bio-exact-span-v2",
+  "split_sha256": "4a4bfd6d2acaf19c227fbea34cc86d02a3bf9fdbe67b1c76b7b07f75ed5eb35f",
+  "checkpoint_sha256": "0cb582aa3781b1440e0b89ceffd94f0a648c27f3b8d6087ffff476f346209478",
+  "has_ground_truth": true,
+  "latency": 78.70193152999946,
+  "throughput": 12.706168458125095,
+  "perf": {
+    "elapsed_sec": 7.870193152999946,
+    "latency": 78.70193152999946,
+    "throughput": 12.706168458125095
+  },
+  "window_policy": "all-windows-first-subword-v1",
+  "prediction_sha256": "3ee119b28750c6d23cfbd458559c10fe458b2e7885bfcb021742349275e5d96e",
+  "precision": 0.9171062547098718,
+  "recall": 0.9226686884003032,
+  "f1": 0.9198790627362056,
+  "entity_metrics": {
+    "precision": 0.9171062547098718,
+    "recall": 0.9226686884003032,
+    "f1": 0.9198790627362056,
+    "total_true_entities": 1319,
+    "total_pred_entities": 1327,
+    "per_type": {
+      "menu.cnt": {
+        "precision": 0.9683257918552036,
+        "recall": 0.9727272727272728,
+        "f1": 0.9705215419501134,
+        "support": 220
+      },
+      "menu.discountprice": {
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8000000000000002,
+        "support": 10
+      },
+      "menu.etc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 3
+      },
+      "menu.itemsubtotal": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "menu.nm": {
+        "precision": 0.9212598425196851,
+        "recall": 0.9285714285714286,
+        "f1": 0.924901185770751,
+        "support": 252
+      },
+      "menu.num": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11
+      },
+      "menu.price": {
+        "precision": 0.9523809523809523,
+        "recall": 0.975609756097561,
+        "f1": 0.963855421686747,
+        "support": 246
+      },
+      "menu.sub.cnt": {
+        "precision": 0.8421052631578947,
+        "recall": 0.9411764705882353,
+        "f1": 0.8888888888888888,
+        "support": 17
+      },
+      "menu.sub.nm": {
+        "precision": 0.6590909090909091,
+        "recall": 0.8055555555555556,
+        "f1": 0.7250000000000001,
+        "support": 36
+      },
+      "menu.sub.price": {
+        "precision": 0.8571428571428571,
+        "recall": 0.9,
+        "f1": 0.8780487804878048,
+        "support": 20
+      },
+      "menu.unitprice": {
+        "precision": 0.9090909090909091,
+        "recall": 0.8955223880597015,
+        "f1": 0.9022556390977443,
+        "support": 67
+      },
+      "sub_total.discount_price": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7
+      },
+      "sub_total.etc": {
+        "precision": 0.9166666666666666,
+        "recall": 0.8461538461538461,
+        "f1": 0.8799999999999999,
+        "support": 13
+      },
+      "sub_total.service_price": {
+        "precision": 0.8333333333333334,
+        "recall": 0.7692307692307693,
+        "f1": 0.8,
+        "support": 13
+      },
+      "sub_total.subtotal_price": {
+        "precision": 0.9402985074626866,
+        "recall": 0.9264705882352942,
+        "f1": 0.9333333333333335,
+        "support": 68
+      },
+      "sub_total.tax_price": {
+        "precision": 0.9333333333333333,
+        "recall": 0.9130434782608695,
+        "f1": 0.9230769230769231,
+        "support": 46
+      },
+      "total.cashprice": {
+        "precision": 0.9117647058823529,
+        "recall": 0.8611111111111112,
+        "f1": 0.8857142857142858,
+        "support": 72
+      },
+      "total.changeprice": {
+        "precision": 0.847457627118644,
+        "recall": 0.8771929824561403,
+        "f1": 0.8620689655172413,
+        "support": 57
+      },
+      "total.creditcardprice": {
+        "precision": 0.9375,
+        "recall": 0.8823529411764706,
+        "f1": 0.9090909090909091,
+        "support": 17
+      },
+      "total.emoneyprice": {
+        "precision": 0.3333333333333333,
+        "recall": 0.5,
+        "f1": 0.4,
+        "support": 2
+      },
+      "total.menuqty_cnt": {
+        "precision": 0.9032258064516129,
+        "recall": 0.9655172413793104,
+        "f1": 0.9333333333333333,
+        "support": 29
+      },
+      "total.menutype_cnt": {
+        "precision": 0.8333333333333334,
+        "recall": 0.7142857142857143,
+        "f1": 0.7692307692307692,
+        "support": 7
+      },
+      "total.total_etc": {
+        "precision": 0.16666666666666666,
+        "recall": 0.3333333333333333,
+        "f1": 0.2222222222222222,
+        "support": 3
+      },
+      "total.total_price": {
+        "precision": 0.9484536082474226,
+        "recall": 0.9484536082474226,
+        "f1": 0.9484536082474226,
+        "support": 97
+      }
+    }
+  },
+  "value_metrics": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.9344385832705351,
+    "recall": 0.9472880061115355,
+    "f1": 0.9408194233687405,
+    "support": 1309,
+    "macro_f1": 0.7945780819818481,
+    "per_type": {
+      "menu.cnt": {
+        "precision": 0.9683257918552036,
+        "recall": 0.9727272727272728,
+        "f1": 0.9705215419501134,
+        "support": 220
+      },
+      "menu.discountprice": {
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "support": 10
+      },
+      "menu.etc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 3
+      },
+      "menu.itemsubtotal": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "menu.nm": {
+        "precision": 0.9251968503937008,
+        "recall": 0.9362549800796812,
+        "f1": 0.9306930693069307,
+        "support": 251
+      },
+      "menu.num": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11
+      },
+      "menu.price": {
+        "precision": 0.9642857142857143,
+        "recall": 0.9878048780487805,
+        "f1": 0.9759036144578314,
+        "support": 246
+      },
+      "menu.sub.cnt": {
+        "precision": 0.8421052631578947,
+        "recall": 0.9411764705882353,
+        "f1": 0.8888888888888888,
+        "support": 17
+      },
+      "menu.sub.nm": {
+        "precision": 0.6590909090909091,
+        "recall": 0.8055555555555556,
+        "f1": 0.725,
+        "support": 36
+      },
+      "menu.sub.price": {
+        "precision": 0.8571428571428571,
+        "recall": 0.9,
+        "f1": 0.8780487804878049,
+        "support": 20
+      },
+      "menu.unitprice": {
+        "precision": 0.9393939393939394,
+        "recall": 0.9253731343283582,
+        "f1": 0.9323308270676691,
+        "support": 67
+      },
+      "sub_total.discount_price": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7
+      },
+      "sub_total.etc": {
+        "precision": 0.9166666666666666,
+        "recall": 0.8461538461538461,
+        "f1": 0.88,
+        "support": 13
+      },
+      "sub_total.service_price": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      },
+      "sub_total.subtotal_price": {
+        "precision": 0.9850746268656716,
+        "recall": 1.0,
+        "f1": 0.9924812030075187,
+        "support": 66
+      },
+      "sub_total.tax_price": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 45
+      },
+      "total.cashprice": {
+        "precision": 0.9558823529411765,
+        "recall": 0.9420289855072463,
+        "f1": 0.948905109489051,
+        "support": 69
+      },
+      "total.changeprice": {
+        "precision": 0.9152542372881356,
+        "recall": 0.9642857142857143,
+        "f1": 0.9391304347826087,
+        "support": 56
+      },
+      "total.creditcardprice": {
+        "precision": 0.9375,
+        "recall": 0.8823529411764706,
+        "f1": 0.9090909090909091,
+        "support": 17
+      },
+      "total.emoneyprice": {
+        "precision": 0.3333333333333333,
+        "recall": 0.5,
+        "f1": 0.4,
+        "support": 2
+      },
+      "total.menuqty_cnt": {
+        "precision": 0.9032258064516129,
+        "recall": 0.9655172413793104,
+        "f1": 0.9333333333333333,
+        "support": 29
+      },
+      "total.menutype_cnt": {
+        "precision": 0.8333333333333334,
+        "recall": 0.7142857142857143,
+        "f1": 0.7692307692307693,
+        "support": 7
+      },
+      "total.total_etc": {
+        "precision": 0.16666666666666666,
+        "recall": 0.3333333333333333,
+        "f1": 0.2222222222222222,
+        "support": 3
+      },
+      "total.total_price": {
+        "precision": 0.9690721649484536,
+        "recall": 0.9791666666666666,
+        "f1": 0.9740932642487047,
+        "support": 96
+      }
+    },
+    "num_documents": 100
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "verified_on": "2026-09-25",
+  "source_archive": "roberta-sroie-seed42-receipts-v1.zip",
+  "archive_size_bytes": 2224773618,
+  "archive_sha256": "235343f35d295285b0c3a59d043ab20e356c41fe448f34d873bd88bcdbc2318e",
+  "files_sha256": {
+    "run-config.json": "a9ae107af65a0cbd96272c289acca1724d84eeec4ff7be21b7459946263523ed",
+    "requirements-freeze.txt": "2bf0fe1ef8439bf3618e0b149fbe12afb7afac3906294802455a11926640ab9e",
+    "reports/roberta_sroie_report.md": "86637e7bcdb8b5036f91c5e5c1c1c0e615917db91adc1bb331415222a41a4c35",
+    "reports/predictions/predictions_roberta_sroie_test.metrics.json": "65e088f5b5e12b485639cc2328b8a65fb7fe61211cca875c3f2df3caa03a26e4",
+    "reports/predictions/predictions_roberta_sroie_test.json": "36e32f982d29ee2fc053b836c8022b781c45bf5e0cc6d2619c3a8d8d079133d3",
+    "reports/predictions/roberta_sroie_test.four-field.metrics.values.json": "67feecb0489fca98e511fd9333f8914f53014a2bbbacd0c1c89a66493c4519b2",
+    "reports/predictions/roberta_sroie_test.four-field.metrics.json": "11d8686cc2044128a31074f3e53cc11fdcd848887e9a07f826fa0b9733935bb2",
+    "reports/logs/train_roberta_sroie_20260924_194021.log": "9e103e9aa9bb29203db91131780638a7e92b3259eb011a2510c5b0ceb1f6fd12",
+    "reports/metrics/roberta_sroie_history.csv": "1db72c537bf6ae322770d48206876f184c0193bae46e825b752890961e06a411",
+    "reports/metrics/roberta_sroie_results.json": "c902ed27053767ad2d7df33e0cf7df9646c71cb7854ff54bff0d55a628ad0ca8",
+    "reports/figures/roberta_sroie_training_curves.png": "faba942cb41a8f576a729e69b032fdb3d321592b36b75ce9b9f7bc0f3971d490",
+    "checkpoints/roberta_sroie_latest.pt": "e1ca242ababeb7fe3ba0a0f819fe0121c38743112403ecec5f72d4d96e1ffe61",
+    "checkpoints/roberta_sroie_best.pt": "b9843dc7084ef69f293ea2a8bd319b983ae1a4d6ca4af350c48f71bc2fa249a4",
+    "checkpoints/tokenizer/merges.txt": "1ce1664773c50f3e0cc8842619a93edc4624525b728b188a9e0be33b7726adc5",
+    "checkpoints/tokenizer/tokenizer.json": "8954f883d55d8ef262cb85ca609f319c27705dc70a9e571300991c4d86282ce2",
+    "checkpoints/tokenizer/vocab.json": "ed19656ea1707df69134c4af35c8ceda2cc9860bf2c3495026153a133670ab5e",
+    "checkpoints/tokenizer/special_tokens_map.json": "06e405a36dfe4b9604f484f6a1e619af1a7f7d09e34a8555eb0b77b66318067f",
+    "checkpoints/tokenizer/tokenizer_config.json": "38b4f61b73aab22f9c2bb01d0f2be28d745e1db57ef7fcfddfa33c6ac8265444"
+  },
+  "zip_crc_ok": true,
+  "checkpoint_hash_matches": true,
+  "prediction_hash_matches": true,
+  "split_hash_matches": true,
+  "source_hashes_match_uploaded_bundle": true,
+  "receipt_reference_hash_matches": true,
+  "test_ids_match": true,
+  "train_test_overlap": 0,
+  "val_test_overlap": 0,
+  "num_test_documents": 63,
+  "completed_epochs": 13,
+  "best_epoch": 8,
+  "best_validation_entity_f1": 0.8186666666666668,
+  "test_entity_f1": 0.883656509695291,
+  "field_value_metrics_independently_recomputed": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.8702702702702703,
+    "recall": 0.9147727272727273,
+    "f1": 0.8919667590027701,
+    "support": 352,
+    "macro_f1": 0.8921967733207653,
+    "per_type": {
+      "address": {
+        "precision": 0.8757396449704142,
+        "recall": 0.9192546583850931,
+        "f1": 0.896969696969697,
+        "support": 161
+      },
+      "company": {
+        "precision": 0.8285714285714286,
+        "recall": 0.8285714285714286,
+        "f1": 0.8285714285714286,
+        "support": 70
+      },
+      "date": {
+        "precision": 0.9682539682539683,
+        "recall": 1.0,
+        "f1": 0.9838709677419355,
+        "support": 61
+      },
+      "total": {
+        "precision": 0.8088235294117647,
+        "recall": 0.9166666666666666,
+        "f1": 0.859375,
+        "support": 60
+      }
+    },
+    "num_documents": 63
+  },
+  "checkpoint_reload_performed": false,
+  "scope": "ZIP CRC and SHA-256 for all members; source/split/checkpoint provenance; field-value metrics recomputed from local annotations. Entity F1 is the exported run metric; no local re-inference.",
+  "original_four_field_metrics_independently_recomputed": {
+    "protocol": "sroie-four-field-nfkc-casefold-v1",
+    "precision": 0.7389558232931727,
+    "recall": 0.7330677290836654,
+    "f1": 0.736,
+    "support": 251,
+    "macro_f1": 0.7357675371223757,
+    "per_type": {
+      "address": {
+        "precision": 0.6774193548387096,
+        "recall": 0.6774193548387096,
+        "f1": 0.6774193548387096,
+        "support": 62
+      },
+      "company": {
+        "precision": 0.6451612903225806,
+        "recall": 0.6349206349206349,
+        "f1": 0.64,
+        "support": 63
+      },
+      "date": {
+        "precision": 0.8387096774193549,
+        "recall": 0.8253968253968254,
+        "f1": 0.832,
+        "support": 63
+      },
+      "total": {
+        "precision": 0.7936507936507936,
+        "recall": 0.7936507936507936,
+        "f1": 0.7936507936507936,
+        "support": 63
+      }
+    },
+    "num_documents": 63,
+    "aggregation": "join-nonempty-fragments-in-input-order",
+    "target_source": "original-SROIE-key-annotations",
+    "unannotated_field_slots": 1,
+    "missing_annotation_policy": "exclude-unannotated-keys-from-scoring"
+  },
+  "original_four_field_counts": {
+    "tp": 184,
+    "fp": 65,
+    "fn": 67
+  }
+}

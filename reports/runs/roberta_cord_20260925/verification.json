@@ -1,0 +1,195 @@
+{
+  "verified_on": "2026-09-25",
+  "source_archive": "roberta-cord-seed42-receipts-v1.zip",
+  "archive_size_bytes": 2217143420,
+  "archive_sha256": "92bca5fa2e6cfbfa9fcf1f1ba3d6d08cfc93c53805ae95877a9b25a700dbadae",
+  "files_sha256": {
+    "run-config.json": "ad0a3ba3971d5505d1da69294c6971e691c3eaef4411898d56aff90d583672a4",
+    "requirements-freeze.txt": "2bf0fe1ef8439bf3618e0b149fbe12afb7afac3906294802455a11926640ab9e",
+    "checkpoints/roberta_cord_best.pt": "0cb582aa3781b1440e0b89ceffd94f0a648c27f3b8d6087ffff476f346209478",
+    "checkpoints/roberta_cord_latest.pt": "f09642b2f28de38d474863ddad22d4c127c5916ef8d0030ec76b1c79b34c27d4",
+    "checkpoints/tokenizer/special_tokens_map.json": "06e405a36dfe4b9604f484f6a1e619af1a7f7d09e34a8555eb0b77b66318067f",
+    "checkpoints/tokenizer/vocab.json": "ed19656ea1707df69134c4af35c8ceda2cc9860bf2c3495026153a133670ab5e",
+    "checkpoints/tokenizer/tokenizer.json": "8954f883d55d8ef262cb85ca609f319c27705dc70a9e571300991c4d86282ce2",
+    "checkpoints/tokenizer/tokenizer_config.json": "38b4f61b73aab22f9c2bb01d0f2be28d745e1db57ef7fcfddfa33c6ac8265444",
+    "checkpoints/tokenizer/merges.txt": "1ce1664773c50f3e0cc8842619a93edc4624525b728b188a9e0be33b7726adc5",
+    "reports/roberta_cord_report.md": "fa1051e6be6131d204d7b1f208f5145418f50fd20827cda5146cff027ce0738a",
+    "reports/metrics/roberta_cord_history.csv": "c77ef2deb4beab60903f3770b0646e51e5c961e99e63f718ddabfedabd23861a",
+    "reports/metrics/roberta_cord_results.json": "3b34849be36466c107a5bc12246bb05fed1582e0b29a0b049100b63bf95bb278",
+    "reports/logs/train_roberta_cord_20260924_194017.log": "62d62cb53b561815e3d39f74d79eb6a874adde000a513c426e064bdb2c66c09a",
+    "reports/figures/roberta_cord_training_curves.png": "b962d45e7acd951370b238ef714fa52921b3b3eb1b5a48de008a4d2a4d337d3c",
+    "reports/predictions/predictions_roberta_cord_test.json": "3ee119b28750c6d23cfbd458559c10fe458b2e7885bfcb021742349275e5d96e",
+    "reports/predictions/predictions_roberta_cord_test.metrics.json": "8d667b5364990446de79ac1be4b344ba71872998d421d7030647a57e1d25beac"
+  },
+  "zip_crc_ok": true,
+  "checkpoint_hash_matches": true,
+  "prediction_hash_matches": true,
+  "split_hash_matches": true,
+  "source_hashes_match_uploaded_bundle": true,
+  "receipt_reference_hash_matches": true,
+  "test_ids_match": true,
+  "train_test_overlap": 0,
+  "val_test_overlap": 0,
+  "num_test_documents": 100,
+  "completed_epochs": 14,
+  "best_epoch": 9,
+  "best_validation_entity_f1": 0.9290636400486421,
+  "test_entity_f1": 0.9198790627362056,
+  "field_value_metrics_independently_recomputed": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.9344385832705351,
+    "recall": 0.9472880061115355,
+    "f1": 0.9408194233687405,
+    "support": 1309,
+    "macro_f1": 0.7945780819818481,
+    "per_type": {
+      "menu.cnt": {
+        "precision": 0.9683257918552036,
+        "recall": 0.9727272727272728,
+        "f1": 0.9705215419501134,
+        "support": 220
+      },
+      "menu.discountprice": {
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "support": 10
+      },
+      "menu.etc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 3
+      },
+      "menu.itemsubtotal": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "menu.nm": {
+        "precision": 0.9251968503937008,
+        "recall": 0.9362549800796812,
+        "f1": 0.9306930693069307,
+        "support": 251
+      },
+      "menu.num": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11
+      },
+      "menu.price": {
+        "precision": 0.9642857142857143,
+        "recall": 0.9878048780487805,
+        "f1": 0.9759036144578314,
+        "support": 246
+      },
+      "menu.sub.cnt": {
+        "precision": 0.8421052631578947,
+        "recall": 0.9411764705882353,
+        "f1": 0.8888888888888888,
+        "support": 17
+      },
+      "menu.sub.nm": {
+        "precision": 0.6590909090909091,
+        "recall": 0.8055555555555556,
+        "f1": 0.725,
+        "support": 36
+      },
+      "menu.sub.price": {
+        "precision": 0.8571428571428571,
+        "recall": 0.9,
+        "f1": 0.8780487804878049,
+        "support": 20
+      },
+      "menu.unitprice": {
+        "precision": 0.9393939393939394,
+        "recall": 0.9253731343283582,
+        "f1": 0.9323308270676691,
+        "support": 67
+      },
+      "sub_total.discount_price": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7
+      },
+      "sub_total.etc": {
+        "precision": 0.9166666666666666,
+        "recall": 0.8461538461538461,
+        "f1": 0.88,
+        "support": 13
+      },
+      "sub_total.service_price": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 12
+      },
+      "sub_total.subtotal_price": {
+        "precision": 0.9850746268656716,
+        "recall": 1.0,
+        "f1": 0.9924812030075187,
+        "support": 66
+      },
+      "sub_total.tax_price": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 45
+      },
+      "total.cashprice": {
+        "precision": 0.9558823529411765,
+        "recall": 0.9420289855072463,
+        "f1": 0.948905109489051,
+        "support": 69
+      },
+      "total.changeprice": {
+        "precision": 0.9152542372881356,
+        "recall": 0.9642857142857143,
+        "f1": 0.9391304347826087,
+        "support": 56
+      },
+      "total.creditcardprice": {
+        "precision": 0.9375,
+        "recall": 0.8823529411764706,
+        "f1": 0.9090909090909091,
+        "support": 17
+      },
+      "total.emoneyprice": {
+        "precision": 0.3333333333333333,
+        "recall": 0.5,
+        "f1": 0.4,
+        "support": 2
+      },
+      "total.menuqty_cnt": {
+        "precision": 0.9032258064516129,
+        "recall": 0.9655172413793104,
+        "f1": 0.9333333333333333,
+        "support": 29
+      },
+      "total.menutype_cnt": {
+        "precision": 0.8333333333333334,
+        "recall": 0.7142857142857143,
+        "f1": 0.7692307692307693,
+        "support": 7
+      },
+      "total.total_etc": {
+        "precision": 0.16666666666666666,
+        "recall": 0.3333333333333333,
+        "f1": 0.2222222222222222,
+        "support": 3
+      },
+      "total.total_price": {
+        "precision": 0.9690721649484536,
+        "recall": 0.9791666666666666,
+        "f1": 0.9740932642487047,
+        "support": 96
+      }
+    },
+    "num_documents": 100
+  },
+  "checkpoint_reload_performed": false,
+  "scope": "ZIP CRC and SHA-256 for all members; source/split/checkpoint provenance; field-value metrics recomputed from local annotations. Entity F1 is the exported run metric; no local re-inference."
+}

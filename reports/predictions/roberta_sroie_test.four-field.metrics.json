@@ -1,0 +1,45 @@
+{
+  "protocol": "sroie-four-field-nfkc-casefold-v1",
+  "precision": 0.7389558232931727,
+  "recall": 0.7330677290836654,
+  "f1": 0.736,
+  "support": 251,
+  "macro_f1": 0.7357675371223757,
+  "per_type": {
+    "address": {
+      "precision": 0.6774193548387096,
+      "recall": 0.6774193548387096,
+      "f1": 0.6774193548387096,
+      "support": 62
+    },
+    "company": {
+      "precision": 0.6451612903225806,
+      "recall": 0.6349206349206349,
+      "f1": 0.64,
+      "support": 63
+    },
+    "date": {
+      "precision": 0.8387096774193549,
+      "recall": 0.8253968253968254,
+      "f1": 0.832,
+      "support": 63
+    },
+    "total": {
+      "precision": 0.7936507936507936,
+      "recall": 0.7936507936507936,
+      "f1": 0.7936507936507936,
+      "support": 63
+    }
+  },
+  "num_documents": 63,
+  "aggregation": "join-nonempty-fragments-in-input-order",
+  "target_source": "original-SROIE-key-annotations",
+  "unannotated_field_slots": 1,
+  "missing_annotation_policy": "exclude-unannotated-keys-from-scoring",
+  "split": "test",
+  "expected_num_documents": 63,
+  "complete": true,
+  "prediction_sha256": "36e32f982d29ee2fc053b836c8022b781c45bf5e0cc6d2619c3a8d8d079133d3",
+  "raw_targets_sha256": "ddbdfd6c68352dcda1d9545afb0bacba6cfafef816d9da3cf6a0c95f80aa0102",
+  "aggregated_prediction_sha256": "67feecb0489fca98e511fd9333f8914f53014a2bbbacd0c1c89a66493c4519b2"
+}

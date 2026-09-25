@@ -50,13 +50,21 @@
         "test": 63
       },
       "resume_from": "",
-      "status": "running",
+      "status": "complete",
       "version": 2,
       "remote_source_and_private_setting_verified": true,
       "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
       "submitted_code_sha256": "ce81dbcc97a6479eb25f0f0aab3f2ce570aa5fb106eead882809c90b682d71cd",
       "full_training_counts_confirmed": true,
-      "launch_log_sha256": "6a33a21eac51436ba60c156e318c3a476751c84c22d82a5bcf166c8cc8fabca7"
+      "launch_log_sha256": "6a33a21eac51436ba60c156e318c3a476751c84c22d82a5bcf166c8cc8fabca7",
+      "verified": true,
+      "completed_epochs": 13,
+      "best_epoch": 8,
+      "test_entity_f1": 0.883656509695291,
+      "test_ocr_field_value_f1": 0.8919667590027701,
+      "archive_sha256": "235343f35d295285b0c3a59d043ab20e356c41fe448f34d873bd88bcdbc2318e",
+      "verification": "reports/runs/roberta_sroie_20260925/verification.json",
+      "test_original_four_field_f1": 0.736
     },
     "cord": {
       "notebook": "phvngtngtm/reconia-roberta-cord",
@@ -70,18 +78,25 @@
         "test": 100
       },
       "resume_from": "",
-      "status": "running",
+      "status": "complete",
       "version": 2,
       "remote_source_and_private_setting_verified": true,
       "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
       "submitted_code_sha256": "0e7e9badc48a4c31c809774a409caec1b6a87da8955522a8af2121d9bc6b6c4f",
       "full_training_counts_confirmed": true,
-      "launch_log_sha256": "af120630019cb80e6b941135d9c0159a71cd9ce5389d9edd90492a7976570c78"
+      "launch_log_sha256": "af120630019cb80e6b941135d9c0159a71cd9ce5389d9edd90492a7976570c78",
+      "verified": true,
+      "completed_epochs": 14,
+      "best_epoch": 9,
+      "test_entity_f1": 0.9198790627362056,
+      "test_ocr_field_value_f1": 0.9408194233687405,
+      "archive_sha256": "92bca5fa2e6cfbfa9fcf1f1ba3d6d08cfc93c53805ae95877a9b25a700dbadae",
+      "verification": "reports/runs/roberta_cord_20260925/verification.json"
     }
   },
   "limitations": [
     "Smoke scores are not benchmark results.",
-    "Full-run test outputs remain pending verification.",
-    "VLM inference adapters are not implemented; shared SROIE four-field scoring is available."
+    "VLM inference adapters are not implemented; shared SROIE four-field scoring is available.",
+    "One seed per run; entity F1 is exported, while field-value metrics were independently rescored without local re-inference."
   ]
 }

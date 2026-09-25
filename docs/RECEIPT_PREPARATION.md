@@ -1,6 +1,6 @@
 # Chuẩn bị SROIE và CORD-v2 — 25/09/2026
 
-Đã chuẩn bị dữ liệu cục bộ và chạy smoke GNN thành công trên Kaggle cho cả hai bộ.
+Đã chuẩn bị dữ liệu cục bộ, hoàn tất và kiểm chứng GNN/RoBERTa trên Kaggle cho cả hai bộ.
 Các lần chạy DocILE đã hoàn tất và được giữ riêng.
 
 ## Trạng thái Kaggle ngày 25/09
@@ -32,14 +32,14 @@ backbone RoBERTa-base đã pin như DocILE, smoke 8 train / 4 val trước full 
 [RoBERTa SROIE](https://www.kaggle.com/code/phvngtngtm/reconia-roberta-sroie) và
 [RoBERTa CORD](https://www.kaggle.com/code/phvngtngtm/reconia-roberta-cord) đều private.
 Smoke version 1 đã qua train/reload/inference trên 8 train / 4 val; SROIE chạy thêm
-scorer bốn key thành công. Full version 2 đã khởi chạy cho cả hai bộ, seed 42,
+scorer bốn key thành công. Full version 2 đã hoàn tất cho cả hai bộ, seed 42,
 tối đa 20 epochs, patience 5, batch 4 × accumulation 4. Backbone
 `FacebookAI/roberta-base` pin revision `e2da8e2f811d1448a5b465c236feacd80ffbac7b`,
 LR backbone 5e-5 / head 2e-4; xử lý toàn bộ cửa sổ OCR. Full run học mới, không
 resume smoke. Best/latest và tokenizer được giữ trong output ZIP; không cần tải
 ZIP smoke lớn để dùng cho benchmark. Bằng chứng:
 [roberta_receipts_kaggle_20260925.json](../reports/data/roberta_receipts_kaggle_20260925.json).
-Kết quả full run cần kiểm chứng sau khi Kaggle hoàn tất.
+ZIP full run đã tải và kiểm chứng toàn bộ CRC/hash, split và điểm field-value. SROIE: best 8/13 epochs, entity F1 88,37%, đoạn OCR F1 89,20%, bốn key gốc F1 73,60%. CORD: best 9/14 epochs, entity F1 91,99%, field-value F1 94,08%. Cả hai dừng sớm đúng patience 5. Xem [bằng chứng SROIE](../reports/runs/roberta_sroie_20260925/verification.json) và [CORD](../reports/runs/roberta_cord_20260925/verification.json).
 
 ## Nguồn và split
 

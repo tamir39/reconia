@@ -23,8 +23,10 @@ Trên cùng split và seed 42, RoBERTa cao hơn GNN **12,87 điểm phần trăm
 |---|---|---:|---:|---|---:|---:|
 | GNN / SROIE | 500 / 63 / 63 | 15 / 20 | 78,36% | 78,19% / 83,52% / **80,77%** | 81,32% | **54,70%** |
 | GNN / CORD-v2 | 800 / 100 / 100 | 19 / 20 | 73,21% | 64,50% / 75,89% / **69,73%** | **70,46%** | — |
+| RoBERTa / SROIE | 500 / 63 / 63 | 8 / 13 | 81,87% | 86,22% / 90,62% / **88,37%** | 89,20% | **73,60%** |
+| RoBERTa / CORD-v2 | 800 / 100 / 100 | 9 / 14 | 92,91% | 91,71% / 92,27% / **91,99%** | **94,08%** | — |
 
-Cả hai chạy seed 42 trên Tesla T4. ZIP, hash checkpoint/predictions/mã nguồn,
+Hai lần GNN chạy seed 42 trên Tesla T4. ZIP, hash checkpoint/predictions/mã nguồn,
 manifest đối chiếu receipt và đúng toàn bộ ID test đều đã khớp; test không trùng
 train/val. Tất cả chỉ số field-value từ đoạn OCR đã được tái tính từ nhãn cục bộ
 và khớp. Entity F1 lấy từ output đã kiểm chứng provenance, không chạy lại suy luận.
@@ -39,6 +41,8 @@ file key gốc: 131 TP / 97 FP / 120 FN. Đây là phép chấm dành cho so sá
 VLM một giá trị mỗi key; không thay thế hoặc trộn với điểm đoạn OCR 81,32%.
 [Metrics bốn key](predictions/gnn_sroie_test.four-field.metrics.json).
 
-RoBERTa/SROIE và RoBERTa/CORD đã qua smoke, full version 2 đang chạy trên Kaggle; chưa có kết quả
-full run mới đã kiểm chứng. Các báo cáo RoBERTa receipt lịch sử chưa đủ provenance
-vẫn không thuộc bảng này.
+RoBERTa full version 2 đã hoàn tất và được kiểm chứng trên cùng split, seed 42 và Tesla T4. SROIE dừng sớm ở epoch 13, chọn best epoch 8; CORD dừng ở epoch 14, chọn best epoch 9, đúng patience 5 theo validation F1. Đã kiểm tra CRC và SHA-256 mọi tệp ZIP, hash checkpoint, predictions, mã nguồn, manifest đối chiếu receipt và đầy đủ ID test; không trùng train/val. Toàn bộ chỉ số field-value đã tái tính và khớp. Entity F1 lấy từ output, không chạy lại suy luận cục bộ. Xem [SROIE](runs/roberta_sroie_20260925/verification.json) và [CORD](runs/roberta_cord_20260925/verification.json).
+
+RoBERTa đạt bốn key SROIE gốc F1 **73,60%**; đối chiếu trực tiếp key gốc cho **184 TP / 65 FP / 67 FN**, hỗ trợ 251 giá trị. [Metrics bốn key](predictions/roberta_sroie_test.four-field.metrics.json). So với GNN trên cùng split, tăng **18,90 điểm phần trăm** ở phép chấm này; CORD tăng **23,62 điểm phần trăm field-value F1**. Đây vẫn là kết quả một seed.
+
+GNN và RoBERTa hiện có sáu lần chạy đầy đủ đã kiểm chứng trên ba bộ dữ liệu. LayoutLMv3, LiLT và hai VLM chưa có kết quả; không suy ra toàn bộ đề tài đã hoàn tất.
