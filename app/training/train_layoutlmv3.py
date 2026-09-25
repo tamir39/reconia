@@ -1,4 +1,4 @@
-"""Fine-tune LayoutLMv3 on verified receipt images and existing OCR splits."""
+"""Fine-tune LayoutLMv3 on verified page images and existing OCR splits."""
 
 import argparse
 import json
@@ -12,7 +12,7 @@ from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from transformers import AutoProcessor, LayoutLMv3ForTokenClassification
 
-from app.data import SroieAdapter, CordAdapter
+from app.data import SroieAdapter, CordAdapter, DocileAdapter
 from app.data.portable import load_adapter
 from app.data.layoutlmv3_dataset import LayoutLMv3InvoiceDataset, WINDOW_POLICY
 from app.evaluation.metrics import InferenceProfiler, compute_entity_metrics, extract_entities_from_bio
@@ -72,7 +72,7 @@ def train(args):
         torch.cuda.manual_seed_all(args.seed)
     device = torch.device("cuda" if args.device == "auto" and torch.cuda.is_available()
                           else "cpu" if args.device == "auto" else args.device)
-    adapter = load_adapter(args.dataset, {"sroie": SroieAdapter, "cord": CordAdapter}[args.dataset])
+    adapter = load_adapter(args.dataset, {"sroie": SroieAdapter, "cord": CordAdapter, "docile": DocileAdapter}[args.dataset])
     split_ids = {s: adapter.document_ids(s) for s in ("train", "val", "test")}
     if any(len(ids) != len(set(ids)) for ids in split_ids.values()):
         raise ValueError("Duplicate IDs within split")
@@ -166,6 +166,9 @@ def train(args):
         batch_accum=args.batch_accum, lr=args.lr, head_lr=args.head_lr, patience=args.patience,
         backbone_repo=BACKBONE_REPO, backbone_revision=BACKBONE_REVISION,
         image_input="original-page-rgb", ocr_input="dataset-provided")
+    if hasattr(adapter, "_image_store"):
+        metadata.update(image_manifest_sha256=adapter._image_store.manifest_sha256,
+                        image_render_policy=adapter._image_store.manifest["policy"])
     del checkpoint, model, optimizer, scheduler, groups, params, train_data, val_data, loader, logits, loss
     if device.type == "cuda":
         torch.cuda.empty_cache()
@@ -181,7 +184,7 @@ def train(args):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset", choices=["sroie", "cord"], required=True)
+    parser.add_argument("--dataset", choices=["sroie", "cord", "docile"], required=True)
     parser.add_argument("--model-path", default=None)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=2)

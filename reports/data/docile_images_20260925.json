@@ -1,0 +1,634 @@
+{
+  "date": "2026-09-25",
+  "dataset": "docile",
+  "status": "prepared_locally_not_uploaded",
+  "image_policy": "poppler-full-page-rgb-png-longest1600-v1",
+  "image_manifest_sha256": "d082dd30d5473e34af6c957797fa9f749a7d998299796c0754a182afbb5fcbcc",
+  "export_manifest_sha256": "15a88e5fcc429358024f6270e26b439f5db01aec6f88d3aca84b749e4eab9915",
+  "renderer": "pdftoppm version 26.07.0",
+  "counts": {
+    "train": {
+      "documents": 4680,
+      "pages": 6109
+    },
+    "val": {
+      "documents": 500,
+      "pages": 635
+    },
+    "test": {
+      "documents": 500,
+      "pages": 650
+    }
+  },
+  "documents": 5680,
+  "pages": 7394,
+  "multipage_documents": 1419,
+  "raw_ocr_matches_export": true,
+  "page_counts_and_aspect_ratios_verified": true,
+  "all_image_hashes_verified": true,
+  "cross_split_identical_rendered_document_groups": [],
+  "cross_split_identical_page_groups": [
+    [
+      {
+        "doc_id": "01e49b6f7b0e4edf91f42c0f",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "05d16be7f93b48ed8f374701",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "2150abbfe3f44dcf8a6b76c4",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "262223a97b214408aa564bfa",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "294a33bd00ee4df19d33c037",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "5789a465ea1942f192c8cf82",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "5e5319b7c6f747e4806e673a",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "8de1fd76bbac47e5ac6f4fcb",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "8fc1852266d244ffac35940b",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "9cbbbc62cde447cb9bb065fc",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "c418c2d38e1f4a7599d314c9",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "c86753cf37e54270b7ff1a2f",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "c9d366bde5494ca6bfb9f1cc",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "cbcb18bf3b7042ce89738422",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "cc4b8b4e1c7a4ac793c0d186",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "e03c092ef0bb48db9d0f918a",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "3d2f2e78b8e449c297b5da48",
+        "page": 1,
+        "split": "val"
+      },
+      {
+        "doc_id": "a3f51835ee5a479cb87f85fe",
+        "page": 1,
+        "split": "val"
+      },
+      {
+        "doc_id": "54eec993aa234fcfab21098b",
+        "page": 1,
+        "split": "test"
+      },
+      {
+        "doc_id": "9461f940f75a4a86a7541f11",
+        "page": 1,
+        "split": "test"
+      },
+      {
+        "doc_id": "c082738c29aa475e9f0b1667",
+        "page": 1,
+        "split": "test"
+      },
+      {
+        "doc_id": "f5b647e55a0b45eebefe8e8e",
+        "page": 1,
+        "split": "test"
+      }
+    ],
+    [
+      {
+        "doc_id": "023e00c3df3346638f0e2f0e",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "14dfd1b6ed4f4dd4a2233667",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "222d94e9a8c74ec79a18387e",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "2514dc49fb9a42dfbd090788",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "4a9d2670f8854db5af301fa0",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "586360a044e04d0d819596a5",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "5e17101de2bf4c81ae7c5166",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "75503db063414d468bdce02b",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "80590438bdba4a16b53477ca",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "9575365ff81a49f9b6822cde",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "a503ebb4385747e89ad96b37",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "ced92ae77d2e464887083600",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "d2a97f8443af4c0fb3c6568c",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "9f49f9b038df46a280ae8f38",
+        "page": 1,
+        "split": "val"
+      },
+      {
+        "doc_id": "1cba5b2df5064a1382669cb2",
+        "page": 1,
+        "split": "test"
+      },
+      {
+        "doc_id": "cbf4e31513be47d19d1cf254",
+        "page": 1,
+        "split": "test"
+      }
+    ],
+    [
+      {
+        "doc_id": "03ce0f0e04304609a7939960",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "0fa2ae879a574b59be87bf01",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "1259e94325c040ebbf7d608e",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "1467883c30b04f4087293a96",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "16fce4dbecdb4a18a1ed0501",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "20cff635219849f3a0c6c65b",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "2cf760dba1204b809120eea6",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "2e18d073b29842e5bdd7abff",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "3558432e1da240a3998e3083",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "4c8f7c6f08ff4efb961940b9",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "4de7e1efe1544402b7deb7c6",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "70cfd4615ef9416e95106d24",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "73b7bf2c174d456c917acb56",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "82a3727ef2a34f80b0d1ef74",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "8411364400b54f548ae02a84",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "87adca2f163f48dbb6a4e507",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "a01827178d5a467a930f4cc2",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "a1268f8290cf4f5eaaeebfbe",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "ad96ecffd1ae4b61b724604c",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "b1d7e615949d4fbba81c010c",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "b3a24e48a1b24fc5b3723702",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "c3a84275b96544e78e2430b6",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "ca1f7368efe645699e92546d",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "d2917fe68f144e93b4f11f7c",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "e0dd69810578496d99550eb4",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "e23b433678c54c239912e2a4",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "e2517107ab9b4a859a2ae5c8",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "e855819f0385450485b6f62a",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "f0d66b939f1840a4beda653d",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "fd9f69fe5b56404ca53b7e84",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "fe79f012e22a4718859ffa79",
+        "page": 2,
+        "split": "train"
+      },
+      {
+        "doc_id": "41d2dccfb1a94013870467c9",
+        "page": 1,
+        "split": "val"
+      },
+      {
+        "doc_id": "daa59323729041038c356b76",
+        "page": 1,
+        "split": "val"
+      },
+      {
+        "doc_id": "57fa665856874ddf8799785c",
+        "page": 2,
+        "split": "test"
+      },
+      {
+        "doc_id": "63c8c59459d84413b9faaca4",
+        "page": 1,
+        "split": "test"
+      },
+      {
+        "doc_id": "dd5c5c98905e4c91b045de2b",
+        "page": 2,
+        "split": "test"
+      }
+    ],
+    [
+      {
+        "doc_id": "29fc89e4903345a49368d907",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "8cb6fac218d442bc9caf600a",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "ece99e6f96ec4d22bc4d89ac",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "188b78406d3549539c193acb",
+        "page": 1,
+        "split": "val"
+      }
+    ],
+    [
+      {
+        "doc_id": "5a54b06b74dd465fbf15f12e",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "8c3e760e24d34b84b4001e52",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "a1f561c78090434ba5fb8e05",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "76ce6e7b74094bb1bcc683ed",
+        "page": 1,
+        "split": "test"
+      }
+    ],
+    [
+      {
+        "doc_id": "67c0d812af674f25a54b6713",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "6c4961def79b43208f330a5f",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "ed069572319f40a0bea48118",
+        "page": 1,
+        "split": "train"
+      },
+      {
+        "doc_id": "6e2f39308bb2489996907752",
+        "page": 1,
+        "split": "val"
+      }
+    ]
+  ],
+  "visual_qa_pages": [
+    {
+      "doc_id": "00136a27c7774c1e8dc6b2f2",
+      "page": 0
+    },
+    {
+      "doc_id": "00136a27c7774c1e8dc6b2f2",
+      "page": 1
+    },
+    {
+      "doc_id": "00134dd365a24343b35b78c6",
+      "page": 0
+    },
+    {
+      "doc_id": "002e3cf97973428f905671b3",
+      "page": 0
+    },
+    {
+      "doc_id": "0039ed9f32974a90afb4f8f2",
+      "page": 0
+    },
+    {
+      "doc_id": "003cc91637994b7d9566ac41",
+      "page": 0
+    }
+  ],
+  "visual_qa_result": "OCR boxes visually aligned on six sampled pages, including two pages of one multipage invoice.",
+  "tests_passed": 133,
+  "notebook": "notebooks/kaggle_layoutlmv3_docile.ipynb",
+  "notebook_default": "smoke",
+  "notebook_python_cells_compile": true,
+  "notebook_sha256": "c64b4e2f033034232f4a4ac6a72231eac7ad6aec233d77fd84a9fa186d0eb1f4",
+  "kaggle_uploaded": false,
+  "gpu_smoke_passed": false,
+  "full_training_started": false,
+  "limitations": [
+    "Visual QA samples only; all pages received structural/hash checks.",
+    "Internal split and scores, not official DocILE evaluation.",
+    "Rendered PNG longest edge is 1600; original PDFs remain unchanged.",
+    "Private image upload needs authorization beyond the previous OCR-only upload.",
+    "Six groups of identical rendered pages cross split boundaries. One shared page template has annotated vendor/payment fields; this is pre-existing overlap in the fixed DocILE split, not a new split introduced by image preparation. Preserve the split for baseline comparability and disclose overlap; do not call this benchmark page-disjoint."
+  ],
+  "duplicate_page_analysis": [
+    {
+      "group_index": 0,
+      "occurrences_by_split": {
+        "train": 16,
+        "val": 2,
+        "test": 4
+      },
+      "annotated_fields_by_split": {
+        "train": 0,
+        "val": 0,
+        "test": 0
+      },
+      "field_types": [],
+      "ocr_word_counts": [
+        0
+      ]
+    },
+    {
+      "group_index": 1,
+      "occurrences_by_split": {
+        "train": 13,
+        "val": 1,
+        "test": 2
+      },
+      "annotated_fields_by_split": {
+        "train": 0,
+        "val": 0,
+        "test": 0
+      },
+      "field_types": [],
+      "ocr_word_counts": [
+        9
+      ]
+    },
+    {
+      "group_index": 2,
+      "occurrences_by_split": {
+        "train": 31,
+        "val": 2,
+        "test": 3
+      },
+      "annotated_fields_by_split": {
+        "train": 77,
+        "val": 5,
+        "test": 6
+      },
+      "field_types": [
+        "payment_terms",
+        "vendor_address",
+        "vendor_name"
+      ],
+      "ocr_word_counts": [
+        157
+      ]
+    },
+    {
+      "group_index": 3,
+      "occurrences_by_split": {
+        "train": 3,
+        "val": 1
+      },
+      "annotated_fields_by_split": {
+        "train": 0,
+        "val": 0
+      },
+      "field_types": [],
+      "ocr_word_counts": [
+        2244
+      ]
+    },
+    {
+      "group_index": 4,
+      "occurrences_by_split": {
+        "train": 3,
+        "test": 1
+      },
+      "annotated_fields_by_split": {
+        "train": 0,
+        "test": 0
+      },
+      "field_types": [],
+      "ocr_word_counts": [
+        24
+      ]
+    },
+    {
+      "group_index": 5,
+      "occurrences_by_split": {
+        "train": 3,
+        "val": 1
+      },
+      "annotated_fields_by_split": {
+        "train": 0,
+        "val": 0
+      },
+      "field_types": [],
+      "ocr_word_counts": [
+        3
+      ]
+    }
+  ],
+  "upload_bundle_files": {
+    "docile-export.bin": {
+      "bytes": 31714967,
+      "sha256": "6b1c83f1edbf928cafe95564b84d13695373884ade39d56d5fd2a8b37afb5c5f"
+    },
+    "docile-images.bin": {
+      "bytes": 1813513167,
+      "sha256": "5ad17c28a6db0e437b7ba3ab32b64ecd7e0581d87899589e060f32390fb435e9"
+    },
+    "reconia-code.bin": {
+      "bytes": 197378,
+      "sha256": "a299ec98eb6c6a760bcb01351e440017404ab098c8f35d0cfc12f9efbebf4c95"
+    }
+  },
+  "upload_bundle_bytes": 1845425512,
+  "bundle_zip_crc_and_archived_image_hashes_verified": true
+}

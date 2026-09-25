@@ -362,6 +362,9 @@ def run_prediction_pipeline(
         results["window_policy"] = layout_policy
         results["image_input"] = "original-page-rgb"
         results["ocr_input"] = "dataset-provided"
+        if hasattr(adapter, "_image_store"):
+            results["image_manifest_sha256"] = adapter._image_store.manifest_sha256
+            results["image_render_policy"] = adapter._image_store.manifest["policy"]
 
     if output_json:
         output_json.parent.mkdir(parents=True, exist_ok=True)

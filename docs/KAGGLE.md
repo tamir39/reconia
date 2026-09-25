@@ -6,6 +6,10 @@
 và OCR có sẵn cho SROIE/CORD, mặc định smoke. Xem [cấu hình và giới hạn](LAYOUTLMV3.md).
 Full version 2 của cả SROIE và CORD đã hoàn tất và kiểm chứng; xem [bảng kết quả](../reports/verified_comparison.md). Không dùng bundle OCR-only của DocILE cho mô hình này.
 
+DocILE có [notebook ảnh riêng](../notebooks/kaggle_layoutlmv3_docile.ipynb), mặc định smoke.
+Xem [quy trình render và kiểm chứng](DOCILE_IMAGES.md); bundle này cần ảnh toàn trang,
+không tự thay ảnh thiếu bằng trang trắng. Chưa có run GPU DocILE LayoutLMv3.
+
 ## SROIE và CORD
 
 GNN đã hoàn tất và kiểm chứng trên cả hai bộ. Notebook

@@ -11,6 +11,13 @@ GNN được lấy từ `gnn-docile-seed42-v1.zip` do nhóm tải từ Kaggle. �
 
 Entity metric: `ocr-bio-exact-span-v2`. Field-value metric: `field-value-nfkc-casefold-v1`. Đây là test nội bộ lấy từ train gốc của DocILE, không phải test chính thức. Điểm của hai protocol không thể dùng thay thế nhau. Độ trễ GNN ghi nhận khoảng 95,1 ms/tài liệu, bao gồm các bước trong prediction pipeline; so sánh tốc độ cần cùng thiết bị và quy trình.
 
+Kiểm tra ảnh ngày 25/09 phát hiện 6 nhóm trang giống hệt nhau giữa các split DocILE,
+mặc dù ID tài liệu không trùng và không có toàn bộ tài liệu render giống hệt nhau.
+Một mẫu trang lặp chứa trường vendor/payment trên 31 train, 2 val và 3 test;
+5 nhóm còn lại không có trường được chú giải. Đây là giới hạn có sẵn của split
+baseline hiện tại, không khẳng định độc lập ở mức nội dung trang/template.
+Xem [phân tích overlap](data/docile_images_20260925.json).
+
 Các báo cáo mô hình/dataset khác chưa có provenance tương ứng vẫn là kết quả lịch sử. Bảng này chỉ dùng các lần chạy đã kiểm chứng, không dùng điểm smoke test. Đây là một seed khởi đầu, chưa phải kết luận thống kê qua nhiều lần chạy.
 
 RoBERTa: ZIP `roberta-docile-seed42-v1.zip` tải ngày 25/09 chứa đủ 20 epochs và 500 dự đoán test. CRC mọi tệp, hash checkpoint/predictions/split/manifest và mã nguồn đã khớp; không có ID test trùng train hoặc val. Toàn bộ chỉ số field-value đã được tái tính từ nhãn DocILE gốc và khớp. Xem [bằng chứng](runs/roberta_docile_20260925/verification.json), [cấu hình](runs/roberta_docile_20260925/run-config.json), [metrics](predictions/predictions_roberta_docile_test.metrics.json). Lần kiểm tra cục bộ này không chạy lại suy luận; entity F1 lấy từ kết quả xuất của lần chạy đã kiểm tra provenance.

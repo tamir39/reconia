@@ -211,14 +211,6 @@ class DocileAdapter:
         return self._find_file("pdfs", f"{doc_id}.pdf")
 
     def get_image(self, doc_id: str, page: int = 0):
-        """Extract or render the page image from the source PDF."""
-        import pypdf
-        from PIL import Image
-
-        pdf_p = self.pdf_path(doc_id)
-        reader = pypdf.PdfReader(str(pdf_p))
-        if page < len(reader.pages):
-            p = reader.pages[page]
-            if p.images:
-                return p.images[0].image.convert("RGB")
-        return Image.new("RGB", (1000, 1000), color=(255, 255, 255))
+        """Render the complete page; missing or invalid pages are errors."""
+        from app.data.page_images import render_page
+        return render_page(self.pdf_path(doc_id), page)

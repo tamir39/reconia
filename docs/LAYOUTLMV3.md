@@ -13,10 +13,11 @@ SROIE: best 9/14 epochs, test entity F1 94,50%, giá trị đoạn OCR F1 95,35%
 
 ## Phạm vi
 
-Pipeline đầu tiên hỗ trợ SROIE và CORD-v2 bằng ảnh receipt gốc, từ OCR và bbox có sẵn.
+Pipeline hỗ trợ SROIE, CORD-v2 và DocILE bằng ảnh trang, từ OCR và bbox có sẵn.
 Dùng cùng split, vocabulary từ train, seed 42 và metric với GNN/RoBERTa đã kiểm chứng.
-DocILE chưa nằm trong notebook này: bundle OCR hiện có không chứa ảnh trang.
-Cần chuẩn bị và kiểm chứng bundle ảnh DocILE riêng trước khi mở rộng thực nghiệm.
+DocILE dùng [notebook riêng](../notebooks/kaggle_layoutlmv3_docile.ipynb) với
+[bundle ảnh toàn trang đã đối chiếu OCR](DOCILE_IMAGES.md). Chưa có run GPU DocILE;
+không dùng bundle OCR-only cho mô hình ảnh.
 
 Backbone: `microsoft/layoutlmv3-base`, revision
 `cfbbbff0762e6aab37086fdd4739ad14fe7d5db4`. Theo

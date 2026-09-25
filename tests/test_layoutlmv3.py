@@ -98,7 +98,8 @@ def test_receipt_adapters_refuse_missing_or_wrong_page_images(tmp_path):
         cord.get_image('train_0', 1)
 
 
-def test_tiny_training_reloads_and_exports_full_test(processor, tmp_path, monkeypatch):
+@pytest.mark.parametrize('dataset', ['sroie', 'docile'])
+def test_tiny_training_reloads_and_exports_full_test(processor, tmp_path, monkeypatch, dataset):
     from app.training import train_layoutlmv3 as training
     from app.evaluation import predict
     torch.set_num_threads(1)
@@ -117,13 +118,13 @@ def test_tiny_training_reloads_and_exports_full_test(processor, tmp_path, monkey
     adapter = Adapter()
     monkeypatch.setattr(training, 'load_adapter', lambda *_: adapter)
     monkeypatch.setattr(predict, 'load_adapter', lambda *_: adapter)
-    training.main(['--dataset', 'sroie', '--model-path', str(model_dir), '--epochs', '1',
+    training.main(['--dataset', dataset, '--model-path', str(model_dir), '--epochs', '1',
                    '--batch-size', '1', '--batch-accum', '3', '--device', 'cpu',
                    '--save-dir', str(tmp_path / 'checkpoints'), '--report-dir', str(tmp_path / 'reports')])
-    metrics = json.loads((tmp_path / 'reports/predictions/predictions_layoutlmv3_sroie_test.metrics.json').read_text())
+    metrics = json.loads((tmp_path / f'reports/predictions/predictions_layoutlmv3_{dataset}_test.metrics.json').read_text())
     assert metrics['complete'] and metrics['num_documents'] == 1
     assert metrics['window_policy'] == WINDOW_POLICY
     assert metrics['value_metrics']['num_documents'] == 1
-    assert (tmp_path / 'checkpoints/layoutlmv3_sroie_latest.pt').is_file()
-    report = json.loads((tmp_path / 'reports/metrics/layoutlmv3_sroie_results.json').read_text())
+    assert (tmp_path / f'checkpoints/layoutlmv3_{dataset}_latest.pt').is_file()
+    report = json.loads((tmp_path / f'reports/metrics/layoutlmv3_{dataset}_results.json').read_text())
     assert report['best_epoch'] == 1 and report['split'] == 'TEST'

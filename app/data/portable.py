@@ -64,6 +64,12 @@ class ExportAdapter:
         return split in self._splits
 
     def get_image(self, doc_id, page=0):
+        image_root = os.environ.get(f"{self.name.upper()}_IMAGE_DIR")
+        if image_root:
+            if not hasattr(self, "_image_store"):
+                from app.data.page_images import PageImageStore
+                self._image_store = PageImageStore(image_root, self)
+            return self._image_store.get_image(doc_id, page)
         raise NotImplementedError("OCR exports contain no page images; attach the original dataset for image models")
 
 
