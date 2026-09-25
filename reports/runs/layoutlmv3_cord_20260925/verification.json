@@ -1,0 +1,201 @@
+{
+  "verified_on": "2026-09-25",
+  "source_archive": "layoutlmv3-cord-seed42-receipts-v1.zip",
+  "archive_size_bytes": 2252809928,
+  "archive_sha256": "7db10026b0c746690043168847c5e07284ac4f38c9cfa00bda1dc344fa9137c2",
+  "files_sha256": {
+    "run-config.json": "14f014889f0314c5663c8238dba54a45c3b18d5d52e570546126cbe3aacd01c2",
+    "requirements-freeze.txt": "2bf0fe1ef8439bf3618e0b149fbe12afb7afac3906294802455a11926640ab9e",
+    "checkpoints/layoutlmv3_cord_latest.pt": "6e3483195cc656fa59196c85de58c11df767c9851300d3dfc7ba305ac5e7b1fa",
+    "checkpoints/layoutlmv3_cord_best.pt": "39e4a8d007a9ffa699a877f567a27d610cbc4a5dd9525c4e901fd2a832ce1430",
+    "checkpoints/processor/tokenizer_config.json": "02005ccc36e75fd70548efea9ab37088fa8eb2e2db53bd165e16ac13c93b3010",
+    "checkpoints/processor/merges.txt": "1ce1664773c50f3e0cc8842619a93edc4624525b728b188a9e0be33b7726adc5",
+    "checkpoints/processor/tokenizer.json": "42d111bece82d26509254d8e11c156d8bfa06fdf8876183f64a4fde1956a853f",
+    "checkpoints/processor/vocab.json": "ed19656ea1707df69134c4af35c8ceda2cc9860bf2c3495026153a133670ab5e",
+    "checkpoints/processor/preprocessor_config.json": "d224efe4b72035670def4c76085b144d5aafea912e0cabac680f806da37c9008",
+    "checkpoints/processor/special_tokens_map.json": "8293ae960b0a0852d4d3813118030a1149a3ed9fe37bc2e1e7b3c2e62eb2d4b7",
+    "reports/layoutlmv3_cord_report.md": "12307ba8d028e9f5f52da3f73c8ca7cd38f8b85b4a04c69a625e11512edd2bb5",
+    "reports/figures/layoutlmv3_cord_training_curves.png": "6ebeac351c61cb98ea23110add4adbb03bd13b238211c6db8e22bdb83c2b7075",
+    "reports/predictions/predictions_layoutlmv3_cord_test.json": "b386ba7bcaac23582e89681b50a0f50735e0175cb91ba231b2ca58106b03cdef",
+    "reports/predictions/predictions_layoutlmv3_cord_test.metrics.json": "0bdddb834afa961957909e098eb4fc9e9c05d0a0f97bb8c8f5b929aa28516798",
+    "reports/metrics/layoutlmv3_cord_history.csv": "cfbe4c7d67f897002f7aa293169d41a73b7d6b4aec63e06573d0daf3f43566ab",
+    "reports/metrics/layoutlmv3_cord_results.json": "bd76a31bd0daa2420d02e89200d6e5b334ec2d6ffc16a1fbb75dd49ac66e83cf",
+    "reports/logs/train_layoutlmv3_cord.log": "3f6051068840dda31651d20c313c375584e014a6b4e18c98499e7294b1350fc5"
+  },
+  "zip_crc_ok": true,
+  "checkpoint_hash_matches": true,
+  "prediction_hash_matches": true,
+  "split_hash_matches": true,
+  "source_hashes_match_uploaded_bundle": true,
+  "receipt_reference_hash_matches": true,
+  "test_ids_match": true,
+  "train_test_overlap": 0,
+  "val_test_overlap": 0,
+  "num_test_documents": 100,
+  "completed_epochs": 20,
+  "best_epoch": 20,
+  "best_validation_entity_f1": 0.9328478964401294,
+  "test_entity_f1": 0.9393479909021987,
+  "field_value_metrics_independently_recomputed": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.9514783927217589,
+    "recall": 0.9587471352177235,
+    "f1": 0.9550989345509894,
+    "support": 1309,
+    "macro_f1": 0.7868131315582426,
+    "per_type": {
+      "menu.cnt": {
+        "precision": 0.9864253393665159,
+        "recall": 0.990909090909091,
+        "f1": 0.9886621315192744,
+        "support": 220
+      },
+      "menu.discountprice": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6,
+        "f1": 0.631578947368421,
+        "support": 10
+      },
+      "menu.etc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 3
+      },
+      "menu.itemsubtotal": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "menu.nm": {
+        "precision": 0.9566929133858267,
+        "recall": 0.9681274900398407,
+        "f1": 0.9623762376237623,
+        "support": 251
+      },
+      "menu.num": {
+        "precision": 1.0,
+        "recall": 0.7272727272727273,
+        "f1": 0.8421052631578947,
+        "support": 11
+      },
+      "menu.price": {
+        "precision": 0.9723320158102767,
+        "recall": 1.0,
+        "f1": 0.9859719438877755,
+        "support": 246
+      },
+      "menu.sub.cnt": {
+        "precision": 0.8947368421052632,
+        "recall": 1.0,
+        "f1": 0.9444444444444444,
+        "support": 17
+      },
+      "menu.sub.nm": {
+        "precision": 0.9210526315789473,
+        "recall": 0.9722222222222222,
+        "f1": 0.9459459459459459,
+        "support": 36
+      },
+      "menu.sub.price": {
+        "precision": 1.0,
+        "recall": 0.85,
+        "f1": 0.918918918918919,
+        "support": 20
+      },
+      "menu.unitprice": {
+        "precision": 0.9264705882352942,
+        "recall": 0.9402985074626866,
+        "f1": 0.9333333333333333,
+        "support": 67
+      },
+      "sub_total.discount_price": {
+        "precision": 0.8571428571428571,
+        "recall": 0.8571428571428571,
+        "f1": 0.8571428571428571,
+        "support": 7
+      },
+      "sub_total.etc": {
+        "precision": 0.9166666666666666,
+        "recall": 0.8461538461538461,
+        "f1": 0.88,
+        "support": 13
+      },
+      "sub_total.service_price": {
+        "precision": 0.9230769230769231,
+        "recall": 1.0,
+        "f1": 0.96,
+        "support": 12
+      },
+      "sub_total.subtotal_price": {
+        "precision": 0.9411764705882353,
+        "recall": 0.9696969696969697,
+        "f1": 0.9552238805970149,
+        "support": 66
+      },
+      "sub_total.tax_price": {
+        "precision": 0.9166666666666666,
+        "recall": 0.9777777777777777,
+        "f1": 0.946236559139785,
+        "support": 45
+      },
+      "total.cashprice": {
+        "precision": 1.0,
+        "recall": 0.9565217391304348,
+        "f1": 0.9777777777777777,
+        "support": 69
+      },
+      "total.changeprice": {
+        "precision": 0.9322033898305084,
+        "recall": 0.9821428571428571,
+        "f1": 0.9565217391304348,
+        "support": 56
+      },
+      "total.creditcardprice": {
+        "precision": 0.8823529411764706,
+        "recall": 0.8823529411764706,
+        "f1": 0.8823529411764706,
+        "support": 17
+      },
+      "total.emoneyprice": {
+        "precision": 0.3333333333333333,
+        "recall": 0.5,
+        "f1": 0.4,
+        "support": 2
+      },
+      "total.menuqty_cnt": {
+        "precision": 0.90625,
+        "recall": 1.0,
+        "f1": 0.9508196721311475,
+        "support": 29
+      },
+      "total.menutype_cnt": {
+        "precision": 0.8,
+        "recall": 0.5714285714285714,
+        "f1": 0.6666666666666666,
+        "support": 7
+      },
+      "total.total_etc": {
+        "precision": 0.3333333333333333,
+        "recall": 0.3333333333333333,
+        "f1": 0.3333333333333333,
+        "support": 3
+      },
+      "total.total_price": {
+        "precision": 0.9494949494949495,
+        "recall": 0.9791666666666666,
+        "f1": 0.9641025641025641,
+        "support": 96
+      }
+    },
+    "num_documents": 100
+  },
+  "checkpoint_reload_performed": false,
+  "scope": "ZIP CRC and SHA-256 for all members; source/split/checkpoint provenance; field-value metrics recomputed from local annotations. Entity F1 is the exported run metric; no local re-inference.",
+  "kaggle_notebook": "phvngtngtm/reconia-layoutlmv3-cord",
+  "kaggle_version": 2,
+  "processor_files_present": true,
+  "processor_apply_ocr": false,
+  "full_train_command_verified": true
+}

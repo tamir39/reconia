@@ -4,7 +4,7 @@
 
 [Notebook LayoutLMv3 receipt](../notebooks/kaggle_layoutlmv3_receipts.ipynb) nhận ảnh trang
 và OCR có sẵn cho SROIE/CORD, mặc định smoke. Xem [cấu hình và giới hạn](LAYOUTLMV3.md).
-Không dùng bundle OCR-only của DocILE cho mô hình này.
+Full version 2 của cả SROIE và CORD đã hoàn tất và kiểm chứng; xem [bảng kết quả](../reports/verified_comparison.md). Không dùng bundle OCR-only của DocILE cho mô hình này.
 
 ## SROIE và CORD
 

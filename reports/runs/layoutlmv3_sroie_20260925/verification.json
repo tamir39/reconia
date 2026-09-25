@@ -1,0 +1,127 @@
+{
+  "verified_on": "2026-09-25",
+  "source_archive": "layoutlmv3-sroie-seed42-receipts-v1.zip",
+  "archive_size_bytes": 2243007262,
+  "archive_sha256": "26fefd9622839c005c8706812158f64cdedc6f8038adafb4ebc4b75f9ee7890a",
+  "files_sha256": {
+    "run-config.json": "69c3c67b2278d9f3d33a1e1ee3b6c67394a860ae533f62ebe55c92967f36564e",
+    "requirements-freeze.txt": "2bf0fe1ef8439bf3618e0b149fbe12afb7afac3906294802455a11926640ab9e",
+    "checkpoints/layoutlmv3_sroie_best.pt": "052c0ecbaf2d5ff043b235b1f4c48e02ebf81e3b11153e6df206e041b3c81bb0",
+    "checkpoints/layoutlmv3_sroie_latest.pt": "57e70ab20ae5ee51831d5e46393130b5e2ab8796970d342124bdb15ca0bd2fd3",
+    "checkpoints/processor/merges.txt": "1ce1664773c50f3e0cc8842619a93edc4624525b728b188a9e0be33b7726adc5",
+    "checkpoints/processor/vocab.json": "ed19656ea1707df69134c4af35c8ceda2cc9860bf2c3495026153a133670ab5e",
+    "checkpoints/processor/special_tokens_map.json": "8293ae960b0a0852d4d3813118030a1149a3ed9fe37bc2e1e7b3c2e62eb2d4b7",
+    "checkpoints/processor/tokenizer.json": "42d111bece82d26509254d8e11c156d8bfa06fdf8876183f64a4fde1956a853f",
+    "checkpoints/processor/preprocessor_config.json": "d224efe4b72035670def4c76085b144d5aafea912e0cabac680f806da37c9008",
+    "checkpoints/processor/tokenizer_config.json": "02005ccc36e75fd70548efea9ab37088fa8eb2e2db53bd165e16ac13c93b3010",
+    "reports/layoutlmv3_sroie_report.md": "cf26d7b773e8c8a22a756626770aa9aabc160e29293a78f31b981adf71cce968",
+    "reports/predictions/predictions_layoutlmv3_sroie_test.json": "aafcc3065e4739309590c1430d0c229b8f5f1c23d201147a2f5de4f4389b9c81",
+    "reports/predictions/layoutlmv3_sroie_test.four-field.metrics.json": "b61a421af92a85562aa82fbe3a15864e106a2ce1a7a27e3f4a7022b8ed37a16a",
+    "reports/predictions/predictions_layoutlmv3_sroie_test.metrics.json": "718774ad6ea333274b96d670f65d03aeb833371bac74e160bf6b67af8742d1a5",
+    "reports/predictions/layoutlmv3_sroie_test.four-field.metrics.values.json": "1ce41433b027c7a9ff71d10173cb739effcbf986666058ae7aacbbaf44566923",
+    "reports/figures/layoutlmv3_sroie_training_curves.png": "508a583bd5f6ca952de624de8e9a4793ea9dbfdfff86c8dabb9d87d2561aaf60",
+    "reports/metrics/layoutlmv3_sroie_results.json": "6426c926facf979c6324e90fcb8293e8b8f5c1cb525f3a411e5d269b6656718b",
+    "reports/metrics/layoutlmv3_sroie_history.csv": "73f3d6a4e1d8fe9f4e6e6f332bedd9002c08bcb683309ff1b9cdb19d4cdc97ca",
+    "reports/logs/train_layoutlmv3_sroie.log": "5322edd712be8689c372d03c6bf57c5cbad61b986fbeba63b1b5795b0390e451"
+  },
+  "zip_crc_ok": true,
+  "checkpoint_hash_matches": true,
+  "prediction_hash_matches": true,
+  "split_hash_matches": true,
+  "source_hashes_match_uploaded_bundle": true,
+  "receipt_reference_hash_matches": true,
+  "test_ids_match": true,
+  "train_test_overlap": 0,
+  "val_test_overlap": 0,
+  "num_test_documents": 63,
+  "completed_epochs": 14,
+  "best_epoch": 9,
+  "best_validation_entity_f1": 0.9414893617021276,
+  "test_entity_f1": 0.9449929478138223,
+  "field_value_metrics_independently_recomputed": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.9467787114845938,
+    "recall": 0.9602272727272727,
+    "f1": 0.9534555712270804,
+    "support": 352,
+    "macro_f1": 0.949917893354634,
+    "per_type": {
+      "address": {
+        "precision": 0.9515151515151515,
+        "recall": 0.9751552795031055,
+        "f1": 0.9631901840490797,
+        "support": 161
+      },
+      "company": {
+        "precision": 0.9420289855072463,
+        "recall": 0.9285714285714286,
+        "f1": 0.935251798561151,
+        "support": 70
+      },
+      "date": {
+        "precision": 0.967741935483871,
+        "recall": 0.9836065573770492,
+        "f1": 0.975609756097561,
+        "support": 61
+      },
+      "total": {
+        "precision": 0.9180327868852459,
+        "recall": 0.9333333333333333,
+        "f1": 0.9256198347107438,
+        "support": 60
+      }
+    },
+    "num_documents": 63
+  },
+  "checkpoint_reload_performed": false,
+  "scope": "ZIP CRC and SHA-256 for all members; source/split/checkpoint provenance; field-value metrics recomputed from local annotations. Entity F1 is the exported run metric; no local re-inference.",
+  "original_four_field_metrics_independently_recomputed": {
+    "protocol": "sroie-four-field-nfkc-casefold-v1",
+    "precision": 0.7651821862348178,
+    "recall": 0.7529880478087649,
+    "f1": 0.7590361445783133,
+    "support": 251,
+    "macro_f1": 0.7594726062467998,
+    "per_type": {
+      "address": {
+        "precision": 0.6612903225806451,
+        "recall": 0.6612903225806451,
+        "f1": 0.6612903225806451,
+        "support": 62
+      },
+      "company": {
+        "precision": 0.6507936507936508,
+        "recall": 0.6507936507936508,
+        "f1": 0.6507936507936508,
+        "support": 63
+      },
+      "date": {
+        "precision": 0.8360655737704918,
+        "recall": 0.8095238095238095,
+        "f1": 0.8225806451612904,
+        "support": 63
+      },
+      "total": {
+        "precision": 0.9180327868852459,
+        "recall": 0.8888888888888888,
+        "f1": 0.9032258064516129,
+        "support": 63
+      }
+    },
+    "num_documents": 63,
+    "aggregation": "join-nonempty-fragments-in-input-order",
+    "target_source": "original-SROIE-key-annotations",
+    "unannotated_field_slots": 1,
+    "missing_annotation_policy": "exclude-unannotated-keys-from-scoring"
+  },
+  "original_four_field_counts": {
+    "tp": 189,
+    "fp": 58,
+    "fn": 62
+  },
+  "kaggle_notebook": "phvngtngtm/reconia-layoutlmv3-sroie",
+  "kaggle_version": 2,
+  "processor_files_present": true,
+  "processor_apply_ocr": false,
+  "full_train_command_verified": true
+}

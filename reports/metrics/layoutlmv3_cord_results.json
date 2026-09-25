@@ -1,0 +1,386 @@
+{
+  "model": "LayoutLMv3",
+  "dataset": "cord",
+  "best_epoch": 20,
+  "split": "TEST",
+  "train_loss": 0.015047584061976522,
+  "val_loss": 0.300089616125683,
+  "precision": 0.9393479909021987,
+  "recall": 0.9393479909021987,
+  "f1": 0.9393479909021987,
+  "latency": 188.7353621499915,
+  "total_params": 125962939,
+  "device": "cuda",
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 2.061155335009098,
+      "val_loss": 0.8364948556713303,
+      "precision": 0.7632398753894081,
+      "recall": 0.7928802588996764,
+      "f1": 0.7777777777777778,
+      "latency": 79.3948632799993
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.8526054725237191,
+      "val_loss": 0.42949654095127077,
+      "precision": 0.8429237947122862,
+      "recall": 0.8770226537216829,
+      "f1": 0.8596352101506741,
+      "latency": 79.62623960999963
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.493967913184315,
+      "val_loss": 0.32556514347897464,
+      "precision": 0.9042298483639266,
+      "recall": 0.9166666666666666,
+      "f1": 0.9104057854560065,
+      "latency": 79.60623365999936
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.34374026351608333,
+      "val_loss": 0.26223922809219535,
+      "precision": 0.9139871382636656,
+      "recall": 0.9199029126213593,
+      "f1": 0.9169354838709678,
+      "latency": 78.9249794300008
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.25989378828555343,
+      "val_loss": 0.2689932773719658,
+      "precision": 0.9030206677265501,
+      "recall": 0.919093851132686,
+      "f1": 0.9109863672814755,
+      "latency": 79.76057265000009
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.2002569918264635,
+      "val_loss": 0.2879322797932542,
+      "precision": 0.9061748195669607,
+      "recall": 0.9142394822006472,
+      "f1": 0.9101892871526379,
+      "latency": 79.19332060999977
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.15435605396749452,
+      "val_loss": 0.30253772286243213,
+      "precision": 0.9110032362459547,
+      "recall": 0.9110032362459547,
+      "f1": 0.9110032362459546,
+      "latency": 79.57693350999762
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.13104527585441247,
+      "val_loss": 0.29156132062176227,
+      "precision": 0.9238249594813615,
+      "recall": 0.9223300970873787,
+      "f1": 0.923076923076923,
+      "latency": 79.26738760999797
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.10209997920901515,
+      "val_loss": 0.27131863159944675,
+      "precision": 0.9251207729468599,
+      "recall": 0.9296116504854369,
+      "f1": 0.927360774818402,
+      "latency": 79.06782576999831
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.08389913714781869,
+      "val_loss": 0.2781515259394543,
+      "precision": 0.9212218649517685,
+      "recall": 0.9271844660194175,
+      "f1": 0.9241935483870968,
+      "latency": 79.62024394000309
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.0678331058594631,
+      "val_loss": 0.27222005411478106,
+      "precision": 0.917940466613033,
+      "recall": 0.9231391585760518,
+      "f1": 0.9205324727712788,
+      "latency": 79.38350092000292
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.05617271764436737,
+      "val_loss": 0.3152246840182293,
+      "precision": 0.9162640901771336,
+      "recall": 0.9207119741100324,
+      "f1": 0.9184826472962065,
+      "latency": 79.28167971999756
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.0435209741620929,
+      "val_loss": 0.30156005574739647,
+      "precision": 0.9264943457189014,
+      "recall": 0.9279935275080906,
+      "f1": 0.9272433306386418,
+      "latency": 79.49660473000222
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.037499344972893596,
+      "val_loss": 0.2975748147771158,
+      "precision": 0.9289176090468497,
+      "recall": 0.93042071197411,
+      "f1": 0.9296685529506872,
+      "latency": 79.20881469000051
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.029677263016055805,
+      "val_loss": 0.2939732238404923,
+      "precision": 0.9296685529506872,
+      "recall": 0.93042071197411,
+      "f1": 0.9300444803881925,
+      "latency": 79.10057775000041
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.02514030686870683,
+      "val_loss": 0.31349759490961127,
+      "precision": 0.9294975688816856,
+      "recall": 0.9279935275080906,
+      "f1": 0.928744939271255,
+      "latency": 79.01942868999868
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.018837432912841904,
+      "val_loss": 0.2929120107885358,
+      "precision": 0.9296685529506872,
+      "recall": 0.93042071197411,
+      "f1": 0.9300444803881925,
+      "latency": 79.00252934000036
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.018483803747803906,
+      "val_loss": 0.30402230546270365,
+      "precision": 0.9296685529506872,
+      "recall": 0.93042071197411,
+      "f1": 0.9300444803881925,
+      "latency": 79.4965962499964
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.015335195835214109,
+      "val_loss": 0.30280412596114464,
+      "precision": 0.9297253634894992,
+      "recall": 0.9312297734627831,
+      "f1": 0.9304769603880356,
+      "latency": 79.39058269999805
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.015047584061976522,
+      "val_loss": 0.300089616125683,
+      "precision": 0.9328478964401294,
+      "recall": 0.9328478964401294,
+      "f1": 0.9328478964401294,
+      "latency": 79.3387871699997
+    }
+  ],
+  "per_type": {
+    "menu.cnt": {
+      "precision": 0.9864253393665159,
+      "recall": 0.990909090909091,
+      "f1": 0.9886621315192745,
+      "support": 220
+    },
+    "menu.discountprice": {
+      "precision": 0.6666666666666666,
+      "recall": 0.6,
+      "f1": 0.631578947368421,
+      "support": 10
+    },
+    "menu.etc": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 3
+    },
+    "menu.itemsubtotal": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 6
+    },
+    "menu.nm": {
+      "precision": 0.952755905511811,
+      "recall": 0.9603174603174603,
+      "f1": 0.9565217391304348,
+      "support": 252
+    },
+    "menu.num": {
+      "precision": 1.0,
+      "recall": 0.7272727272727273,
+      "f1": 0.8421052631578948,
+      "support": 11
+    },
+    "menu.price": {
+      "precision": 0.9683794466403162,
+      "recall": 0.9959349593495935,
+      "f1": 0.9819639278557115,
+      "support": 246
+    },
+    "menu.sub.cnt": {
+      "precision": 0.8947368421052632,
+      "recall": 1.0,
+      "f1": 0.9444444444444444,
+      "support": 17
+    },
+    "menu.sub.nm": {
+      "precision": 0.9210526315789473,
+      "recall": 0.9722222222222222,
+      "f1": 0.9459459459459458,
+      "support": 36
+    },
+    "menu.sub.price": {
+      "precision": 1.0,
+      "recall": 0.85,
+      "f1": 0.9189189189189189,
+      "support": 20
+    },
+    "menu.unitprice": {
+      "precision": 0.9264705882352942,
+      "recall": 0.9402985074626866,
+      "f1": 0.9333333333333335,
+      "support": 67
+    },
+    "sub_total.discount_price": {
+      "precision": 0.8571428571428571,
+      "recall": 0.8571428571428571,
+      "f1": 0.8571428571428571,
+      "support": 7
+    },
+    "sub_total.etc": {
+      "precision": 0.9166666666666666,
+      "recall": 0.8461538461538461,
+      "f1": 0.8799999999999999,
+      "support": 13
+    },
+    "sub_total.service_price": {
+      "precision": 0.7692307692307693,
+      "recall": 0.7692307692307693,
+      "f1": 0.7692307692307693,
+      "support": 13
+    },
+    "sub_total.subtotal_price": {
+      "precision": 0.9264705882352942,
+      "recall": 0.9264705882352942,
+      "f1": 0.9264705882352942,
+      "support": 68
+    },
+    "sub_total.tax_price": {
+      "precision": 0.8541666666666666,
+      "recall": 0.8913043478260869,
+      "f1": 0.8723404255319149,
+      "support": 46
+    },
+    "total.cashprice": {
+      "precision": 0.9545454545454546,
+      "recall": 0.875,
+      "f1": 0.9130434782608695,
+      "support": 72
+    },
+    "total.changeprice": {
+      "precision": 0.864406779661017,
+      "recall": 0.8947368421052632,
+      "f1": 0.8793103448275862,
+      "support": 57
+    },
+    "total.creditcardprice": {
+      "precision": 0.8823529411764706,
+      "recall": 0.8823529411764706,
+      "f1": 0.8823529411764706,
+      "support": 17
+    },
+    "total.emoneyprice": {
+      "precision": 0.3333333333333333,
+      "recall": 0.5,
+      "f1": 0.4,
+      "support": 2
+    },
+    "total.menuqty_cnt": {
+      "precision": 0.90625,
+      "recall": 1.0,
+      "f1": 0.9508196721311475,
+      "support": 29
+    },
+    "total.menutype_cnt": {
+      "precision": 0.8,
+      "recall": 0.5714285714285714,
+      "f1": 0.6666666666666666,
+      "support": 7
+    },
+    "total.total_etc": {
+      "precision": 0.3333333333333333,
+      "recall": 0.3333333333333333,
+      "f1": 0.3333333333333333,
+      "support": 3
+    },
+    "total.total_price": {
+      "precision": 0.9393939393939394,
+      "recall": 0.9587628865979382,
+      "f1": 0.9489795918367346,
+      "support": 97
+    }
+  },
+  "metadata": {
+    "window_policy": "page-image-all-windows-first-subword-v1",
+    "train_documents": 800,
+    "val_documents": 100,
+    "train_windows": 800,
+    "best_epoch": 20,
+    "epochs_trained": 20,
+    "seed": 42,
+    "device": "cuda",
+    "gpu_name": "Tesla T4",
+    "total_params": 125962939,
+    "batch_size": 2,
+    "batch_accum": 8,
+    "lr": 5e-05,
+    "head_lr": 0.0002,
+    "patience": 5,
+    "backbone_repo": "microsoft/layoutlmv3-base",
+    "backbone_revision": "cfbbbff0762e6aab37086fdd4739ad14fe7d5db4",
+    "image_input": "original-page-rgb",
+    "ocr_input": "dataset-provided"
+  },
+  "metrics_val": {
+    "precision": 0.9328478964401294,
+    "recall": 0.9328478964401294,
+    "f1": 0.9328478964401294,
+    "train_loss": 0.015047584061976522,
+    "val_loss": 0.300089616125683,
+    "latency": 79.3387871699997
+  },
+  "metrics_test": {
+    "precision": 0.9393479909021987,
+    "recall": 0.9393479909021987,
+    "f1": 0.9393479909021987,
+    "latency": 188.7353621499915
+  },
+  "evaluation_provenance": {
+    "protocol": "ocr-bio-exact-span-v2",
+    "complete": true,
+    "num_documents": 100,
+    "expected_num_documents": 100,
+    "split_sha256": "4a4bfd6d2acaf19c227fbea34cc86d02a3bf9fdbe67b1c76b7b07f75ed5eb35f",
+    "checkpoint_sha256": "39e4a8d007a9ffa699a877f567a27d610cbc4a5dd9525c4e901fd2a832ce1430",
+    "prediction_sha256": "b386ba7bcaac23582e89681b50a0f50735e0175cb91ba231b2ca58106b03cdef"
+  }
+}

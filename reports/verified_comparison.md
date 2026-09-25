@@ -25,6 +25,8 @@ Trên cùng split và seed 42, RoBERTa cao hơn GNN **12,87 điểm phần trăm
 | GNN / CORD-v2 | 800 / 100 / 100 | 19 / 20 | 73,21% | 64,50% / 75,89% / **69,73%** | **70,46%** | — |
 | RoBERTa / SROIE | 500 / 63 / 63 | 8 / 13 | 81,87% | 86,22% / 90,62% / **88,37%** | 89,20% | **73,60%** |
 | RoBERTa / CORD-v2 | 800 / 100 / 100 | 9 / 14 | 92,91% | 91,71% / 92,27% / **91,99%** | **94,08%** | — |
+| LayoutLMv3 / SROIE | 500 / 63 / 63 | 9 / 14 | 94,15% | 93,84% / 95,17% / **94,50%** | **95,35%** | 75,90% |
+| LayoutLMv3 / CORD | 800 / 100 / 100 | 20 / 20 | 93,28% | 93,93% / 93,93% / **93,93%** | **95,51%** | — |
 
 Hai lần GNN chạy seed 42 trên Tesla T4. ZIP, hash checkpoint/predictions/mã nguồn,
 manifest đối chiếu receipt và đúng toàn bộ ID test đều đã khớp; test không trùng
@@ -45,4 +47,8 @@ RoBERTa full version 2 đã hoàn tất và được kiểm chứng trên cùng 
 
 RoBERTa đạt bốn key SROIE gốc F1 **73,60%**; đối chiếu trực tiếp key gốc cho **184 TP / 65 FP / 67 FN**, hỗ trợ 251 giá trị. [Metrics bốn key](predictions/roberta_sroie_test.four-field.metrics.json). So với GNN trên cùng split, tăng **18,90 điểm phần trăm** ở phép chấm này; CORD tăng **23,62 điểm phần trăm field-value F1**. Đây vẫn là kết quả một seed.
 
-GNN và RoBERTa hiện có sáu lần chạy đầy đủ đã kiểm chứng trên ba bộ dữ liệu. LayoutLMv3, LiLT và hai VLM chưa có kết quả; không suy ra toàn bộ đề tài đã hoàn tất.
+LayoutLMv3 full version 2 đã hoàn tất và kiểm chứng trên cùng split, seed 42, Tesla T4, với ảnh trang gốc và OCR có sẵn. SROIE chọn best epoch 9, dừng sớm ở epoch 14; CORD chọn best epoch 20 và chạy đủ 20 epochs. CRC và SHA-256 mọi tệp ZIP, checkpoint/predictions, mã nguồn, manifest receipt, processor và toàn bộ ID test đều khớp. Không trùng ID test với train/val. Các điểm field-value được tái tính từ nhãn cục bộ và khớp; entity F1 là số liệu xuất từ run đã kiểm tra provenance, chưa chạy lại suy luận cục bộ. Xem [SROIE](runs/layoutlmv3_sroie_20260925/verification.json) và [CORD](runs/layoutlmv3_cord_20260925/verification.json).
+
+SROIE bốn key gốc đạt **75,90%**, với **189 TP / 58 FP / 62 FN** trên 251 giá trị được chú giải. So với RoBERTa, tăng **2,30 điểm phần trăm** ở phép chấm này; CORD field-value F1 tăng **1,43 điểm phần trăm**. Các kết quả chỉ dùng một seed, chưa có kết luận thống kê.
+
+Hiện có tám lần chạy đầy đủ đã kiểm chứng: GNN/RoBERTa trên ba bộ và LayoutLMv3 trên hai bộ receipt. LayoutLMv3/DocILE cần chuẩn bị ảnh trang; LiLT và hai VLM chưa có kết quả. Đề tài vẫn đang thực hiện.

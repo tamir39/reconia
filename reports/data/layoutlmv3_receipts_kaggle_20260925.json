@@ -44,7 +44,7 @@
   "full_runs": {
     "sroie": {
       "notebook": "phvngtngtm/reconia-layoutlmv3-sroie",
-      "status": "running",
+      "status": "complete",
       "max_epochs": 20,
       "patience": 5,
       "seed": 42,
@@ -60,11 +60,19 @@
       "submitted_code_sha256": "826372f2716867538360af4a60424d3986e0e810c83cd76b3817d57c2cde6ada",
       "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
       "full_training_counts_confirmed": true,
-      "launch_log_sha256": "b7c937cf3a926d4c91280a83fa41ef4aa2a24477e8c516c5c266e9ce33a7ff2e"
+      "launch_log_sha256": "b7c937cf3a926d4c91280a83fa41ef4aa2a24477e8c516c5c266e9ce33a7ff2e",
+      "verified": true,
+      "completed_epochs": 14,
+      "best_epoch": 9,
+      "test_entity_f1": 0.9449929478138223,
+      "test_ocr_field_value_f1": 0.9534555712270804,
+      "archive_sha256": "26fefd9622839c005c8706812158f64cdedc6f8038adafb4ebc4b75f9ee7890a",
+      "verification": "reports/runs/layoutlmv3_sroie_20260925/verification.json",
+      "test_original_four_field_f1": 0.7590361445783133
     },
     "cord": {
       "notebook": "phvngtngtm/reconia-layoutlmv3-cord",
-      "status": "running",
+      "status": "complete",
       "max_epochs": 20,
       "patience": 5,
       "seed": 42,
@@ -80,14 +88,22 @@
       "submitted_code_sha256": "0a9eda3d5480083a6fc0c03b2595536422964c02613a035d9bd850a498291283",
       "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
       "full_training_counts_confirmed": true,
-      "launch_log_sha256": "6ecacb430324134d3af4ff2f5b194c48dcf646ef75e2c355bcf84683814a58af"
+      "launch_log_sha256": "6ecacb430324134d3af4ff2f5b194c48dcf646ef75e2c355bcf84683814a58af",
+      "verified": true,
+      "completed_epochs": 20,
+      "best_epoch": 20,
+      "test_entity_f1": 0.9393479909021987,
+      "test_ocr_field_value_f1": 0.9550989345509894,
+      "archive_sha256": "7db10026b0c746690043168847c5e07284ac4f38c9cfa00bda1dc344fa9137c2",
+      "verification": "reports/runs/layoutlmv3_cord_20260925/verification.json"
     }
   },
   "limitations": [
     "Smoke scores are not benchmark results.",
     "DocILE requires a separately prepared image bundle.",
     "Fresh training only; resume is not supported in this first version.",
-    "LiLT and both VLM adapters remain unimplemented."
+    "LiLT and both VLM adapters remain unimplemented.",
+    "One seed per run; entity F1 is exported, while field-value metrics were independently rescored without local re-inference."
   ],
   "dataset_version": 4
 }

@@ -6,10 +6,10 @@
 trình mới và suy luận đủ 4 val; hash predictions/mã nguồn, split và field-value
 đã được kiểm tra cục bộ. SROIE đã qua cả scorer bốn key gốc.
 
-Full version 2 đang chạy private trên [SROIE](https://www.kaggle.com/code/phvngtngtm/reconia-layoutlmv3-sroie)
+Full version 2 đã hoàn tất và kiểm chứng trên [SROIE](https://www.kaggle.com/code/phvngtngtm/reconia-layoutlmv3-sroie)
 và [CORD](https://www.kaggle.com/code/phvngtngtm/reconia-layoutlmv3-cord), học mới trên toàn bộ train.
 Dataset private dùng version 4. Xem [bằng chứng và cấu hình](../reports/data/layoutlmv3_receipts_kaggle_20260925.json).
-Chưa có kết quả full run được kiểm chứng.
+SROIE: best 9/14 epochs, test entity F1 94,50%, giá trị đoạn OCR F1 95,35%, bốn key gốc F1 75,90%. CORD: best 20/20 epochs, test entity F1 93,93%, field-value F1 95,51%. Đã kiểm tra ZIP/hash/split và tái tính field-value từ nhãn cục bộ; chưa chạy lại suy luận cục bộ. Xem [bảng so sánh đã kiểm chứng](../reports/verified_comparison.md).
 
 ## Phạm vi
 
