@@ -1,0 +1,95 @@
+{
+  "model": "LAYOUTLMV3",
+  "dataset": "sroie",
+  "split": "val",
+  "source_split": "val",
+  "num_documents": 4,
+  "expected_num_documents": 63,
+  "complete": false,
+  "protocol": "ocr-bio-exact-span-v2",
+  "split_sha256": "f3d484dc455329b909157609e1ddecbebec64714ef437f14a1e6f89b6c0fdb3c",
+  "checkpoint_sha256": "562814d99314330559e9eb03d6fc449ac93c80363dae12e095e3abe379a5a0b6",
+  "has_ground_truth": true,
+  "latency": 193.07073150000065,
+  "throughput": 5.179448962723781,
+  "perf": {
+    "elapsed_sec": 0.7722829260000026,
+    "latency": 193.07073150000065,
+    "throughput": 5.179448962723781
+  },
+  "window_policy": "page-image-all-windows-first-subword-v1",
+  "image_input": "original-page-rgb",
+  "ocr_input": "dataset-provided",
+  "prediction_sha256": "e01c486ab63d2d8729df763baed20dbeb9e068d5b9ec72709bd09898b367a61a",
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1": 0.0,
+  "entity_metrics": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "total_true_entities": 26,
+    "total_pred_entities": 3,
+    "per_type": {
+      "address": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 12
+      },
+      "company": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "date": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      },
+      "total": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      }
+    }
+  },
+  "value_metrics": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 26,
+    "macro_f1": 0.0,
+    "per_type": {
+      "address": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 12
+      },
+      "company": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "date": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      },
+      "total": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      }
+    },
+    "num_documents": 4
+  }
+}

@@ -148,10 +148,11 @@ class CordAdapter:
 
     def get_image(self, doc_id: str, page: int = 0):
         """Return PIL Image for the document from Hugging Face dataset."""
-        from PIL import Image
+        if page != 0:
+            raise ValueError("CORD receipts have exactly one page")
         split, idx = self._parse_doc_id(doc_id)
         sample = self._dataset[split][idx]
         img = sample.get("image")
         if img is not None:
             return img.convert("RGB")
-        return Image.new("RGB", (1000, 1000), color=(255, 255, 255))
+        raise FileNotFoundError(f"Missing CORD image: {doc_id}")

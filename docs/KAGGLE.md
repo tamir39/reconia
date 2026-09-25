@@ -1,5 +1,11 @@
 # Huấn luyện mô hình trên Kaggle
 
+## LayoutLMv3
+
+[Notebook LayoutLMv3 receipt](../notebooks/kaggle_layoutlmv3_receipts.ipynb) nhận ảnh trang
+và OCR có sẵn cho SROIE/CORD, mặc định smoke. Xem [cấu hình và giới hạn](LAYOUTLMV3.md).
+Không dùng bundle OCR-only của DocILE cho mô hình này.
+
 ## SROIE và CORD
 
 GNN đã hoàn tất và kiểm chứng trên cả hai bộ. Notebook

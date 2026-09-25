@@ -292,8 +292,10 @@ class SroieAdapter:
 
     def get_image(self, doc_id: str, page: int = 0):
         """Return PIL Image for the receipt scan."""
+        if page != 0:
+            raise ValueError("SROIE receipts have exactly one page")
         img_p = self.image_path(doc_id)
         if img_p.is_file():
             with Image.open(img_p) as img:
                 return img.convert("RGB")
-        return Image.new("RGB", (1000, 1000), color=(255, 255, 255))
+        raise FileNotFoundError(img_p)

@@ -22,7 +22,7 @@ Mục tiêu của đề tài là xây dựng **khung thực nghiệm thống nh�
 5. **Qwen2.5-VL**: theo đề xuất của Thịnh; checkpoint 3B-Instruct đề xuất để thử trên Kaggle, chưa hiện thực.
 6. **InternVL**: theo đề xuất của Thịnh; checkpoint InternVL2.5-2B đề xuất để thử trên Kaggle, chưa hiện thực.
 
-GNN và RoBERTa đã có mã nguồn. Bốn mô hình còn lại chưa hiện thực.
+GNN và RoBERTa đã có các lần chạy được kiểm chứng. LayoutLMv3 đã qua smoke ảnh/OCR cho SROIE/CORD và đang chạy full version 2 trên Kaggle; xem [hướng dẫn](docs/LAYOUTLMV3.md). LiLT và hai VLM chưa hiện thực. LayoutLMv3/DocILE cần bundle ảnh riêng.
 
 Chuẩn bị ảnh/nhãn SROIE và CORD-v2: [hướng dẫn và giới hạn đánh giá](docs/RECEIPT_PREPARATION.md), [notebook GNN receipt](notebooks/kaggle_gnn_receipts.ipynb) mặc định smoke. GNN và RoBERTa đã hoàn tất và kiểm chứng trên cả hai bộ. RoBERTa test entity F1: SROIE 88,37%, CORD 91,99%; xem [bảng so sánh](reports/verified_comparison.md). [Notebook RoBERTa receipt](notebooks/kaggle_roberta_receipts.ipynb) dùng cùng split và mặc định smoke.
 

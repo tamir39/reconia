@@ -1,0 +1,93 @@
+{
+  "date": "2026-09-25",
+  "dataset": "phvngtngtm/reconia-sroie-cord-training-bundle",
+  "is_private": true,
+  "backbone_repo": "microsoft/layoutlmv3-base",
+  "backbone_revision": "cfbbbff0762e6aab37086fdd4739ad14fe7d5db4",
+  "source_bundle_sha256": "f1e9f6550624cdc3928744e2fc8528f0fce0dcd13711c3663dfe3a0bd00f4f6c",
+  "window_policy": "page-image-all-windows-first-subword-v1",
+  "tests_passed": 126,
+  "smoke_runs": {
+    "sroie": {
+      "notebook": "phvngtngtm/reconia-layoutlmv3-sroie",
+      "version": 1,
+      "train_documents": 8,
+      "validation_documents": 4,
+      "epochs": 1,
+      "gpu": "Tesla T4",
+      "checkpoint_reloaded_for_inference": true,
+      "remote_source_and_private_setting_verified": true,
+      "submitted_code_sha256": "b55e39592af1bfda96011df028963235dcf479196936dff4b2ee9ec89336b1f1",
+      "status": "complete",
+      "prediction_hash_verified": true,
+      "source_hashes_verified": true,
+      "field_value_metrics_recomputed": true,
+      "evidence_directory": "reports/runs/layoutlmv3_receipts_kaggle_20260925/sroie-smoke"
+    },
+    "cord": {
+      "notebook": "phvngtngtm/reconia-layoutlmv3-cord",
+      "version": 1,
+      "train_documents": 8,
+      "validation_documents": 4,
+      "epochs": 1,
+      "gpu": "Tesla T4",
+      "checkpoint_reloaded_for_inference": true,
+      "remote_source_and_private_setting_verified": true,
+      "submitted_code_sha256": "24b7a7d8e15461cb9dca910a84530107a27f177141a15c5d2edf31adce3769de",
+      "status": "complete",
+      "prediction_hash_verified": true,
+      "source_hashes_verified": true,
+      "field_value_metrics_recomputed": true,
+      "evidence_directory": "reports/runs/layoutlmv3_receipts_kaggle_20260925/cord-smoke"
+    }
+  },
+  "full_runs": {
+    "sroie": {
+      "notebook": "phvngtngtm/reconia-layoutlmv3-sroie",
+      "status": "running",
+      "max_epochs": 20,
+      "patience": 5,
+      "seed": 42,
+      "batch_size": 2,
+      "batch_accum": 8,
+      "counts": {
+        "train": 500,
+        "val": 63,
+        "test": 63
+      },
+      "version": 2,
+      "remote_source_and_private_setting_verified": true,
+      "submitted_code_sha256": "826372f2716867538360af4a60424d3986e0e810c83cd76b3817d57c2cde6ada",
+      "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
+      "full_training_counts_confirmed": true,
+      "launch_log_sha256": "b7c937cf3a926d4c91280a83fa41ef4aa2a24477e8c516c5c266e9ce33a7ff2e"
+    },
+    "cord": {
+      "notebook": "phvngtngtm/reconia-layoutlmv3-cord",
+      "status": "running",
+      "max_epochs": 20,
+      "patience": 5,
+      "seed": 42,
+      "batch_size": 2,
+      "batch_accum": 8,
+      "counts": {
+        "train": 800,
+        "val": 100,
+        "test": 100
+      },
+      "version": 2,
+      "remote_source_and_private_setting_verified": true,
+      "submitted_code_sha256": "0a9eda3d5480083a6fc0c03b2595536422964c02613a035d9bd850a498291283",
+      "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
+      "full_training_counts_confirmed": true,
+      "launch_log_sha256": "6ecacb430324134d3af4ff2f5b194c48dcf646ef75e2c355bcf84683814a58af"
+    }
+  },
+  "limitations": [
+    "Smoke scores are not benchmark results.",
+    "DocILE requires a separately prepared image bundle.",
+    "Fresh training only; resume is not supported in this first version.",
+    "LiLT and both VLM adapters remain unimplemented."
+  ],
+  "dataset_version": 4
+}

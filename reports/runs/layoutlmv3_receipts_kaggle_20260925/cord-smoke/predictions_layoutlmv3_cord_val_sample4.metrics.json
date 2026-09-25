@@ -1,0 +1,203 @@
+{
+  "model": "LAYOUTLMV3",
+  "dataset": "cord",
+  "split": "val",
+  "source_split": "validation",
+  "num_documents": 4,
+  "expected_num_documents": 100,
+  "complete": false,
+  "protocol": "ocr-bio-exact-span-v2",
+  "split_sha256": "10b01112c86792825eeb2131731dfd15fd3d4e194013f9ce0845403dcc279235",
+  "checkpoint_sha256": "8d6bb621382d15fb47a518cd4537dd49c207f0231bd0423149782876638560a3",
+  "has_ground_truth": true,
+  "latency": 330.239547000005,
+  "throughput": 3.02810492893507,
+  "perf": {
+    "elapsed_sec": 1.32095818800002,
+    "latency": 330.239547000005,
+    "throughput": 3.02810492893507
+  },
+  "window_policy": "page-image-all-windows-first-subword-v1",
+  "image_input": "original-page-rgb",
+  "ocr_input": "dataset-provided",
+  "prediction_sha256": "88d065f904ff831e10fc2cea46897a9cc44f3fbb6c61e5ad621bb4abc8b1e30d",
+  "precision": 0.09259259259259259,
+  "recall": 0.12195121951219512,
+  "f1": 0.10526315789473684,
+  "entity_metrics": {
+    "precision": 0.09259259259259259,
+    "recall": 0.12195121951219512,
+    "f1": 0.10526315789473684,
+    "total_true_entities": 41,
+    "total_pred_entities": 54,
+    "per_type": {
+      "menu.cnt": {
+        "precision": 0.26666666666666666,
+        "recall": 0.6666666666666666,
+        "f1": 0.3809523809523809,
+        "support": 6
+      },
+      "menu.etc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "menu.nm": {
+        "precision": 0.05555555555555555,
+        "recall": 0.16666666666666666,
+        "f1": 0.08333333333333333,
+        "support": 6
+      },
+      "menu.price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "menu.sub.nm": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "menu.sub.unitprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "menu.unitprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "menu.vatyn": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "sub_total.subtotal_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "sub_total.tax_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 3
+      },
+      "total.cashprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 5
+      },
+      "total.changeprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      },
+      "total.total_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      }
+    }
+  },
+  "value_metrics": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.09259259259259259,
+    "recall": 0.1282051282051282,
+    "f1": 0.10752688172043011,
+    "support": 39,
+    "macro_f1": 0.03571428571428571,
+    "per_type": {
+      "menu.cnt": {
+        "precision": 0.26666666666666666,
+        "recall": 0.6666666666666666,
+        "f1": 0.38095238095238093,
+        "support": 6
+      },
+      "menu.etc": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "menu.nm": {
+        "precision": 0.05555555555555555,
+        "recall": 0.16666666666666666,
+        "f1": 0.08333333333333333,
+        "support": 6
+      },
+      "menu.price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "menu.sub.nm": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "menu.sub.unitprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "menu.unitprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "menu.vatyn": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "sub_total.subtotal_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "sub_total.tax_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "total.cashprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      },
+      "total.changeprice": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      },
+      "total.total_price": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      }
+    },
+    "num_documents": 4
+  }
+}
