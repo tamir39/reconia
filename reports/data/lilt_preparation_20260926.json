@@ -49,7 +49,7 @@
     }
   },
   "date": "2026-09-26",
-  "status": "prepared_locally_upload_blocked_pending_explicit_approval",
+  "status": "all_smokes_verified_docile_sroie_full_launched_cord_queued",
   "backbone_repo": "SCUT-DLVCLab/lilt-roberta-en-base",
   "backbone_revision": "96328faae824978e47bd0e8ea09f66b85efda5f5",
   "notebook": "notebooks/kaggle_lilt.ipynb",
@@ -60,12 +60,92 @@
     "full_suite_passed": 138,
     "additional_export_test_passed": 1
   },
-  "uploaded": false,
-  "gpu_smoke_passed": false,
-  "full_training_started": false,
+  "uploaded": true,
+  "gpu_smoke_passed": true,
+  "full_training_started": true,
   "limitations": [
     "No LiLT GPU/full results yet.",
     "Internal DocILE split includes previously documented repeated pages.",
     "Receipt coordinates preserved without rounding; DocILE uses frozen existing OCR export."
-  ]
+  ],
+  "user_upload_authorization": "User approved combined private bundle and smoke-to-full training on 2026-09-26",
+  "dataset_private_verified": true,
+  "smoke_runs": {
+    "docile": {
+      "version": 1,
+      "status": "complete",
+      "private_verified": true,
+      "source_matches": true,
+      "evidence_verified": true,
+      "verification": {
+        "dataset": "docile",
+        "smoke_version": 1,
+        "source_and_export_hashes_match": true,
+        "validation_ids_match": true,
+        "prediction_hash_matches": true,
+        "field_value_metrics_recomputed": true,
+        "kaggle_fresh_process_reload_passed": true,
+        "local_checkpoint_reload_performed": false,
+        "scope": "Small validation smoke only; not a full result. Checkpoint reload ran on Kaggle; only small evidence files downloaded."
+      }
+    },
+    "sroie": {
+      "version": 1,
+      "status": "complete",
+      "private_verified": true,
+      "source_matches": true,
+      "evidence_verified": true,
+      "verification": {
+        "dataset": "sroie",
+        "smoke_version": 1,
+        "source_and_export_hashes_match": true,
+        "validation_ids_match": true,
+        "prediction_hash_matches": true,
+        "field_value_metrics_recomputed": true,
+        "kaggle_fresh_process_reload_passed": true,
+        "local_checkpoint_reload_performed": false,
+        "scope": "Small validation smoke only; not a full result. Checkpoint reload ran on Kaggle; only small evidence files downloaded.",
+        "sroie_original_key_scores_recomputed": true
+      }
+    },
+    "cord": {
+      "version": 1,
+      "status": "complete",
+      "private_verified": true,
+      "source_matches": true,
+      "training_reload_passed": true,
+      "evidence_verified": true,
+      "verification": {
+        "dataset": "cord",
+        "smoke_version": 1,
+        "source_and_export_hashes_match": true,
+        "validation_ids_match": true,
+        "prediction_hash_matches": true,
+        "field_value_metrics_recomputed": true,
+        "kaggle_fresh_process_reload_passed": true,
+        "local_checkpoint_reload_performed": false,
+        "scope": "Small validation smoke only; not a full result. Checkpoint reload ran on Kaggle; only small evidence files downloaded."
+      }
+    }
+  },
+  "full_runs": {
+    "docile": {
+      "version": 2,
+      "status": "running",
+      "private_verified": true,
+      "source_matches": true,
+      "training_documents_confirmed": 4680,
+      "epochs": 20
+    },
+    "sroie": {
+      "version": 2,
+      "status": "submitted",
+      "private_verified": true,
+      "source_matches": true
+    },
+    "cord": {
+      "status": "waiting_for_gpu_slot",
+      "smoke_verified": true
+    }
+  }
 }
