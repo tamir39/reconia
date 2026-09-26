@@ -1,0 +1,384 @@
+{
+  "verified_on": "2026-09-26",
+  "source_archive": "layoutlmv3-docile-seed42-images-v1.zip",
+  "archive_size_bytes": 2463891825,
+  "archive_sha256": "0394fd34f08268b93f8e65ed79b145327a25cb2c379bb67b861ca613fbfb181c",
+  "files_sha256": {
+    "requirements-freeze.txt": "52972cb9ddbaffdebf764d866ebfb2c28f55b758a3709a07b42bf672c58d2dba",
+    "run-config.json": "2271f9f733d90ccd52c49660232912f657322ba7018f9f02ca38c6583408c554",
+    "reports/layoutlmv3_docile_report.md": "6ef0256771379c678d937c0ebe10967ca338bac0b4db717dfe509b71b816df59",
+    "reports/predictions/predictions_layoutlmv3_docile_test.metrics.json": "8753b96047352bced8c4fb211f2a036d86fcc8361aec7d46422db15779cec08a",
+    "reports/predictions/predictions_layoutlmv3_docile_test.json": "151cb4491091c6fbc05c6c1e477706197630eae7826e35dbd433e74149f0914a",
+    "reports/figures/layoutlmv3_docile_training_curves.png": "83c0dfb722da02d6fa007ff17b3a83ba98ce06e4f197bd74306b7a6be5553531",
+    "reports/metrics/layoutlmv3_docile_history.csv": "01d3e151ea701ed05a183370f0f3edb980f6baf4fa4d1383a0d12797ea7457b0",
+    "reports/metrics/layoutlmv3_docile_results.json": "926744de318dc8535afa23ae647b293ba17a6a3379bc5d39e2d0fb5ab8464cf1",
+    "reports/logs/train_layoutlmv3_docile.log": "b941345a989e192906d711fb96f61b02c555fc4eeb754538d2547be291d8ee75",
+    "checkpoints/layoutlmv3_docile_best.pt": "cf7bcd5df9819848537e455f5f65759dcae352b516348e5a763319ee02bf7441",
+    "checkpoints/layoutlmv3_docile_latest.pt": "a91b2226f3abcc26a22c5c794ee06388d5b4a83139c63add4855ce12e04f2e1c",
+    "checkpoints/processor/vocab.json": "ed19656ea1707df69134c4af35c8ceda2cc9860bf2c3495026153a133670ab5e",
+    "checkpoints/processor/special_tokens_map.json": "8293ae960b0a0852d4d3813118030a1149a3ed9fe37bc2e1e7b3c2e62eb2d4b7",
+    "checkpoints/processor/tokenizer_config.json": "02005ccc36e75fd70548efea9ab37088fa8eb2e2db53bd165e16ac13c93b3010",
+    "checkpoints/processor/preprocessor_config.json": "d224efe4b72035670def4c76085b144d5aafea912e0cabac680f806da37c9008",
+    "checkpoints/processor/merges.txt": "1ce1664773c50f3e0cc8842619a93edc4624525b728b188a9e0be33b7726adc5",
+    "checkpoints/processor/tokenizer.json": "42d111bece82d26509254d8e11c156d8bfa06fdf8876183f64a4fde1956a853f"
+  },
+  "zip_crc_ok": true,
+  "checkpoint_hash_matches": true,
+  "prediction_hash_matches": true,
+  "split_hash_matches": true,
+  "source_hashes_match_uploaded_bundle": true,
+  "image_manifest_hash_matches": true,
+  "image_render_policy_matches": true,
+  "export_manifest_hash_matches": true,
+  "test_ids_match": true,
+  "train_test_overlap": 0,
+  "val_test_overlap": 0,
+  "num_test_documents": 500,
+  "completed_epochs": 20,
+  "best_epoch": 20,
+  "best_validation_entity_f1": 0.8161160354552779,
+  "test_entity_f1": 0.8318984348898769,
+  "field_value_metrics_independently_recomputed": {
+    "protocol": "field-value-nfkc-casefold-v1",
+    "precision": 0.6872720003997801,
+    "recall": 0.6740675390873891,
+    "f1": 0.6806057306873856,
+    "support": 20403,
+    "macro_f1": 0.49357273451562367,
+    "per_type": {
+      "account_num": {
+        "precision": 0.7333333333333333,
+        "recall": 0.6470588235294118,
+        "f1": 0.6875,
+        "support": 17
+      },
+      "amount_due": {
+        "precision": 0.7893333333333333,
+        "recall": 0.5606060606060606,
+        "f1": 0.655592469545958,
+        "support": 528
+      },
+      "amount_paid": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "support": 42
+      },
+      "amount_total_gross": {
+        "precision": 0.6837349397590361,
+        "recall": 0.4567404426559356,
+        "f1": 0.5476477683956574,
+        "support": 497
+      },
+      "amount_total_net": {
+        "precision": 0.4915254237288136,
+        "recall": 0.35802469135802467,
+        "f1": 0.4142857142857143,
+        "support": 81
+      },
+      "amount_total_tax": {
+        "precision": 0.88,
+        "recall": 0.4,
+        "f1": 0.55,
+        "support": 55
+      },
+      "bank_num": {
+        "precision": 0.5,
+        "recall": 0.29411764705882354,
+        "f1": 0.37037037037037035,
+        "support": 17
+      },
+      "bic": {
+        "precision": 0.6666666666666666,
+        "recall": 0.5714285714285714,
+        "f1": 0.6153846153846154,
+        "support": 7
+      },
+      "currency_code_amount_due": {
+        "precision": 0.6216216216216216,
+        "recall": 0.06845238095238096,
+        "f1": 0.12332439678284182,
+        "support": 336
+      },
+      "customer_billing_address": {
+        "precision": 0.0437375745526839,
+        "recall": 0.04899777282850779,
+        "f1": 0.046218487394957986,
+        "support": 449
+      },
+      "customer_billing_name": {
+        "precision": 0.6313932980599647,
+        "recall": 0.6716697936210131,
+        "f1": 0.6509090909090909,
+        "support": 533
+      },
+      "customer_delivery_address": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 23
+      },
+      "customer_delivery_name": {
+        "precision": 0.6538461538461539,
+        "recall": 0.68,
+        "f1": 0.6666666666666666,
+        "support": 25
+      },
+      "customer_id": {
+        "precision": 0.7021276595744681,
+        "recall": 0.7333333333333333,
+        "f1": 0.717391304347826,
+        "support": 180
+      },
+      "customer_order_id": {
+        "precision": 0.4927536231884058,
+        "recall": 0.6181818181818182,
+        "f1": 0.5483870967741935,
+        "support": 55
+      },
+      "customer_other_address": {
+        "precision": 0.07407407407407407,
+        "recall": 0.08333333333333333,
+        "f1": 0.0784313725490196,
+        "support": 24
+      },
+      "customer_other_name": {
+        "precision": 0.44666666666666666,
+        "recall": 0.5114503816793893,
+        "f1": 0.47686832740213525,
+        "support": 131
+      },
+      "customer_registration_id": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "customer_tax_id": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "date_due": {
+        "precision": 0.9452054794520548,
+        "recall": 0.8846153846153846,
+        "f1": 0.9139072847682119,
+        "support": 78
+      },
+      "date_issue": {
+        "precision": 0.8623853211009175,
+        "recall": 0.8499095840867993,
+        "f1": 0.8561020036429873,
+        "support": 553
+      },
+      "document_id": {
+        "precision": 0.8460144927536232,
+        "recall": 0.8414414414414414,
+        "f1": 0.8437217705510388,
+        "support": 555
+      },
+      "line_item_amount_gross": {
+        "precision": 0.7848528702363724,
+        "recall": 0.7788415509813308,
+        "f1": 0.7818356559346468,
+        "support": 2089
+      },
+      "line_item_amount_net": {
+        "precision": 0.5212355212355212,
+        "recall": 0.3452685421994885,
+        "f1": 0.4153846153846154,
+        "support": 391
+      },
+      "line_item_code": {
+        "precision": 0.48415300546448087,
+        "recall": 0.5643312101910828,
+        "f1": 0.5211764705882352,
+        "support": 785
+      },
+      "line_item_currency": {
+        "precision": 0.6728971962616822,
+        "recall": 0.9,
+        "f1": 0.7700534759358288,
+        "support": 80
+      },
+      "line_item_date": {
+        "precision": 0.8262671342046541,
+        "recall": 0.8727272727272727,
+        "f1": 0.8488619616833142,
+        "support": 2970
+      },
+      "line_item_description": {
+        "precision": 0.5750090810025427,
+        "recall": 0.6269306930693069,
+        "f1": 0.5998484274346343,
+        "support": 2525
+      },
+      "line_item_discount_amount": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      },
+      "line_item_discount_rate": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 4
+      },
+      "line_item_hts_number": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 2
+      },
+      "line_item_order_id": {
+        "precision": 0.42857142857142855,
+        "recall": 0.10714285714285714,
+        "f1": 0.17142857142857143,
+        "support": 28
+      },
+      "line_item_person_name": {
+        "precision": 0.48717948717948717,
+        "recall": 0.4222222222222222,
+        "f1": 0.4523809523809524,
+        "support": 45
+      },
+      "line_item_position": {
+        "precision": 0.8156498673740054,
+        "recall": 0.6466876971608833,
+        "f1": 0.7214076246334311,
+        "support": 951
+      },
+      "line_item_quantity": {
+        "precision": 0.8967334035827187,
+        "recall": 0.8202409638554217,
+        "f1": 0.8567832871885225,
+        "support": 2075
+      },
+      "line_item_tax": {
+        "precision": 0.6190476190476191,
+        "recall": 0.65,
+        "f1": 0.6341463414634146,
+        "support": 20
+      },
+      "line_item_tax_rate": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "line_item_unit_price_gross": {
+        "precision": 0.82756785524215,
+        "recall": 0.8288912579957356,
+        "f1": 0.8282290279627164,
+        "support": 1876
+      },
+      "line_item_unit_price_net": {
+        "precision": 0.44954128440366975,
+        "recall": 0.4117647058823529,
+        "f1": 0.4298245614035088,
+        "support": 238
+      },
+      "line_item_units_of_measure": {
+        "precision": 0.4050632911392405,
+        "recall": 0.5423728813559322,
+        "f1": 0.463768115942029,
+        "support": 59
+      },
+      "line_item_weight": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 6
+      },
+      "order_id": {
+        "precision": 0.745819397993311,
+        "recall": 0.7636986301369864,
+        "f1": 0.754653130287648,
+        "support": 292
+      },
+      "payment_reference": {
+        "precision": 0.6923076923076923,
+        "recall": 0.5294117647058824,
+        "f1": 0.6,
+        "support": 17
+      },
+      "payment_terms": {
+        "precision": 0.6372093023255814,
+        "recall": 0.6954314720812182,
+        "f1": 0.6650485436893204,
+        "support": 197
+      },
+      "tax_detail_gross": {
+        "precision": 0.4864864864864865,
+        "recall": 0.3333333333333333,
+        "f1": 0.3956043956043956,
+        "support": 54
+      },
+      "tax_detail_net": {
+        "precision": 0.6,
+        "recall": 0.3888888888888889,
+        "f1": 0.47191011235955055,
+        "support": 54
+      },
+      "tax_detail_rate": {
+        "precision": 0.75,
+        "recall": 0.5,
+        "f1": 0.6,
+        "support": 6
+      },
+      "tax_detail_tax": {
+        "precision": 0.7222222222222222,
+        "recall": 0.4642857142857143,
+        "f1": 0.5652173913043478,
+        "support": 56
+      },
+      "vendor_address": {
+        "precision": 0.07857142857142857,
+        "recall": 0.0935374149659864,
+        "f1": 0.08540372670807453,
+        "support": 588
+      },
+      "vendor_email": {
+        "precision": 0.22033898305084745,
+        "recall": 0.2549019607843137,
+        "f1": 0.23636363636363636,
+        "support": 51
+      },
+      "vendor_name": {
+        "precision": 0.5888888888888889,
+        "recall": 0.6483180428134556,
+        "f1": 0.6171761280931587,
+        "support": 654
+      },
+      "vendor_order_id": {
+        "precision": 0.7586206896551724,
+        "recall": 0.7857142857142857,
+        "f1": 0.7719298245614035,
+        "support": 28
+      },
+      "vendor_registration_id": {
+        "precision": 0.5555555555555556,
+        "recall": 0.8333333333333334,
+        "f1": 0.6666666666666666,
+        "support": 6
+      },
+      "vendor_tax_id": {
+        "precision": 0.46153846153846156,
+        "recall": 0.46875,
+        "f1": 0.46511627906976744,
+        "support": 64
+      }
+    },
+    "num_documents": 500
+  },
+  "checkpoint_reload_performed": false,
+  "scope": "ZIP CRC and SHA-256 for all members; source/split/checkpoint provenance; field-value metrics recomputed from local annotations. Entity F1 is the exported run metric; no local re-inference.",
+  "presentation_chart": {
+    "path": "reports/figures/layoutlmv3_docile_training_curves.png",
+    "regenerated_from": "reports/metrics/layoutlmv3_docile_results.json",
+    "reason": "Repair missing Vietnamese glyphs in Kaggle figure; label validation metrics explicitly.",
+    "sha256": "62e66401f562faaec464177f02ec315c13e18741a5264b48242f696fe82ffafe"
+  }
+}

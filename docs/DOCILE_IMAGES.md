@@ -8,7 +8,7 @@ Có 1.419 tài liệu nhiều trang. Không tạo lại split hoặc chạy OCR 
 
 Đã render và kiểm chứng đủ 7.394 trang ngày 25/09/2026; 133 tests passed.
 [Bằng chứng chuẩn bị](../reports/data/docile_images_20260925.json).
-Bundle ảnh version 1 đã upload và xác nhận private. Smoke GPU version 1 đã qua train/reload/inference; source, manifest ảnh, hash predictions, ID val và field-value đã kiểm chứng cục bộ. Full version 2 đang chạy trên Tesla T4 với đầy đủ 4.680 train / 500 val / 500 test. Chưa có kết quả full run. Xem [bằng chứng Kaggle](../reports/data/layoutlmv3_docile_kaggle_20260925.json).
+Bundle ảnh version 1 đã upload và xác nhận private. Smoke GPU version 1 đã qua train/reload/inference; source, manifest ảnh, hash predictions, ID val và field-value đã kiểm chứng cục bộ. Full version 2 đã hoàn tất và kiểm chứng ngày 26/09 trên Tesla T4 với đầy đủ 4.680 train / 500 val / 500 test, best epoch 20/20. Test entity F1 83,19%, field-value F1 68,06%; field-value đã tái tính cục bộ, chưa chạy lại suy luận. Xem [bằng chứng full run](../reports/runs/layoutlmv3_docile_20260926/verification.json). Xem [bằng chứng Kaggle](../reports/data/layoutlmv3_docile_kaggle_20260925.json).
 
 Không có toàn bộ tài liệu render giống hệt nhau giữa các split. Có **6 nhóm trang
 giống hệt nhau qua biên split**: năm nhóm không có trường được chú giải; một mẫu

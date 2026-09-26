@@ -12,3 +12,9 @@ Dockerfile text eol=lf
 # endings when these artifacts are checked out on another operating system.
 reports/predictions/*.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
 reports/runs/**/*.json -text whitespace=trailing-space,space-before-tab,cr-at-eol
+
+# Preserve the downloaded DocILE report bytes referenced by verification.json.
+reports/metrics/layoutlmv3_docile_results.json -text
+reports/metrics/layoutlmv3_docile_history.csv -text whitespace=cr-at-eol
+reports/layoutlmv3_docile_report.md -text
+reports/runs/layoutlmv3_docile_20260926/requirements-freeze.txt -text

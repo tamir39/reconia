@@ -1,6 +1,8 @@
 # Bảng So Sánh Tổng Hợp Các Mô Hình
 
-Tổng hợp kết quả thực nghiệm từ các file trong thư mục `reports/` (ưu tiên đánh giá trên tập **TEST** độc lập):
+Tổng hợp kết quả thực nghiệm từ các file trong thư mục `reports/` (ưu tiên đánh giá trên tập **TEST** nội bộ):
+
+Entity F1 là số liệu xuất từ run; field-value được tái tính riêng. Một seed, không phải điểm DocILE chính thức. DocILE có trang/template lặp giữa split; xem [bảng kiểm chứng và giới hạn](verified_comparison.md).
 
 ## 1. Kết Quả Tổng Hợp
 
@@ -10,6 +12,7 @@ Tổng hợp kết quả thực nghiệm từ các file trong thư mục `report
 | **LayoutLMv3** | `CORD` | `TEST` | 20 | 93.93% | 93.93% | **93.93%** | 188.74 ms |
 | **RoBERTa** | `CORD` | `TEST` | 9 | 91.71% | 92.27% | **91.99%** | 78.70 ms |
 | **GNN** | `DOCILE` | `TEST` | 19 | 63.14% | 70.95% | **66.82%** | 95.11 ms |
+| **LayoutLMv3** | `DOCILE` | `TEST` | 20 | 80.88% | 85.63% | **83.19%** | 262.22 ms |
 | **RoBERTa** | `DOCILE` | `TEST` | 19 | 77.46% | 82.05% | **79.69%** | 94.56 ms |
 | **GNN** | `SROIE` | `TEST` | 15 | 78.19% | 83.52% | **80.77%** | 16.34 ms |
 | **LayoutLMv3** | `SROIE` | `TEST` | 9 | 93.84% | 95.17% | **94.50%** | 160.48 ms |

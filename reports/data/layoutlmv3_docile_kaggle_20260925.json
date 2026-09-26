@@ -26,7 +26,7 @@
     "field_value_metrics_independently_recomputed": true
   },
   "full_run": {
-    "status": "running",
+    "status": "complete",
     "max_epochs": 20,
     "patience": 5,
     "seed": 42,
@@ -54,17 +54,25 @@
       "train": 8800,
       "val": 915
     },
-    "completed_epochs_observed": 0
+    "completed_epochs_observed": 20,
+    "verified": true,
+    "verified_on": "2026-09-26",
+    "completed_epochs": 20,
+    "best_epoch": 20,
+    "test_entity_f1": 0.8318984348898769,
+    "test_ocr_field_value_f1": 0.6806057306873856,
+    "archive_sha256": "0394fd34f08268b93f8e65ed79b145327a25cb2c379bb67b861ca613fbfb181c",
+    "verification": "reports/runs/layoutlmv3_docile_20260926/verification.json"
   },
   "limitations": [
     "DocILE internal split, not official evaluator scores.",
     "Existing repeated pages across splits are documented in docile_images_20260925.json.",
-    "No full-run results yet."
+    "One seed; entity F1 is exported, while field-value metrics were independently recomputed without local re-inference."
   ],
   "monitor": {
     "automation_id": "check-layoutlmv3-training",
     "interval_minutes": 10,
-    "status": "active",
+    "status": "paused",
     "notifies_on": "completion, failure or actionable problem"
   }
 }

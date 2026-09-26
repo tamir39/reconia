@@ -1,0 +1,568 @@
+{
+  "model": "LayoutLMv3",
+  "dataset": "docile",
+  "best_epoch": 20,
+  "split": "TEST",
+  "train_loss": 0.02264099422830999,
+  "val_loss": 0.302805314647303,
+  "precision": 0.80880515716356,
+  "recall": 0.8563492063492063,
+  "f1": 0.8318984348898769,
+  "latency": 262.2171287280071,
+  "total_params": 126002927,
+  "device": "cuda",
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.5730401743014492,
+      "val_loss": 0.25141287734581114,
+      "precision": 0.6517872813432399,
+      "recall": 0.7242410453097575,
+      "f1": 0.6861066633821901,
+      "latency": 134.33714575199974
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.2700087340973749,
+      "val_loss": 0.2164248571368034,
+      "precision": 0.7016635380930805,
+      "recall": 0.7046739907690307,
+      "f1": 0.7031655422937207,
+      "latency": 134.63005732799866
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.21108355862870337,
+      "val_loss": 0.18782051305157665,
+      "precision": 0.7486570182645516,
+      "recall": 0.7700708574400312,
+      "f1": 0.7592129718643851,
+      "latency": 134.34047671200096
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.17578699348816207,
+      "val_loss": 0.18230725448617202,
+      "precision": 0.7594623724085463,
+      "recall": 0.7787167652603524,
+      "f1": 0.7689690589292593,
+      "latency": 134.5595123840012
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.15050768125117348,
+      "val_loss": 0.1762411102036148,
+      "precision": 0.7803878188443519,
+      "recall": 0.7796268608203861,
+      "f1": 0.7800071542388866,
+      "latency": 134.4187634480004
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.13050782790137005,
+      "val_loss": 0.1938263218405359,
+      "precision": 0.7718416090509114,
+      "recall": 0.7982838198010791,
+      "f1": 0.7848400600773336,
+      "latency": 134.55612819400267
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.11422836436848229,
+      "val_loss": 0.19607987580992955,
+      "precision": 0.771332124773395,
+      "recall": 0.8021192225183644,
+      "f1": 0.7864244741873806,
+      "latency": 134.6366604779978
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.09891139110664054,
+      "val_loss": 0.1869828649708788,
+      "precision": 0.7698680576864069,
+      "recall": 0.8155106286160047,
+      "f1": 0.7920323252730601,
+      "latency": 134.68358241199894
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.0855682261622149,
+      "val_loss": 0.21617271530943133,
+      "precision": 0.7868168016194332,
+      "recall": 0.8085548982643177,
+      "f1": 0.7975377512744061,
+      "latency": 134.5091925980014
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.07278618483637646,
+      "val_loss": 0.22560146952755644,
+      "precision": 0.7944091486658196,
+      "recall": 0.81284534876162,
+      "f1": 0.8035215114224208,
+      "latency": 134.39466790000006
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.06294684443404962,
+      "val_loss": 0.225451208369658,
+      "precision": 0.7873412994772218,
+      "recall": 0.822401352141975,
+      "f1": 0.804489523385584,
+      "latency": 134.5926769380021
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.05409794830711193,
+      "val_loss": 0.2343097865112578,
+      "precision": 0.7900295467404287,
+      "recall": 0.8169407787817721,
+      "f1": 0.8032598274209012,
+      "latency": 134.7487850480029
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.046931942137948685,
+      "val_loss": 0.24944005672986694,
+      "precision": 0.7934040940106141,
+      "recall": 0.8163557173503218,
+      "f1": 0.8047162859248342,
+      "latency": 134.63408136199723
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.040810717404068865,
+      "val_loss": 0.2531566130681198,
+      "precision": 0.8010457849764061,
+      "recall": 0.8166157446531885,
+      "f1": 0.8087558345404797,
+      "latency": 134.56400254600157
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.03503389282824504,
+      "val_loss": 0.2652928009280642,
+      "precision": 0.7938654981901314,
+      "recall": 0.8126503282844698,
+      "f1": 0.8031480886604562,
+      "latency": 134.60378889400454
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.030961358231003776,
+      "val_loss": 0.28396435517709845,
+      "precision": 0.8065693430656934,
+      "recall": 0.818890983553273,
+      "f1": 0.8126834618238121,
+      "latency": 134.6301750279963
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.02762954399827322,
+      "val_loss": 0.2876818331457654,
+      "precision": 0.8072304629808001,
+      "recall": 0.8172008060846389,
+      "f1": 0.8121850368264634,
+      "latency": 134.7706728580015
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.025267911010582175,
+      "val_loss": 0.29499177833155116,
+      "precision": 0.8054188766055339,
+      "recall": 0.81934603133329,
+      "f1": 0.8123227635988656,
+      "latency": 134.65129485400394
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.023617093771371896,
+      "val_loss": 0.3019786611291043,
+      "precision": 0.8085527997954487,
+      "recall": 0.8222713384905415,
+      "f1": 0.8153543687755825,
+      "latency": 134.51055779200397
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.02264099422830999,
+      "val_loss": 0.302805314647303,
+      "precision": 0.8093594169543536,
+      "recall": 0.8229864135734252,
+      "f1": 0.8161160354552779,
+      "latency": 134.93565102599678
+    }
+  ],
+  "per_type": {
+    "account_num": {
+      "precision": 0.8666666666666667,
+      "recall": 0.7647058823529411,
+      "f1": 0.8125,
+      "support": 17
+    },
+    "amount_due": {
+      "precision": 0.688,
+      "recall": 0.6935483870967742,
+      "f1": 0.6907630522088354,
+      "support": 372
+    },
+    "amount_paid": {
+      "precision": 0.7619047619047619,
+      "recall": 0.8,
+      "f1": 0.7804878048780488,
+      "support": 40
+    },
+    "amount_total_gross": {
+      "precision": 0.5632530120481928,
+      "recall": 0.5701219512195121,
+      "f1": 0.5666666666666665,
+      "support": 328
+    },
+    "amount_total_net": {
+      "precision": 0.423728813559322,
+      "recall": 0.4716981132075472,
+      "f1": 0.4464285714285714,
+      "support": 53
+    },
+    "amount_total_tax": {
+      "precision": 0.52,
+      "recall": 0.52,
+      "f1": 0.52,
+      "support": 25
+    },
+    "bank_num": {
+      "precision": 0.9,
+      "recall": 0.6,
+      "f1": 0.7200000000000001,
+      "support": 15
+    },
+    "bic": {
+      "precision": 1.0,
+      "recall": 0.8571428571428571,
+      "f1": 0.923076923076923,
+      "support": 7
+    },
+    "currency_code_amount_due": {
+      "precision": 0.6216216216216216,
+      "recall": 0.7419354838709677,
+      "f1": 0.676470588235294,
+      "support": 31
+    },
+    "customer_billing_address": {
+      "precision": 0.8449304174950298,
+      "recall": 0.8854166666666666,
+      "f1": 0.8646998982706003,
+      "support": 480
+    },
+    "customer_billing_name": {
+      "precision": 0.8271604938271605,
+      "recall": 0.8605504587155963,
+      "f1": 0.8435251798561151,
+      "support": 545
+    },
+    "customer_delivery_address": {
+      "precision": 0.8214285714285714,
+      "recall": 0.7419354838709677,
+      "f1": 0.7796610169491526,
+      "support": 31
+    },
+    "customer_delivery_name": {
+      "precision": 0.8076923076923077,
+      "recall": 0.8076923076923077,
+      "f1": 0.8076923076923077,
+      "support": 26
+    },
+    "customer_id": {
+      "precision": 0.7925531914893617,
+      "recall": 0.8324022346368715,
+      "f1": 0.8119891008174387,
+      "support": 179
+    },
+    "customer_order_id": {
+      "precision": 0.6376811594202898,
+      "recall": 0.8,
+      "f1": 0.7096774193548386,
+      "support": 55
+    },
+    "customer_other_address": {
+      "precision": 0.5925925925925926,
+      "recall": 0.6666666666666666,
+      "f1": 0.627450980392157,
+      "support": 24
+    },
+    "customer_other_name": {
+      "precision": 0.5333333333333333,
+      "recall": 0.5970149253731343,
+      "f1": 0.5633802816901409,
+      "support": 134
+    },
+    "customer_registration_id": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 2
+    },
+    "customer_tax_id": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 1
+    },
+    "date_due": {
+      "precision": 0.9726027397260274,
+      "recall": 0.922077922077922,
+      "f1": 0.9466666666666667,
+      "support": 77
+    },
+    "date_issue": {
+      "precision": 0.9577981651376147,
+      "recall": 0.9525547445255474,
+      "f1": 0.9551692589204026,
+      "support": 548
+    },
+    "document_id": {
+      "precision": 0.9257246376811594,
+      "recall": 0.9393382352941176,
+      "f1": 0.9324817518248176,
+      "support": 544
+    },
+    "line_item_amount_gross": {
+      "precision": 0.8417752050168837,
+      "recall": 0.8871377732587697,
+      "f1": 0.8638613861386139,
+      "support": 1967
+    },
+    "line_item_amount_net": {
+      "precision": 0.5675675675675675,
+      "recall": 0.4966216216216216,
+      "f1": 0.5297297297297298,
+      "support": 296
+    },
+    "line_item_code": {
+      "precision": 0.5672131147540984,
+      "recall": 0.6586294416243654,
+      "f1": 0.6095126247798004,
+      "support": 788
+    },
+    "line_item_currency": {
+      "precision": 0.6728971962616822,
+      "recall": 0.96,
+      "f1": 0.7912087912087912,
+      "support": 75
+    },
+    "line_item_date": {
+      "precision": 0.858463500159388,
+      "recall": 0.9610992148465382,
+      "f1": 0.9068866812594713,
+      "support": 2802
+    },
+    "line_item_description": {
+      "precision": 0.7929531420268797,
+      "recall": 0.8444874274661509,
+      "f1": 0.8179093293368302,
+      "support": 2585
+    },
+    "line_item_discount_amount": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "line_item_discount_rate": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 4
+    },
+    "line_item_hts_number": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 2
+    },
+    "line_item_order_id": {
+      "precision": 0.42857142857142855,
+      "recall": 0.10714285714285714,
+      "f1": 0.17142857142857143,
+      "support": 28
+    },
+    "line_item_person_name": {
+      "precision": 0.6923076923076923,
+      "recall": 0.5869565217391305,
+      "f1": 0.6352941176470588,
+      "support": 46
+    },
+    "line_item_position": {
+      "precision": 0.8687002652519894,
+      "recall": 0.8780160857908847,
+      "f1": 0.8733333333333335,
+      "support": 746
+    },
+    "line_item_quantity": {
+      "precision": 0.9030558482613277,
+      "recall": 0.9591494124230554,
+      "f1": 0.930257801899593,
+      "support": 1787
+    },
+    "line_item_tax": {
+      "precision": 0.6190476190476191,
+      "recall": 0.65,
+      "f1": 0.6341463414634146,
+      "support": 20
+    },
+    "line_item_tax_rate": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 2
+    },
+    "line_item_unit_price_gross": {
+      "precision": 0.8765300691857371,
+      "recall": 0.8883495145631068,
+      "f1": 0.8824002143048486,
+      "support": 1854
+    },
+    "line_item_unit_price_net": {
+      "precision": 0.46788990825688076,
+      "recall": 0.43037974683544306,
+      "f1": 0.44835164835164837,
+      "support": 237
+    },
+    "line_item_units_of_measure": {
+      "precision": 0.5569620253164557,
+      "recall": 0.8148148148148148,
+      "f1": 0.6616541353383458,
+      "support": 54
+    },
+    "line_item_weight": {
+      "precision": 0.1,
+      "recall": 0.16666666666666666,
+      "f1": 0.125,
+      "support": 6
+    },
+    "order_id": {
+      "precision": 0.7892976588628763,
+      "recall": 0.8251748251748252,
+      "f1": 0.8068376068376067,
+      "support": 286
+    },
+    "payment_reference": {
+      "precision": 0.46153846153846156,
+      "recall": 0.6,
+      "f1": 0.5217391304347826,
+      "support": 10
+    },
+    "payment_terms": {
+      "precision": 0.8186046511627907,
+      "recall": 0.8844221105527639,
+      "f1": 0.8502415458937198,
+      "support": 199
+    },
+    "tax_detail_gross": {
+      "precision": 0.24324324324324326,
+      "recall": 0.6428571428571429,
+      "f1": 0.35294117647058826,
+      "support": 14
+    },
+    "tax_detail_net": {
+      "precision": 0.5714285714285714,
+      "recall": 0.625,
+      "f1": 0.5970149253731343,
+      "support": 32
+    },
+    "tax_detail_rate": {
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "f1": 0.8,
+      "support": 6
+    },
+    "tax_detail_tax": {
+      "precision": 0.5555555555555556,
+      "recall": 0.5714285714285714,
+      "f1": 0.5633802816901409,
+      "support": 35
+    },
+    "vendor_address": {
+      "precision": 0.8128571428571428,
+      "recall": 0.8492537313432836,
+      "f1": 0.8306569343065694,
+      "support": 670
+    },
+    "vendor_email": {
+      "precision": 0.7457627118644068,
+      "recall": 0.8627450980392157,
+      "f1": 0.8,
+      "support": 51
+    },
+    "vendor_name": {
+      "precision": 0.7694444444444445,
+      "recall": 0.8231797919762258,
+      "f1": 0.7954055994256999,
+      "support": 673
+    },
+    "vendor_order_id": {
+      "precision": 0.896551724137931,
+      "recall": 0.9285714285714286,
+      "f1": 0.912280701754386,
+      "support": 28
+    },
+    "vendor_registration_id": {
+      "precision": 0.5555555555555556,
+      "recall": 0.8333333333333334,
+      "f1": 0.6666666666666667,
+      "support": 6
+    },
+    "vendor_tax_id": {
+      "precision": 0.8,
+      "recall": 0.9122807017543859,
+      "f1": 0.8524590163934427,
+      "support": 57
+    }
+  },
+  "metadata": {
+    "window_policy": "page-image-all-windows-first-subword-v1",
+    "train_documents": 4680,
+    "val_documents": 500,
+    "train_windows": 8800,
+    "best_epoch": 20,
+    "epochs_trained": 20,
+    "seed": 42,
+    "device": "cuda",
+    "gpu_name": "Tesla T4",
+    "total_params": 126002927,
+    "batch_size": 2,
+    "batch_accum": 8,
+    "lr": 5e-05,
+    "head_lr": 0.0002,
+    "patience": 5,
+    "backbone_repo": "microsoft/layoutlmv3-base",
+    "backbone_revision": "cfbbbff0762e6aab37086fdd4739ad14fe7d5db4",
+    "image_input": "original-page-rgb",
+    "ocr_input": "dataset-provided",
+    "image_manifest_sha256": "d082dd30d5473e34af6c957797fa9f749a7d998299796c0754a182afbb5fcbcc",
+    "image_render_policy": "poppler-full-page-rgb-png-longest1600-v1"
+  },
+  "metrics_val": {
+    "precision": 0.8093594169543536,
+    "recall": 0.8229864135734252,
+    "f1": 0.8161160354552779,
+    "train_loss": 0.02264099422830999,
+    "val_loss": 0.302805314647303,
+    "latency": 134.93565102599678
+  },
+  "metrics_test": {
+    "precision": 0.80880515716356,
+    "recall": 0.8563492063492063,
+    "f1": 0.8318984348898769,
+    "latency": 262.2171287280071
+  },
+  "evaluation_provenance": {
+    "protocol": "ocr-bio-exact-span-v2",
+    "complete": true,
+    "num_documents": 500,
+    "expected_num_documents": 500,
+    "split_sha256": "d9298c958121eec1d740c5f94b844eceeca1d34f71c55bef28a20fdfcd78d126",
+    "checkpoint_sha256": "cf7bcd5df9819848537e455f5f65759dcae352b516348e5a763319ee02bf7441",
+    "prediction_sha256": "151cb4491091c6fbc05c6c1e477706197630eae7826e35dbd433e74149f0914a"
+  }
+}

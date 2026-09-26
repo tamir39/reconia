@@ -1,7 +1,7 @@
 {
   "date": "2026-09-25",
   "dataset": "docile",
-  "status": "uploaded_privately_full_run_running",
+  "status": "uploaded_privately_full_run_verified",
   "image_policy": "poppler-full-page-rgb-png-longest1600-v1",
   "image_manifest_sha256": "d082dd30d5473e34af6c957797fa9f749a7d998299796c0754a182afbb5fcbcc",
   "export_manifest_sha256": "15a88e5fcc429358024f6270e26b439f5db01aec6f88d3aca84b749e4eab9915",
@@ -634,5 +634,7 @@
   "kaggle_dataset_version": 1,
   "kaggle_private_verified": true,
   "image_upload_authorized": true,
-  "full_training_submitted": true
+  "full_training_submitted": true,
+  "full_training_completed": true,
+  "full_run_verification": "reports/runs/layoutlmv3_docile_20260926/verification.json"
 }
