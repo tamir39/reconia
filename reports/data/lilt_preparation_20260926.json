@@ -1,0 +1,71 @@
+{
+  "counts": {
+    "docile": {
+      "train": 4680,
+      "val": 500,
+      "test": 500
+    },
+    "sroie": {
+      "train": 500,
+      "val": 63,
+      "test": 63
+    },
+    "cord": {
+      "train": 800,
+      "val": 100,
+      "test": 100
+    }
+  },
+  "receipt_export_verification": {
+    "sroie": {
+      "all_documents_match": true,
+      "bio_labels_unchanged": true
+    },
+    "cord": {
+      "all_documents_match": true,
+      "bio_labels_unchanged": true
+    }
+  },
+  "files": {
+    "cord-export.bin": {
+      "bytes": 725468,
+      "sha256": "9b54b26173219d93fba2866de3a462f4fc3412c593b744203dc8a86a41c21c28"
+    },
+    "docile-export.bin": {
+      "bytes": 31714967,
+      "sha256": "6b1c83f1edbf928cafe95564b84d13695373884ade39d56d5fd2a8b37afb5c5f"
+    },
+    "reconia-code.bin": {
+      "bytes": 199668,
+      "sha256": "90fc21c886b5024f1ce7db994fd2a385b1ec637b168fafb134f0a2e3807dfeeb"
+    },
+    "sroie-export.bin": {
+      "bytes": 2028010,
+      "sha256": "c184f835b5c25b32f6d340b1b8ae09d5f7e4f22397e8790523a3e165c4dcaf98"
+    },
+    "sroie-field-value-targets.json": {
+      "bytes": 259289,
+      "sha256": "ddbdfd6c68352dcda1d9545afb0bacba6cfafef816d9da3cf6a0c95f80aa0102"
+    }
+  },
+  "date": "2026-09-26",
+  "status": "prepared_locally_upload_blocked_pending_explicit_approval",
+  "backbone_repo": "SCUT-DLVCLab/lilt-roberta-en-base",
+  "backbone_revision": "96328faae824978e47bd0e8ea09f66b85efda5f5",
+  "notebook": "notebooks/kaggle_lilt.ipynb",
+  "notebook_sha256": "a157db87603b23ffb5d399112a0df087a7eddc1a4cc455fa7ae10c84e734b1f5",
+  "intended_private_dataset": "phvngtngtm/reconia-lilt-training-bundle",
+  "total_payload_bytes": 34927402,
+  "local_tests": {
+    "full_suite_passed": 138,
+    "additional_export_test_passed": 1
+  },
+  "uploaded": false,
+  "gpu_smoke_passed": false,
+  "full_training_started": false,
+  "limitations": [
+    "No LiLT GPU/full results yet.",
+    "Internal DocILE split includes previously documented repeated pages.",
+    "Receipt coordinates preserved without rounding; DocILE uses frozen existing OCR export."
+  ]
+}

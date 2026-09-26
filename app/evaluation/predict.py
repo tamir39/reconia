@@ -199,6 +199,25 @@ def predict_document_layoutlmv3(model, doc, processor, vocab, inv_vocab, device,
     return spans, spans_to_docile_predictions(doc, spans, confidences)
 
 
+def predict_document_lilt(model, doc, tokenizer, vocab, inv_vocab, device):
+    from app.data.lilt_dataset import encode_lilt_windows
+
+    tags, confidences = ["O"] * len(doc.words), [1.0] * len(doc.words)
+    for window in encode_lilt_windows(doc, tokenizer, vocab):
+        inputs = {k: window[k].unsqueeze(0).to(device)
+                  for k in ("input_ids", "attention_mask", "bbox")}
+        with torch.no_grad():
+            probabilities = model(**inputs).logits.softmax(-1)[0].cpu()
+        for position, index in enumerate(window["word_indices"].tolist()):
+            if index >= 0:
+                confidence, label = probabilities[position].max(-1)
+                tags[index] = inv_vocab[int(label)]
+                confidences[index] = float(confidence)
+    spans = extract_entities_from_bio(tags, texts=[w.text for w in doc.words],
+                                      pages=[w.page for w in doc.words])
+    return spans, spans_to_docile_predictions(doc, spans, confidences)
+
+
 def run_prediction_pipeline(
     model_path: Path,
     dataset_name: str,
@@ -246,8 +265,8 @@ def run_prediction_pipeline(
     detected_model = model_type
     if detected_model == "auto":
         cfg = ckpt.get("config", {})
-        if ckpt.get("model_type") == "layoutlmv3":
-            detected_model = "layoutlmv3"
+        if ckpt.get("model_type") in ("layoutlmv3", "lilt"):
+            detected_model = ckpt["model_type"]
         elif isinstance(cfg, InvoiceGNNConfig) or (isinstance(cfg, dict) and "geo_dim" in cfg) or "gnn" in str(model_path).lower():
             detected_model = "gnn"
         else:
@@ -258,6 +277,11 @@ def run_prediction_pipeline(
         from app.models_dl.layoutlmv3 import load_layoutlmv3_checkpoint
         del ckpt
         model, tokenizer, vocab = load_layoutlmv3_checkpoint(model_path, device)
+        inv_vocab = {idx: name for name, idx in vocab.items()}
+    elif detected_model == "lilt":
+        from app.models_dl.lilt import load_lilt_checkpoint
+        del ckpt
+        model, tokenizer, vocab = load_lilt_checkpoint(model_path, device)
         inv_vocab = {idx: name for name, idx in vocab.items()}
     elif detected_model == "gnn":
         validate_gnn_checkpoint(ckpt)
@@ -305,6 +329,9 @@ def run_prediction_pipeline(
         if detected_model == "layoutlmv3":
             pred_spans, docile_preds = predict_document_layoutlmv3(
                 model, doc, tokenizer, vocab, inv_vocab, device, adapter.get_image)
+        elif detected_model == "lilt":
+            pred_spans, docile_preds = predict_document_lilt(
+                model, doc, tokenizer, vocab, inv_vocab, device)
         elif detected_model == "gnn":
             pred_spans, docile_preds = predict_document_gnn(
                 model=model,
@@ -357,6 +384,9 @@ def run_prediction_pipeline(
     }
     if detected_model == "roberta":
         results["window_policy"] = WINDOW_POLICY
+    elif detected_model == "lilt":
+        from app.data.lilt_dataset import WINDOW_POLICY as lilt_policy
+        results.update(window_policy=lilt_policy, image_input="none", ocr_input="dataset-provided")
     elif detected_model == "layoutlmv3":
         from app.data.layoutlmv3_dataset import WINDOW_POLICY as layout_policy
         results["window_policy"] = layout_policy
@@ -447,7 +477,7 @@ def _resolve_checkpoint(model_name: str, dataset_name: str, checkpoints_dir: Pat
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", default="auto", choices=["auto", "roberta", "gnn", "layoutlmv3"], help="Model architecture")
+    parser.add_argument("--model", default="auto", choices=["auto", "roberta", "gnn", "layoutlmv3", "lilt"], help="Model architecture")
     parser.add_argument("--checkpoint", type=Path, default=None, help="Path to trained .pt checkpoint file")
     parser.add_argument("--dataset", default="all", choices=["all", "docile", "cord", "sroie"], help="Dataset name ('all', 'sroie', 'cord', 'docile')")
     parser.add_argument("--split", default="test", help="Dataset split to evaluate (test, val, train, test_official)")
@@ -464,7 +494,7 @@ def main(argv: list[str] | None = None) -> int:
     pred_dir.mkdir(parents=True, exist_ok=True)
 
     if args.all or args.dataset == "all":
-        models_to_run = ["gnn", "roberta", "layoutlmv3"] if args.model == "auto" else [args.model]
+        models_to_run = ["gnn", "roberta", "layoutlmv3", "lilt"] if args.model == "auto" else [args.model]
         datasets_to_run = ["sroie", "cord", "docile"] if (args.all or args.dataset == "all") else [args.dataset]
         all_results = []
 

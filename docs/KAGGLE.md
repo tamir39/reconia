@@ -80,3 +80,7 @@ Pop-Location
 ```
 
 Không thêm `--public`. Script chỉ đóng gói mã và dữ liệu đã chọn, không lấy `.env`, API key hoặc trọng số. Khi dataset đã tồn tại, tạo version mới thay vì tạo bản trùng. Mã nguồn kèm hash trong bundle là nguồn dùng để train; thay đổi GitHub không tự cập nhật notebook đang chạy.
+
+## LiLT
+
+[Notebook LiLT](../notebooks/kaggle_lilt.ipynb) dùng bundle OCR/nhãn riêng cho cả ba bộ, không cần ảnh. Mặc định smoke 8 train/4 val; xem [quy trình](LILT.md). Không dùng kết quả smoke để kết luận chất lượng.
