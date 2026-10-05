@@ -1,8 +1,6 @@
 import json
-import os
 import random
 import re
-import shutil
 from pathlib import Path
 
 from PIL import Image
@@ -106,50 +104,6 @@ def export_jsonl(sample_ids: list[str], img_dir: Path, box_dir: Path, key_dir: P
             file.write(json.dumps(sample, ensure_ascii=False) + "\n")
 
 
-def organize_sroie_raw(sroie_dir: Path) -> None:
-    if not os.access(sroie_dir, os.W_OK):
-        return
-
-    train_dest = sroie_dir / "train"
-    test_dest = sroie_dir / "test"
-    train_dest.mkdir(parents=True, exist_ok=True)
-    test_dest.mkdir(parents=True, exist_ok=True)
-
-    # Train: 626 samples
-    train_img = sroie_dir / "0325updated.task1train(626p)"
-    train_box = sroie_dir / "0325updated.task1train(626p)"
-    train_key = sroie_dir / "0325updated.task2train(626p)"
-
-    if train_img.exists() and train_box.exists() and train_key.exists():
-        (train_dest / "img").mkdir(parents=True, exist_ok=True)
-        (train_dest / "box").mkdir(parents=True, exist_ok=True)
-        (train_dest / "key").mkdir(parents=True, exist_ok=True)
-
-        for file_path in train_img.glob("*.jpg"):
-            if "(" in file_path.stem:
-                continue
-            sample_id = file_path.stem
-            shutil.copy2(file_path, train_dest / "img" / f"{sample_id}.jpg")
-            shutil.copy2(train_box / f"{sample_id}.txt", train_dest / "box" / f"{sample_id}.txt")
-            shutil.copy2(train_key / f"{sample_id}.txt", train_dest / "key" / f"{sample_id}.txt")
-
-    # Test: 347 samples
-    test_img = sroie_dir / "SROIE_test_images_task_3"
-    test_box = sroie_dir / "text.task1&2-test（361p)"
-    test_key = sroie_dir / "SROIE_test_gt_task_3"
-
-    if test_img.exists() and test_box.exists() and test_key.exists():
-        (test_dest / "img").mkdir(parents=True, exist_ok=True)
-        (test_dest / "box").mkdir(parents=True, exist_ok=True)
-        (test_dest / "key").mkdir(parents=True, exist_ok=True)
-
-        for file_path in test_img.glob("*.jpg"):
-            sample_id = file_path.stem
-            shutil.copy2(file_path, test_dest / "img" / f"{sample_id}.jpg")
-            shutil.copy2(test_box / f"{sample_id}.txt", test_dest / "box" / f"{sample_id}.txt")
-            shutil.copy2(test_key / f"{sample_id}.txt", test_dest / "key" / f"{sample_id}.txt")
-
-
 def prepare_sroie() -> None:
     cache_dir = get_repo_dir() / ".cache" / "sroie"
     sroie_dir = resolve_data_dir("sroie")
@@ -157,9 +111,6 @@ def prepare_sroie() -> None:
     train_img = sroie_dir / "train" / "img"
     train_box = sroie_dir / "train" / "box"
     train_key = sroie_dir / "train" / "key"
-
-    if not train_img.exists():
-        organize_sroie_raw(sroie_dir)
 
     test_img = sroie_dir / "test" / "img"
     test_box = sroie_dir / "test" / "box"

@@ -69,11 +69,21 @@ pip install -r requirements.txt
 
 ## 4. Dữ liệu gốc
 
-Tải 3 bộ dữ liệu gốc từ các liên kết chính thức và đặt tại thư mục ngoài song song với `reconia` (hoặc trên Kaggle tại `/kaggle/input/reconia-data/`):
+Tải 3 bộ dữ liệu gốc từ các liên kết chính thức và đặt tại thư mục ngoài song song với `reconia` (hoặc trên Kaggle tại `/kaggle/input/datasets/vhngthnh/reconia-data/`):
 
 - **SROIE:** Tải từ cuộc thi ICDAR 2019 Task 1, Task 2 và Task 3 tại [ICDAR 2019 Robust Reading Challenge](https://rrc.cvc.uab.es/?ch=13).
 - **CORD-v2:** Tải từ kho lưu trữ chính thức của Clova AI tại [clovaai/cord](https://github.com/clovaai/cord).
 - **WildReceipt:** Tải theo hướng dẫn của MMOCR tại [MMOCR KIE Dataset Documentation](https://github.com/open-mmlab/mmocr/blob/12558969ee6f11b469a8e964a57730d5df3df6b1/docs/en/datasets/kie.md).
+
+Đối với SROIE và CORD-v2, thực thi script sau để tự động tải CORD-v2 từ Hugging Face và sắp xếp thư mục SROIE trước khi chuẩn bị dữ liệu:
+
+```bash
+python -m tools.setup_data --dataset <dataset>
+```
+
+| Tham số | Mặc định | Lựa chọn | Mô tả |
+| :--- | :---: | :--- | :--- |
+| `--dataset` | `"all"` | `sroie`, `cord_v2`, `all` | Tập dữ liệu cần khởi tạo hoặc toàn bộ |
 
 ### Cấu trúc thư mục dữ liệu gốc
 

@@ -15,7 +15,7 @@ def resolve_data_dir(dataset_name: str) -> Path:
     repo_dir = get_repo_dir()
     candidates = [
         repo_dir.parent / dataset_name,
-        Path("/kaggle/input/reconia-data") / dataset_name,
+        Path("/kaggle/input/datasets/vhngthnh/reconia-data") / dataset_name,
     ]
     for path in candidates:
         if path.exists():
