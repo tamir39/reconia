@@ -1,0 +1,11 @@
+# Deep learning framework
+torch
+
+# Hugging Face ecosystem
+transformers
+accelerate
+datasets
+
+# Image processing & visualization
+pillow
+matplotlib

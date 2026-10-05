@@ -1,0 +1,59 @@
+import json
+import sys
+from pathlib import Path
+
+root_dir = str(Path(__file__).resolve().parents[2])
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
+
+from reconia.tools.plots import save_comparison_plot
+
+DATASETS = ("sroie", "cord_v2", "wildreceipt")
+MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen2_5_vl")
+
+
+def collect_dataset_results(dataset_dir: Path) -> list[dict]:
+    records = []
+    for model in MODELS:
+        metric_file = dataset_dir / model / "test_metrics.json"
+        if metric_file.exists():
+            with open(metric_file, "r", encoding="utf-8") as file:
+                data = json.load(file)
+                records.append({
+                    "model": model,
+                    "test_loss": float(data.get("test_loss", 0.0)),
+                    "precision": float(data.get("precision", 0.0)),
+                    "recall": float(data.get("recall", 0.0)),
+                    "f1": float(data.get("f1", 0.0)),
+                })
+    return records
+
+
+def save_comparison_md(records: list[dict], out_dir: Path | str) -> None:
+    out_path = Path(out_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
+    with open(out_path / "comparison.md", "w", encoding="utf-8") as file:
+        file.write("| Model | Test Loss | Precision (%) | Recall (%) | F1 (%) |\n")
+        file.write("| :--- | :---: | :---: | :---: | :---: |\n")
+        for r in records:
+            file.write(
+                f"| {r['model']} | {r['test_loss']:.4f} | "
+                f"{r['precision'] * 100:.2f} | {r['recall'] * 100:.2f} | "
+                f"{r['f1'] * 100:.2f} |\n"
+            )
+
+
+def compare_results() -> None:
+    base_dir = Path(__file__).resolve().parents[1]
+    results_dir = base_dir / "results"
+
+    for dataset in DATASETS:
+        dataset_dir = results_dir / dataset
+        records = collect_dataset_results(dataset_dir)
+        if records:
+            save_comparison_md(records, dataset_dir)
+            save_comparison_plot(records, dataset_dir)
+
+
+if __name__ == "__main__":
+    compare_results()
