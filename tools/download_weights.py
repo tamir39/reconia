@@ -1,10 +1,15 @@
 import argparse
+import os
 import shutil
 from pathlib import Path
 
-from huggingface_hub import snapshot_download
+from huggingface_hub import constants, snapshot_download
 
 from tools.common import get_repo_dir
+
+
+os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
+constants.HF_HUB_DISABLE_XET = True
 
 MODELS = {
     "roberta": "roberta-base",
