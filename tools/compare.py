@@ -1,11 +1,7 @@
 import json
-import sys
 from pathlib import Path
 
-repo_dir = Path(__file__).resolve().parents[1]
-if str(repo_dir) not in sys.path:
-    sys.path.insert(0, str(repo_dir))
-
+from tools.common import get_repo_dir
 from tools.plots import save_comparison_plot
 
 DATASETS = ("sroie", "cord_v2", "wildreceipt")
@@ -44,8 +40,7 @@ def save_comparison_md(records: list[dict], out_dir: Path | str) -> None:
 
 
 def compare_results() -> None:
-    base_dir = Path(__file__).resolve().parents[1]
-    results_dir = base_dir / "results"
+    results_dir = get_repo_dir() / "results"
 
     for dataset in DATASETS:
         dataset_dir = results_dir / dataset

@@ -2,12 +2,7 @@ import argparse
 import csv
 import json
 import logging
-import sys
 from pathlib import Path
-
-repo_dir = Path(__file__).resolve().parents[2]
-if str(repo_dir) not in sys.path:
-    sys.path.insert(0, str(repo_dir))
 
 import torch
 from torch.optim import AdamW
@@ -23,11 +18,11 @@ from transformers import (
 
 from evaluate.metrics import evaluate_dataset
 from models.roberta.dataset import (
-    RobertaDataset,
     get_labels,
+    RobertaDataset,
     reconstruct_predictions,
 )
-from tools.common import close_logger, set_seed, setup_logger
+from tools.common import get_repo_dir, set_seed, close_logger, setup_logger
 from tools.plots import save_train_plots
 
 
@@ -165,16 +160,16 @@ def train_model(
     warmup_ratio: float = 0.1,
 ) -> dict[str, float]:
     set_seed()
-    base_dir = Path(__file__).resolve().parents[2]
-    out_dir = base_dir / "results" / dataset / "roberta"
+    repo_dir = get_repo_dir()
+    out_dir = repo_dir / "results" / dataset / "roberta"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    weights_path = base_dir / "weights" / "roberta"
+    weights_path = repo_dir / "weights" / "roberta"
     model_source = str(weights_path) if weights_path.exists() else "roberta-base"
 
     logger = setup_logger(out_dir)
     try:
-        cache_dir = base_dir / ".cache" / dataset
+        cache_dir = repo_dir / ".cache" / dataset
         labels = get_labels(cache_dir)
         label2id = {lbl: idx for idx, lbl in enumerate(labels)}
         id2label = {idx: lbl for idx, lbl in enumerate(labels)}

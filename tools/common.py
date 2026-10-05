@@ -7,16 +7,12 @@ import numpy as np
 import torch
 
 
-def set_seed(seed: int = 42) -> None:
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
+def get_repo_dir() -> Path:
+    return Path(__file__).resolve().parents[1]
 
 
 def resolve_data_dir(dataset_name: str) -> Path:
-    repo_dir = Path(__file__).resolve().parents[1]
+    repo_dir = get_repo_dir()
     candidates = [
         repo_dir.parent / dataset_name,
         Path("/kaggle/input/reconia-data") / dataset_name,
@@ -47,6 +43,20 @@ def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
     return [x_min, y_min, x_max, y_max]
 
 
+def set_seed(seed: int = 42) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def close_logger(logger: logging.Logger) -> None:
+    for handler in logger.handlers:
+        handler.close()
+    logger.handlers.clear()
+
+
 def setup_logger(out_dir: Path | str, name: str = "train") -> logging.Logger:
     out_path = Path(out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
@@ -67,9 +77,3 @@ def setup_logger(out_dir: Path | str, name: str = "train") -> logging.Logger:
     logger.addHandler(file_handler)
 
     return logger
-
-
-def close_logger(logger: logging.Logger) -> None:
-    for handler in logger.handlers:
-        handler.close()
-    logger.handlers.clear()

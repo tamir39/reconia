@@ -1,15 +1,10 @@
 import json
 import random
-import sys
 from pathlib import Path
-
-repo_dir = Path(__file__).resolve().parents[1]
-if str(repo_dir) not in sys.path:
-    sys.path.insert(0, str(repo_dir))
 
 from PIL import Image
 
-from tools.common import normalize_box, resolve_data_dir
+from tools.common import get_repo_dir, resolve_data_dir, normalize_box
 
 
 def load_class_map(class_list_file: Path) -> dict[int, str]:
@@ -91,8 +86,7 @@ def export_jsonl(raw_samples: list[dict], wildreceipt_dir: Path, class_map: dict
 
 
 def prepare_wildreceipt() -> None:
-    repo_dir = Path(__file__).resolve().parents[1]
-    cache_dir = repo_dir / ".cache" / "wildreceipt"
+    cache_dir = get_repo_dir() / ".cache" / "wildreceipt"
     wildreceipt_dir = resolve_data_dir("wildreceipt")
 
     class_map = load_class_map(wildreceipt_dir / "class_list.txt")

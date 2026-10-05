@@ -104,16 +104,16 @@ Tải 3 bộ dữ liệu gốc từ các liên kết chính thức và đặt t�
 Chuyển đổi dữ liệu gốc sang định dạng JSONL trong `.cache/<dataset>/`:
 
 ```bash
-python prepare/prepare_sroie.py
-python prepare/prepare_cord_v2.py
-python prepare/prepare_wildreceipt.py
+python -m prepare.prepare_sroie
+python -m prepare.prepare_cord_v2
+python -m prepare.prepare_wildreceipt
 ```
 
 ### Bước 2: Tải trọng số mô hình
 Tải trước trọng số pretrained từ Hugging Face về thư mục `weights/<model>/`:
 
 ```bash
-python tools/download_weights.py --model <model>
+python -m tools.download_weights --model <model>
 ```
 
 | Tham số | Mặc định | Lựa chọn | Mô tả |
@@ -124,7 +124,7 @@ python tools/download_weights.py --model <model>
 Kích thước batch hiệu dụng được đồng bộ ở mức 16 giữa các mô hình (như batch size 8 kết hợp tích lũy gradient 2 bước). Quá trình tối ưu hóa tuân thủ cấu hình baseline của bài báo gốc, loại trừ suy giảm trọng số đối với hệ số chệch và các lớp chuẩn hóa. Các tham số `--lr` và `--batch_size` được điều chỉnh theo từng kiến trúc.
 
 ```bash
-python models/<model>/train.py --dataset <dataset>
+python -m models.<model>.train --dataset <dataset>
 ```
 
 Cấu hình mẫu cho RoBERTa:
@@ -144,7 +144,7 @@ Kết quả và checkpoint được lưu tại `results/<dataset>/<model>/`.
 Tổng hợp kết quả giữa các mô hình đã chạy và lưu vào `results/<dataset>/`:
 
 ```bash
-python tools/compare.py
+python -m tools.compare
 ```
 
 Lệnh tự động trích xuất bảng số liệu `comparison.md` và vẽ biểu đồ so sánh `comparison.png` cho từng tập dữ liệu. Chỉ số đánh giá được tính toán theo cấp trường (field-level F1): so khớp chính xác sau khi chuẩn hóa đối với trường đơn trị và thuật toán ghép cặp 1-1 đối với trường đa trị.

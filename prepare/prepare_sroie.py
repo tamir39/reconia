@@ -1,17 +1,13 @@
 import json
+import os
 import random
 import re
 import shutil
-import sys
 from pathlib import Path
-
-repo_dir = Path(__file__).resolve().parents[1]
-if str(repo_dir) not in sys.path:
-    sys.path.insert(0, str(repo_dir))
 
 from PIL import Image
 
-from tools.common import normalize_box, resolve_data_dir
+from tools.common import get_repo_dir, resolve_data_dir, normalize_box
 
 
 def clean_alphanumeric(text: str) -> str:
@@ -111,6 +107,9 @@ def export_jsonl(sample_ids: list[str], img_dir: Path, box_dir: Path, key_dir: P
 
 
 def organize_sroie_raw(sroie_dir: Path) -> None:
+    if not os.access(sroie_dir, os.W_OK):
+        return
+
     train_dest = sroie_dir / "train"
     test_dest = sroie_dir / "test"
     train_dest.mkdir(parents=True, exist_ok=True)
@@ -152,8 +151,7 @@ def organize_sroie_raw(sroie_dir: Path) -> None:
 
 
 def prepare_sroie() -> None:
-    repo_dir = Path(__file__).resolve().parents[1]
-    cache_dir = repo_dir / ".cache" / "sroie"
+    cache_dir = get_repo_dir() / ".cache" / "sroie"
     sroie_dir = resolve_data_dir("sroie")
 
     train_img = sroie_dir / "train" / "img"

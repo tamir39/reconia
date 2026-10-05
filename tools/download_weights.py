@@ -4,6 +4,8 @@ from pathlib import Path
 
 from huggingface_hub import snapshot_download
 
+from tools.common import get_repo_dir
+
 MODELS = {
     "roberta": "roberta-base",
     "bros": "jinho8345/bros-base-uncased",
@@ -36,7 +38,7 @@ def download_model(model_name: str, weights_dir: Path) -> None:
 
 
 def download_weights(model_name: str = "all") -> None:
-    weights_dir = Path(__file__).resolve().parents[1] / "weights"
+    weights_dir = get_repo_dir() / "weights"
     target_models = list(MODELS) if model_name == "all" else [model_name]
     for name in target_models:
         download_model(name, weights_dir)

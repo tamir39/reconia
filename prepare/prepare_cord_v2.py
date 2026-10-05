@@ -1,14 +1,10 @@
 import json
-import sys
+import os
 from pathlib import Path
-
-repo_dir = Path(__file__).resolve().parents[1]
-if str(repo_dir) not in sys.path:
-    sys.path.insert(0, str(repo_dir))
 
 from datasets import Dataset, Image as ImageFeature, load_from_disk
 
-from tools.common import normalize_box, resolve_data_dir
+from tools.common import get_repo_dir, resolve_data_dir, normalize_box
 
 
 def flatten_dict(data: dict, prefix: str = "") -> dict[str, list[str]]:
@@ -55,7 +51,7 @@ def process_sample(sample_id: str, raw_sample: dict, image_dest_dir: Path) -> di
     height = image_size.get("height")
 
     image_path = image_dest_dir / f"{sample_id}.png"
-    if not image_path.exists():
+    if not image_path.exists() and os.access(image_dest_dir, os.W_OK):
         image_path.write_bytes(raw_sample["image"]["bytes"])
 
     ocr_items = []
@@ -109,7 +105,8 @@ def process_sample(sample_id: str, raw_sample: dict, image_dest_dir: Path) -> di
 
 def export_jsonl(dataset_split: Dataset, image_dest_dir: Path, output_file: Path) -> None:
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    image_dest_dir.mkdir(parents=True, exist_ok=True)
+    if not image_dest_dir.exists() and os.access(image_dest_dir.parent, os.W_OK):
+        image_dest_dir.mkdir(parents=True, exist_ok=True)
 
     with open(output_file, "w", encoding="utf-8") as file:
         for idx, raw_sample in enumerate(dataset_split):
@@ -119,8 +116,7 @@ def export_jsonl(dataset_split: Dataset, image_dest_dir: Path, output_file: Path
 
 
 def prepare_cord_v2() -> None:
-    repo_dir = Path(__file__).resolve().parents[1]
-    cache_dir = repo_dir / ".cache" / "cord_v2"
+    cache_dir = get_repo_dir() / ".cache" / "cord_v2"
     cord_v2_dir = resolve_data_dir("cord_v2")
     image_dir = cord_v2_dir / "images"
 
