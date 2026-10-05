@@ -9,7 +9,7 @@ if str(repo_dir) not in sys.path:
 
 from PIL import Image
 
-from tools.common import normalize_box
+from tools.common import normalize_box, resolve_data_dir
 
 
 def load_class_map(class_list_file: Path) -> dict[int, str]:
@@ -93,9 +93,7 @@ def export_jsonl(raw_samples: list[dict], wildreceipt_dir: Path, class_map: dict
 def prepare_wildreceipt() -> None:
     repo_dir = Path(__file__).resolve().parents[1]
     cache_dir = repo_dir / ".cache" / "wildreceipt"
-    wildreceipt_dir = repo_dir / "data" / "wildreceipt"
-    if not wildreceipt_dir.exists():
-        wildreceipt_dir = repo_dir.parent / "wildreceipt"
+    wildreceipt_dir = resolve_data_dir("wildreceipt")
 
     class_map = load_class_map(wildreceipt_dir / "class_list.txt")
 

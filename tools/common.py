@@ -15,6 +15,18 @@ def set_seed(seed: int = 42) -> None:
         torch.cuda.manual_seed_all(seed)
 
 
+def resolve_data_dir(dataset_name: str) -> Path:
+    repo_dir = Path(__file__).resolve().parents[1]
+    candidates = [
+        repo_dir.parent / dataset_name,
+        Path("/kaggle/input/reconia-data") / dataset_name,
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    return repo_dir.parent / dataset_name
+
+
 def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
     x_coords = [quad[0], quad[2], quad[4], quad[6]]
     y_coords = [quad[1], quad[3], quad[5], quad[7]]

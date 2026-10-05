@@ -8,7 +8,7 @@ if str(repo_dir) not in sys.path:
 
 from datasets import Dataset, Image as ImageFeature, load_from_disk
 
-from tools.common import normalize_box
+from tools.common import normalize_box, resolve_data_dir
 
 
 def flatten_dict(data: dict, prefix: str = "") -> dict[str, list[str]]:
@@ -121,9 +121,7 @@ def export_jsonl(dataset_split: Dataset, image_dest_dir: Path, output_file: Path
 def prepare_cord_v2() -> None:
     repo_dir = Path(__file__).resolve().parents[1]
     cache_dir = repo_dir / ".cache" / "cord_v2"
-    cord_v2_dir = repo_dir / "data" / "cord_v2"
-    if not cord_v2_dir.exists():
-        cord_v2_dir = repo_dir.parent / "cord_v2"
+    cord_v2_dir = resolve_data_dir("cord_v2")
     image_dir = cord_v2_dir / "images"
 
     if not cord_v2_dir.exists():

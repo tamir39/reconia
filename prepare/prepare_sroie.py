@@ -11,7 +11,7 @@ if str(repo_dir) not in sys.path:
 
 from PIL import Image
 
-from tools.common import normalize_box
+from tools.common import normalize_box, resolve_data_dir
 
 
 def clean_alphanumeric(text: str) -> str:
@@ -154,9 +154,7 @@ def organize_sroie_raw(sroie_dir: Path) -> None:
 def prepare_sroie() -> None:
     repo_dir = Path(__file__).resolve().parents[1]
     cache_dir = repo_dir / ".cache" / "sroie"
-    sroie_dir = repo_dir / "data" / "sroie"
-    if not sroie_dir.exists():
-        sroie_dir = repo_dir.parent / "sroie"
+    sroie_dir = resolve_data_dir("sroie")
 
     train_img = sroie_dir / "train" / "img"
     train_box = sroie_dir / "train" / "box"

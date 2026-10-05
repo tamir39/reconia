@@ -69,7 +69,7 @@ pip install -r requirements.txt
 
 ## 4. Dữ liệu gốc
 
-Tải 3 bộ dữ liệu gốc từ các liên kết chính thức và đặt tại `data/<dataset>/` (hoặc tại thư mục cha song song với `reconia`):
+Tải 3 bộ dữ liệu gốc từ các liên kết chính thức và đặt tại thư mục ngoài song song với `reconia` (hoặc trên Kaggle tại `/kaggle/input/reconia-data/`):
 
 - **SROIE:** Tải từ cuộc thi ICDAR 2019 Task 1, Task 2 và Task 3 tại [ICDAR 2019 Robust Reading Challenge](https://rrc.cvc.uab.es/?ch=13).
 - **CORD-v2:** Tải từ kho lưu trữ chính thức của Clova AI tại [clovaai/cord](https://github.com/clovaai/cord).
@@ -78,7 +78,7 @@ Tải 3 bộ dữ liệu gốc từ các liên kết chính thức và đặt t�
 ### Cấu trúc thư mục dữ liệu gốc
 
 ```
-data/ (hoặc ../)
+../ (thư mục cha song song với reconia)
 ├── sroie/
 │   ├── 0325updated.task1train(626p)/
 │   ├── 0325updated.task2train(626p)/
@@ -150,4 +150,4 @@ python tools/compare.py
 Lệnh tự động trích xuất bảng số liệu `comparison.md` và vẽ biểu đồ so sánh `comparison.png` cho từng tập dữ liệu. Chỉ số đánh giá được tính toán theo cấp trường (field-level F1): so khớp chính xác sau khi chuẩn hóa đối với trường đơn trị và thuật toán ghép cặp 1-1 đối với trường đa trị.
 
 ### Thực nghiệm qua Jupyter Notebook
-Ngoài các lệnh CLI trên, mỗi mô hình đều có tệp thực nghiệm độc lập tương ứng tại `notebooks/<model>.ipynb`, hỗ trợ thực thi linh hoạt trên cả Google Colab và môi trường cục bộ.
+Mỗi mô hình có sổ tay thực nghiệm tương ứng tại `notebooks/<model>.ipynb`, hỗ trợ thực thi trên máy cục bộ và Kaggle.
