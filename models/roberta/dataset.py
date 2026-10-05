@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from torch.utils.data import Dataset
+from transformers import PreTrainedTokenizerBase
 
 
 def get_labels(cache_dir: Path | str) -> list[str]:
@@ -24,18 +25,15 @@ class RobertaDataset(Dataset):
     def __init__(
         self,
         jsonl_path: Path | str,
-        tokenizer,
+        tokenizer: PreTrainedTokenizerBase,
         label2id: dict[str, int],
         max_length: int = 512,
     ) -> None:
         self.tokenizer = tokenizer
         self.label2id = label2id
         self.max_length = max_length
-        self.samples = []
-
         with open(jsonl_path, "r", encoding="utf-8") as file:
-            for line in file:
-                self.samples.append(json.loads(line))
+            self.samples = [json.loads(line) for line in file]
 
     def __len__(self) -> int:
         return len(self.samples)
@@ -61,9 +59,7 @@ class RobertaDataset(Dataset):
 
         default_label_id = self.label2id.get("O", 0)
         for box_idx in box_ids:
-            if box_idx is None:
-                labels.append(-100)
-            elif box_idx != prev_box_idx:
+            if box_idx is not None and box_idx != prev_box_idx:
                 label_name = box_labels[box_idx]
                 labels.append(self.label2id.get(label_name, default_label_id))
             else:
@@ -80,7 +76,7 @@ class RobertaDataset(Dataset):
 def align_box_labels(
     pred_ids: list[int],
     words: list[str],
-    tokenizer,
+    tokenizer: PreTrainedTokenizerBase,
     id2label: dict[int, str],
     max_length: int = 512,
 ) -> dict[int, str]:
@@ -147,10 +143,13 @@ def extract_entities(ocr_items: list[dict], box_labels: dict[int, str]) -> dict[
 def reconstruct_predictions(
     preds: list[list[int]],
     samples: list[dict],
-    tokenizer,
+    tokenizer: PreTrainedTokenizerBase,
     id2label: dict[int, str],
     max_length: int = 512,
 ) -> list[dict]:
+    if len(preds) != len(samples):
+        raise ValueError(f"preds ({len(preds)}) and samples ({len(samples)}) length mismatch.")
+
     reconstructed = []
 
     for pred_ids, sample in zip(preds, samples):

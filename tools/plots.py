@@ -55,5 +55,3 @@ def save_comparison_plot(records: list[dict], out_dir: Path | str) -> None:
     plt.tight_layout()
     plt.savefig(out_path / "comparison.png")
     plt.close()
-
-

@@ -5,6 +5,7 @@
 - Thư mục `evaluate/` tính toán chỉ số đánh giá, không chứa thao tác đọc ghi tệp.
 - Thư mục `models/<model>/` chứa mã nguồn huấn luyện và nạp dữ liệu độc lập của từng mô hình.
 - Thư mục `tools/` chứa các tiện ích thực thi chung.
+- Thư mục `notebooks/` chứa các tệp Jupyter Notebook mô phỏng thực nghiệm tương ứng cho từng mô hình.
 
 ## 2. Định dạng và định danh
 - Tuân thủ PEP 8 về thụt lề và khoảng cách dòng.

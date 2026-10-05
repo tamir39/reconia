@@ -12,13 +12,13 @@ def normalize_text(text: str | None) -> str:
 def match_field(pred: list[str] | str | None, gt: list[str] | str | None) -> tuple[int, int, int]:
     if isinstance(gt, list):
         if isinstance(pred, list):
-            pred_items = [normalize_text(x) for x in pred if normalize_text(x)]
-        elif pred is not None and normalize_text(pred):
-            pred_items = [normalize_text(pred)]
+            pred_items = [norm for x in pred if (norm := normalize_text(x))]
+        elif pred is not None and (norm_single := normalize_text(pred)):
+            pred_items = [norm_single]
         else:
             pred_items = []
 
-        gt_items = [normalize_text(x) for x in gt if normalize_text(x)]
+        gt_items = [norm for x in gt if (norm := normalize_text(x))]
 
         tp = 0
         matched_gt = set()

@@ -12,6 +12,7 @@ Nghiên cứu và so sánh thực nghiệm các phương pháp Học sâu cho b�
   4. `layoutlmv3`: Mô hình đa phương thức kết hợp đồng thời ba luồng thông tin gồm văn bản, bố cục tọa độ 2D và hình ảnh tài liệu.
   5. `donut`: Mô hình biến đổi tuần tự từ ảnh sang văn bản cấu trúc, không phụ thuộc vào hệ thống OCR trung gian.
   6. `qwen2_5_vl`: Mô hình thị giác và ngôn ngữ lớn, trích xuất cấu trúc thực thể trực tiếp từ ảnh tài liệu theo câu lệnh chỉ dẫn.
+- **Nguyên tắc so sánh:** Mỗi bộ dữ liệu đại diện cho một không gian bài toán độc lập với đặc thù cấu trúc và nhãn riêng biệt; việc huấn luyện và so sánh giữa 6 mô hình được thực hiện độc lập trên từng bộ dữ liệu, không so sánh chéo kết quả giữa các bộ dữ liệu khác nhau.
 
 ## 2. Cấu trúc thư mục
 
@@ -66,22 +67,53 @@ cd reconia
 pip install -r requirements.txt
 ```
 
-## 4. Quy trình thực nghiệm
+## 4. Dữ liệu gốc
+
+Tải 3 bộ dữ liệu gốc từ các liên kết chính thức và đặt tại `data/<dataset>/` (hoặc tại thư mục cha song song với `reconia`):
+
+- **SROIE:** Tải từ cuộc thi ICDAR 2019 Task 1, Task 2 và Task 3 tại [ICDAR 2019 Robust Reading Challenge](https://rrc.cvc.uab.es/?ch=13).
+- **CORD-v2:** Tải từ kho lưu trữ chính thức của Clova AI tại [clovaai/cord](https://github.com/clovaai/cord).
+- **WildReceipt:** Tải theo hướng dẫn của MMOCR tại [MMOCR KIE Dataset Documentation](https://github.com/open-mmlab/mmocr/blob/12558969ee6f11b469a8e964a57730d5df3df6b1/docs/en/datasets/kie.md).
+
+### Cấu trúc thư mục dữ liệu gốc
+
+```
+data/ (hoặc ../)
+├── sroie/
+│   ├── 0325updated.task1train(626p)/
+│   ├── 0325updated.task2train(626p)/
+│   ├── SROIE_test_gt_task_3/
+│   ├── SROIE_test_images_task_3/
+│   └── text.task1&2-test（361p)/
+├── cord_v2/
+│   ├── dataset_dict.json
+│   ├── train/
+│   ├── validation/
+│   └── test/
+└── wildreceipt/
+    ├── class_list.txt
+    ├── dict.txt
+    ├── image_files/
+    ├── test.txt
+    └── train.txt
+```
+
+## 5. Quy trình thực nghiệm
 
 ### Bước 1: Chuẩn bị dữ liệu
 Chuyển đổi dữ liệu gốc sang định dạng JSONL trong `.cache/<dataset>/`:
 
 ```bash
-python -m reconia.prepare.prepare_sroie
-python -m reconia.prepare.prepare_cord_v2
-python -m reconia.prepare.prepare_wildreceipt
+python prepare/prepare_sroie.py
+python prepare/prepare_cord_v2.py
+python prepare/prepare_wildreceipt.py
 ```
 
 ### Bước 2: Tải trọng số mô hình
 Tải trước trọng số pretrained từ Hugging Face về thư mục `weights/<model>/`:
 
 ```bash
-python -m reconia.tools.download_weights --model <model>
+python tools/download_weights.py --model <model>
 ```
 
 | Tham số | Mặc định | Lựa chọn | Mô tả |
@@ -89,10 +121,10 @@ python -m reconia.tools.download_weights --model <model>
 | `--model` | `"all"` | `roberta`, `bros`, `layoutlmv3`, `donut`, `qwen2_5_vl`, `all` | Tên mô hình cần tải hoặc toàn bộ |
 
 ### Bước 3: Huấn luyện và đánh giá
-Kích thước batch hiệu dụng được đồng bộ ở mức 16 giữa các mô hình (như batch size 8 kết hợp tích lũy gradient 2 bước). Các tham số `--lr` và `--batch_size` được điều chỉnh theo từng kiến trúc.
+Kích thước batch hiệu dụng được đồng bộ ở mức 16 giữa các mô hình (như batch size 8 kết hợp tích lũy gradient 2 bước). Quá trình tối ưu hóa tuân thủ cấu hình baseline của bài báo gốc, loại trừ suy giảm trọng số đối với hệ số chệch và các lớp chuẩn hóa. Các tham số `--lr` và `--batch_size` được điều chỉnh theo từng kiến trúc.
 
 ```bash
-python -m reconia.models.<model>.train --dataset <dataset>
+python models/<model>/train.py --dataset <dataset>
 ```
 
 Cấu hình mẫu cho RoBERTa:
@@ -112,7 +144,10 @@ Kết quả và checkpoint được lưu tại `results/<dataset>/<model>/`.
 Tổng hợp kết quả giữa các mô hình đã chạy và lưu vào `results/<dataset>/`:
 
 ```bash
-python -m reconia.tools.compare
+python tools/compare.py
 ```
 
-Lệnh tự động trích xuất bảng số liệu `comparison.md` và vẽ biểu đồ so sánh `comparison.png` cho từng tập dữ liệu.
+Lệnh tự động trích xuất bảng số liệu `comparison.md` và vẽ biểu đồ so sánh `comparison.png` cho từng tập dữ liệu. Chỉ số đánh giá được tính toán theo cấp trường (field-level F1): so khớp chính xác sau khi chuẩn hóa đối với trường đơn trị và thuật toán ghép cặp 1-1 đối với trường đa trị.
+
+### Thực nghiệm qua Jupyter Notebook
+Ngoài các lệnh CLI trên, mỗi mô hình đều có tệp thực nghiệm độc lập tương ứng tại `notebooks/<model>.ipynb`, hỗ trợ thực thi linh hoạt trên cả Google Colab và môi trường cục bộ.

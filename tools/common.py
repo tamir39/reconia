@@ -15,10 +15,24 @@ def set_seed(seed: int = 42) -> None:
         torch.cuda.manual_seed_all(seed)
 
 
-def close_logger(logger: logging.Logger) -> None:
-    for handler in logger.handlers:
-        handler.close()
-    logger.handlers.clear()
+def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
+    x_coords = [quad[0], quad[2], quad[4], quad[6]]
+    y_coords = [quad[1], quad[3], quad[5], quad[7]]
+
+    x_min = max(0, min(1000, int(min(x_coords) / width * 1000)))
+    y_min = max(0, min(1000, int(min(y_coords) / height * 1000)))
+    x_max = max(0, min(1000, int(max(x_coords) / width * 1000)))
+    y_max = max(0, min(1000, int(max(y_coords) / height * 1000)))
+
+    if x_max <= x_min:
+        x_max = min(1000, x_min + 1)
+        x_min = min(x_min, x_max - 1)
+
+    if y_max <= y_min:
+        y_max = min(1000, y_min + 1)
+        y_min = min(y_min, y_max - 1)
+
+    return [x_min, y_min, x_max, y_max]
 
 
 def setup_logger(out_dir: Path | str, name: str = "train") -> logging.Logger:
@@ -41,3 +55,9 @@ def setup_logger(out_dir: Path | str, name: str = "train") -> logging.Logger:
     logger.addHandler(file_handler)
 
     return logger
+
+
+def close_logger(logger: logging.Logger) -> None:
+    for handler in logger.handlers:
+        handler.close()
+    logger.handlers.clear()

@@ -2,11 +2,11 @@ import json
 import sys
 from pathlib import Path
 
-root_dir = str(Path(__file__).resolve().parents[2])
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
+repo_dir = Path(__file__).resolve().parents[1]
+if str(repo_dir) not in sys.path:
+    sys.path.insert(0, str(repo_dir))
 
-from reconia.tools.plots import save_comparison_plot
+from tools.plots import save_comparison_plot
 
 DATASETS = ("sroie", "cord_v2", "wildreceipt")
 MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen2_5_vl")

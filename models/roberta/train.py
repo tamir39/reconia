@@ -1,39 +1,42 @@
 import argparse
 import csv
 import json
+import logging
 import sys
 from pathlib import Path
 
-root_dir = str(Path(__file__).resolve().parents[3])
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
+repo_dir = Path(__file__).resolve().parents[2]
+if str(repo_dir) not in sys.path:
+    sys.path.insert(0, str(repo_dir))
 
 import torch
 from torch.optim import AdamW
+from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from transformers import (
     AutoTokenizer,
     DataCollatorForTokenClassification,
+    PreTrainedTokenizerBase,
     RobertaForTokenClassification,
     get_linear_schedule_with_warmup,
 )
 
-from reconia.evaluate.metrics import evaluate_dataset
-from reconia.models.roberta.dataset import (
+from evaluate.metrics import evaluate_dataset
+from models.roberta.dataset import (
     RobertaDataset,
     get_labels,
     reconstruct_predictions,
 )
-from reconia.tools.common import close_logger, set_seed, setup_logger
-from reconia.tools.plots import save_train_plots
+from tools.common import close_logger, set_seed, setup_logger
+from tools.plots import save_train_plots
 
 
 def train_epoch(
     model: RobertaForTokenClassification,
     loader: DataLoader,
-    optimizer,
-    scaler,
-    scheduler,
+    optimizer: AdamW,
+    scaler: torch.amp.GradScaler,
+    scheduler: LRScheduler,
     device: torch.device,
     use_amp: bool,
     accum_steps: int = 2,
@@ -74,7 +77,7 @@ def evaluate_epoch(
     model: RobertaForTokenClassification,
     loader: DataLoader,
     samples: list[dict],
-    tokenizer,
+    tokenizer: PreTrainedTokenizerBase,
     id2label: dict[int, str],
     device: torch.device,
 ) -> tuple[float, dict[str, float]]:
@@ -119,12 +122,12 @@ def evaluate_test(
     model: RobertaForTokenClassification,
     loader: DataLoader,
     samples: list[dict],
-    tokenizer,
+    tokenizer: PreTrainedTokenizerBase,
     id2label: dict[int, str],
     device: torch.device,
     dataset: str,
     out_dir: Path,
-    logger,
+    logger: logging.Logger,
 ) -> dict[str, float]:
     model.load_state_dict(torch.load(out_dir / "best.pt", map_location=device, weights_only=True))
     test_loss, test_metrics = evaluate_epoch(model, loader, samples, tokenizer, id2label, device)
@@ -167,105 +170,116 @@ def train_model(
     out_dir.mkdir(parents=True, exist_ok=True)
 
     weights_path = base_dir / "weights" / "roberta"
+    model_source = str(weights_path) if weights_path.exists() else "roberta-base"
 
     logger = setup_logger(out_dir)
-    cache_dir = base_dir / ".cache" / dataset
-    labels = get_labels(cache_dir)
-    label2id = {lbl: idx for idx, lbl in enumerate(labels)}
-    id2label = {idx: lbl for idx, lbl in enumerate(labels)}
+    try:
+        cache_dir = base_dir / ".cache" / dataset
+        labels = get_labels(cache_dir)
+        label2id = {lbl: idx for idx, lbl in enumerate(labels)}
+        id2label = {idx: lbl for idx, lbl in enumerate(labels)}
 
-    tokenizer = AutoTokenizer.from_pretrained(weights_path, add_prefix_space=True)
-    collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
+        tokenizer = AutoTokenizer.from_pretrained(model_source, add_prefix_space=True)
+        collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
 
-    train_ds = RobertaDataset(cache_dir / "train.jsonl", tokenizer, label2id)
-    val_ds = RobertaDataset(cache_dir / "val.jsonl", tokenizer, label2id)
-    test_ds = RobertaDataset(cache_dir / "test.jsonl", tokenizer, label2id)
+        train_ds = RobertaDataset(cache_dir / "train.jsonl", tokenizer, label2id)
+        val_ds = RobertaDataset(cache_dir / "val.jsonl", tokenizer, label2id)
+        test_ds = RobertaDataset(cache_dir / "test.jsonl", tokenizer, label2id)
 
-    logger.info(
-        "Config: epochs=%d, batch_size=%d, accum_steps=%d, lr=%s, patience=%d",
-        epochs,
-        batch_size,
-        accum_steps,
-        f"{lr:g}",
-        patience,
-    )
-
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collator)
-    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, collate_fn=collator)
-    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, collate_fn=collator)
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    model = RobertaForTokenClassification.from_pretrained(
-        weights_path,
-        num_labels=len(labels),
-        id2label=id2label,
-        label2id=label2id,
-    )
-    model.to(device)
-
-    optimizer = AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
-    total_steps = (len(train_loader) + accum_steps - 1) // accum_steps * epochs
-    warmup_steps = int(total_steps * warmup_ratio)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
-
-    use_amp = device.type == "cuda"
-    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
-
-    best_f1 = -1.0
-    best_epoch = 1
-    patience_counter = 0
-    history = []
-
-    for epoch in range(1, epochs + 1):
-        train_loss = train_epoch(model, train_loader, optimizer, scaler, scheduler, device, use_amp, accum_steps)
-        val_loss, val_metrics = evaluate_epoch(model, val_loader, val_ds.samples, tokenizer, id2label, device)
-
-        is_best = val_metrics["f1"] > best_f1
         logger.info(
-            "Epoch %02d/%02d | Train Loss: %.4f | Val Loss: %.4f | Precision: %.4f | Recall: %.4f | F1: %.4f",
-            epoch,
+            "Config: epochs=%d, batch_size=%d, accum_steps=%d, lr=%s, patience=%d",
             epochs,
-            train_loss,
-            val_loss,
-            val_metrics["precision"],
-            val_metrics["recall"],
-            val_metrics["f1"],
+            batch_size,
+            accum_steps,
+            f"{lr:g}",
+            patience,
         )
 
-        history.append({
-            "epoch": epoch,
-            "train_loss": round(train_loss, 4),
-            "val_loss": round(val_loss, 4),
-            "precision": val_metrics["precision"],
-            "recall": val_metrics["recall"],
-            "f1": val_metrics["f1"],
-        })
+        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collator)
+        val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, collate_fn=collator)
+        test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, collate_fn=collator)
 
-        torch.save(model.state_dict(), out_dir / "last.pt")
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        if is_best:
-            best_f1 = val_metrics["f1"]
-            best_epoch = epoch
-            patience_counter = 0
-            torch.save(model.state_dict(), out_dir / "best.pt")
-        else:
-            patience_counter += 1
-            if patience_counter >= patience:
-                logger.info("Early stopped at epoch %d (Best F1: %.4f at epoch %d)", epoch, best_f1, best_epoch)
-                break
+        model = RobertaForTokenClassification.from_pretrained(
+            model_source,
+            num_labels=len(labels),
+            id2label=id2label,
+            label2id=label2id,
+        )
+        model.to(device)
 
-    save_history(history, out_dir)
-    final_results = evaluate_test(
-        model, test_loader, test_ds.samples, tokenizer, id2label, device, dataset, out_dir, logger
-    )
-    close_logger(logger)
+        no_decay = {"bias", "layernorm", "layer_norm"}
+        param_groups = [
+            {
+                "params": [p for n, p in model.named_parameters() if not any(nd in n.lower() for nd in no_decay)],
+                "weight_decay": weight_decay,
+            },
+            {
+                "params": [p for n, p in model.named_parameters() if any(nd in n.lower() for nd in no_decay)],
+                "weight_decay": 0.0,
+            },
+        ]
+        optimizer = AdamW(param_groups, lr=lr)
+        total_steps = (len(train_loader) + accum_steps - 1) // accum_steps * epochs
+        warmup_steps = int(total_steps * warmup_ratio)
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
 
-    del model, train_loader, val_loader, test_loader
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
+        use_amp = device.type == "cuda"
+        scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
 
-    return final_results
+        best_f1 = -1.0
+        best_epoch = 1
+        patience_counter = 0
+        history = []
+
+        for epoch in range(1, epochs + 1):
+            train_loss = train_epoch(model, train_loader, optimizer, scaler, scheduler, device, use_amp, accum_steps)
+            val_loss, val_metrics = evaluate_epoch(model, val_loader, val_ds.samples, tokenizer, id2label, device)
+
+            is_best = val_metrics["f1"] > best_f1
+            logger.info(
+                "Epoch %02d/%02d | Train Loss: %.4f | Val Loss: %.4f | Precision: %.4f | Recall: %.4f | F1: %.4f",
+                epoch,
+                epochs,
+                train_loss,
+                val_loss,
+                val_metrics["precision"],
+                val_metrics["recall"],
+                val_metrics["f1"],
+            )
+
+            history.append({
+                "epoch": epoch,
+                "train_loss": round(train_loss, 4),
+                "val_loss": round(val_loss, 4),
+                "precision": val_metrics["precision"],
+                "recall": val_metrics["recall"],
+                "f1": val_metrics["f1"],
+            })
+
+            torch.save(model.state_dict(), out_dir / "last.pt")
+
+            if is_best:
+                best_f1 = val_metrics["f1"]
+                best_epoch = epoch
+                patience_counter = 0
+                torch.save(model.state_dict(), out_dir / "best.pt")
+            else:
+                patience_counter += 1
+                if patience_counter >= patience:
+                    logger.info("Early stopped at epoch %d (Best F1: %.4f at epoch %d)", epoch, best_f1, best_epoch)
+                    break
+
+        save_history(history, out_dir)
+        final_results = evaluate_test(
+            model, test_loader, test_ds.samples, tokenizer, id2label, device, dataset, out_dir, logger
+        )
+        return final_results
+    finally:
+        close_logger(logger)
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
 
 DATASETS = ("sroie", "cord_v2", "wildreceipt")

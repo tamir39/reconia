@@ -2,8 +2,16 @@ import json
 import random
 import re
 import shutil
+import sys
 from pathlib import Path
+
+repo_dir = Path(__file__).resolve().parents[1]
+if str(repo_dir) not in sys.path:
+    sys.path.insert(0, str(repo_dir))
+
 from PIL import Image
+
+from tools.common import normalize_box
 
 
 def clean_alphanumeric(text: str) -> str:
@@ -17,28 +25,6 @@ def normalize_phrase(text: str) -> str:
     return " " + " ".join(words) + " "
 
 
-def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
-    x_coords = [quad[0], quad[2], quad[4], quad[6]]
-    y_coords = [quad[1], quad[3], quad[5], quad[7]]
-
-    x_min = max(0, min(1000, int(min(x_coords) / width * 1000)))
-    y_min = max(0, min(1000, int(min(y_coords) / height * 1000)))
-    x_max = max(0, min(1000, int(max(x_coords) / width * 1000)))
-    y_max = max(0, min(1000, int(max(y_coords) / height * 1000)))
-
-    if x_max <= x_min:
-        x_max = min(1000, x_min + 1)
-        if x_max <= x_min:
-            x_min = 999
-
-    if y_max <= y_min:
-        y_max = min(1000, y_min + 1)
-        if y_max <= y_min:
-            y_min = 999
-
-    return [x_min, y_min, x_max, y_max]
-
-
 def match_box_label(text: str, gt: dict[str, str]) -> str | None:
     clean_line = clean_alphanumeric(text)
     if len(clean_line) <= 1:
@@ -48,7 +34,7 @@ def match_box_label(text: str, gt: dict[str, str]) -> str | None:
 
     company = normalize_phrase(gt.get("company", ""))
     clean_company = clean_alphanumeric(gt.get("company", ""))
-    if company and (company in phrase_line or phrase_line in company or (clean_company and clean_company == clean_line)):
+    if company and (company in phrase_line or phrase_line in company or clean_company == clean_line):
         return "company"
 
     date = clean_alphanumeric(gt.get("date", ""))
@@ -60,8 +46,8 @@ def match_box_label(text: str, gt: dict[str, str]) -> str | None:
         return "address"
 
     total = clean_alphanumeric(gt.get("total", ""))
-    total_digits = re.sub(r"[^0-9]", "", str(gt.get("total", "")))
-    line_digits = re.sub(r"[^0-9]", "", str(text))
+    total_digits = re.sub(r"[^0-9]", "", gt.get("total", ""))
+    line_digits = re.sub(r"[^0-9]", "", text)
     if (total and total in clean_line) or (total_digits and total_digits == line_digits):
         return "total"
 
@@ -110,6 +96,7 @@ def process_sample(sample_id: str, img_dir: Path, box_dir: Path, key_dir: Path) 
 
     return {
         "id": sample_id,
+        "image_path": f"{img_dir.parent.name}/img/{sample_id}.jpg",
         "ocr": ocr_items,
         "gt": gt,
     }
@@ -119,8 +106,8 @@ def export_jsonl(sample_ids: list[str], img_dir: Path, box_dir: Path, key_dir: P
     output_file.parent.mkdir(parents=True, exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as file:
         for sample_id in sample_ids:
-            sample_data = process_sample(sample_id, img_dir, box_dir, key_dir)
-            file.write(json.dumps(sample_data, ensure_ascii=False) + "\n")
+            sample = process_sample(sample_id, img_dir, box_dir, key_dir)
+            file.write(json.dumps(sample, ensure_ascii=False) + "\n")
 
 
 def organize_sroie_raw(sroie_dir: Path) -> None:
@@ -165,8 +152,11 @@ def organize_sroie_raw(sroie_dir: Path) -> None:
 
 
 def prepare_sroie() -> None:
-    sroie_dir = Path(__file__).resolve().parents[2] / "sroie"
-    cache_dir = Path(__file__).resolve().parents[1] / ".cache" / "sroie"
+    repo_dir = Path(__file__).resolve().parents[1]
+    cache_dir = repo_dir / ".cache" / "sroie"
+    sroie_dir = repo_dir / "data" / "sroie"
+    if not sroie_dir.exists():
+        sroie_dir = repo_dir.parent / "sroie"
 
     train_img = sroie_dir / "train" / "img"
     train_box = sroie_dir / "train" / "box"

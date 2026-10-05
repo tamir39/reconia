@@ -1,31 +1,17 @@
 import json
+import sys
 from pathlib import Path
-from datasets import Image as ImageFeature, load_from_disk
+
+repo_dir = Path(__file__).resolve().parents[1]
+if str(repo_dir) not in sys.path:
+    sys.path.insert(0, str(repo_dir))
+
+from datasets import Dataset, Image as ImageFeature, load_from_disk
+
+from tools.common import normalize_box
 
 
-def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
-    x_coords = [quad[0], quad[2], quad[4], quad[6]]
-    y_coords = [quad[1], quad[3], quad[5], quad[7]]
-
-    x_min = max(0, min(1000, int(min(x_coords) / width * 1000)))
-    y_min = max(0, min(1000, int(min(y_coords) / height * 1000)))
-    x_max = max(0, min(1000, int(max(x_coords) / width * 1000)))
-    y_max = max(0, min(1000, int(max(y_coords) / height * 1000)))
-
-    if x_max <= x_min:
-        x_max = min(1000, x_min + 1)
-        if x_max <= x_min:
-            x_min = 999
-
-    if y_max <= y_min:
-        y_max = min(1000, y_min + 1)
-        if y_max <= y_min:
-            y_min = 999
-
-    return [x_min, y_min, x_max, y_max]
-
-
-def flatten_dict(data: dict, prefix: str = "") -> dict[str, list[str] | str]:
+def flatten_dict(data: dict, prefix: str = "") -> dict[str, list[str]]:
     flattened = {}
     for key, val in data.items():
         field = f"{prefix}.{key}" if prefix else key
@@ -38,20 +24,30 @@ def flatten_dict(data: dict, prefix: str = "") -> dict[str, list[str] | str]:
                     sub_flattened = flatten_dict(item)
                     for sub_key, sub_val in sub_flattened.items():
                         sub_field = f"{field}.{sub_key}"
-                        flattened.setdefault(sub_field, []).append(str(sub_val))
+                        if isinstance(sub_val, list):
+                            flattened.setdefault(sub_field, []).extend(
+                                str(x) for x in sub_val if x is not None
+                            )
+                        elif sub_val is not None:
+                            flattened.setdefault(sub_field, []).append(str(sub_val))
+                elif isinstance(item, list):
+                    for sub_item in item:
+                        if sub_item is not None:
+                            flattened.setdefault(field, []).append(str(sub_item))
                 elif item is not None:
                     flattened.setdefault(field, []).append(str(item))
         else:
-            flattened[field] = val
+            if val is not None:
+                flattened.setdefault(field, []).append(str(val))
 
     return flattened
 
 
-def process_sample(sample_id: str, sample: dict, image_dest_dir: Path) -> dict:
+def process_sample(sample_id: str, raw_sample: dict, image_dest_dir: Path) -> dict:
     gt_data = (
-        json.loads(sample["ground_truth"])
-        if isinstance(sample["ground_truth"], str)
-        else sample["ground_truth"]
+        json.loads(raw_sample["ground_truth"])
+        if isinstance(raw_sample["ground_truth"], str)
+        else raw_sample["ground_truth"]
     )
     meta = gt_data.get("meta", {})
     image_size = meta.get("image_size", {})
@@ -60,11 +56,7 @@ def process_sample(sample_id: str, sample: dict, image_dest_dir: Path) -> dict:
 
     image_path = image_dest_dir / f"{sample_id}.png"
     if not image_path.exists():
-        image_bytes = sample["image"].get("bytes")
-        if image_bytes:
-            image_path.write_bytes(image_bytes)
-        else:
-            sample["image"].save(image_path)
+        image_path.write_bytes(raw_sample["image"]["bytes"])
 
     ocr_items = []
     for line in gt_data.get("valid_line", []):
@@ -109,25 +101,29 @@ def process_sample(sample_id: str, sample: dict, image_dest_dir: Path) -> dict:
 
     return {
         "id": sample_id,
+        "image_path": f"images/{image_dest_dir.name}/{sample_id}.png",
         "ocr": ocr_items,
         "gt": gt,
     }
 
 
-def export_jsonl(dataset_split, image_dest_dir: Path, output_file: Path) -> None:
+def export_jsonl(dataset_split: Dataset, image_dest_dir: Path, output_file: Path) -> None:
     output_file.parent.mkdir(parents=True, exist_ok=True)
     image_dest_dir.mkdir(parents=True, exist_ok=True)
 
     with open(output_file, "w", encoding="utf-8") as file:
-        for idx, sample in enumerate(dataset_split):
+        for idx, raw_sample in enumerate(dataset_split):
             sample_id = str(idx)
-            sample_data = process_sample(sample_id, sample, image_dest_dir)
-            file.write(json.dumps(sample_data, ensure_ascii=False) + "\n")
+            sample = process_sample(sample_id, raw_sample, image_dest_dir)
+            file.write(json.dumps(sample, ensure_ascii=False) + "\n")
 
 
 def prepare_cord_v2() -> None:
-    cord_v2_dir = Path(__file__).resolve().parents[2] / "cord_v2"
-    cache_dir = Path(__file__).resolve().parents[1] / ".cache" / "cord_v2"
+    repo_dir = Path(__file__).resolve().parents[1]
+    cache_dir = repo_dir / ".cache" / "cord_v2"
+    cord_v2_dir = repo_dir / "data" / "cord_v2"
+    if not cord_v2_dir.exists():
+        cord_v2_dir = repo_dir.parent / "cord_v2"
     image_dir = cord_v2_dir / "images"
 
     if not cord_v2_dir.exists():

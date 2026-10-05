@@ -8,6 +8,7 @@ __pycache__/
 
 # Data & preprocessing cache
 .cache/
+data/
 
 # Model weights, checkpoints, logs
 weights/

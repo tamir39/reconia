@@ -1,11 +1,12 @@
 import argparse
 import shutil
 from pathlib import Path
+
 from huggingface_hub import snapshot_download
 
 MODELS = {
     "roberta": "roberta-base",
-    "bros": "clovaai/bros-base-uncased",
+    "bros": "jinho8345/bros-base-uncased",
     "layoutlmv3": "microsoft/layoutlmv3-base",
     "donut": "naver-clova-ix/donut-base",
     "qwen2_5_vl": "Qwen/Qwen2.5-VL-3B-Instruct",
@@ -36,12 +37,9 @@ def download_model(model_name: str, weights_dir: Path) -> None:
 
 def download_weights(model_name: str = "all") -> None:
     weights_dir = Path(__file__).resolve().parents[1] / "weights"
-
-    if model_name == "all":
-        for name in MODELS:
-            download_model(name, weights_dir)
-    else:
-        download_model(model_name, weights_dir)
+    target_models = list(MODELS) if model_name == "all" else [model_name]
+    for name in target_models:
+        download_model(name, weights_dir)
 
 
 def parse_args() -> argparse.Namespace:
