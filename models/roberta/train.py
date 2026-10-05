@@ -8,6 +8,7 @@ import torch
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
+from tqdm.auto import tqdm
 from transformers import (
     AutoTokenizer,
     DataCollatorForTokenClassification,
@@ -34,13 +35,20 @@ def train_epoch(
     scheduler: LRScheduler,
     device: torch.device,
     use_amp: bool,
+    epoch: int,
+    epochs: int,
     accum_steps: int = 2,
 ) -> float:
     model.train()
     total_loss = 0.0
     optimizer.zero_grad()
 
-    for step, batch in enumerate(loader, start=1):
+    progress_loader = tqdm(
+        loader,
+        desc=f"Epoch {epoch:02d}/{epochs:02d} [Train]",
+        leave=False,
+    )
+    for step, batch in enumerate(progress_loader, start=1):
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
         batch_labels = batch["labels"].to(device)
@@ -58,12 +66,16 @@ def train_epoch(
         if step % accum_steps == 0 or step == len(loader):
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            scale_before = scaler.get_scale()
             scaler.step(optimizer)
             scaler.update()
+            scale_after = scaler.get_scale()
             optimizer.zero_grad()
-            scheduler.step()
+            if scale_before <= scale_after:
+                scheduler.step()
 
         total_loss += loss.item() * accum_steps
+        progress_loader.set_postfix(loss=f"{loss.item() * accum_steps:.4f}")
 
     return total_loss / len(loader) if len(loader) > 0 else 0.0
 
@@ -75,13 +87,14 @@ def evaluate_epoch(
     tokenizer: PreTrainedTokenizerBase,
     id2label: dict[int, str],
     device: torch.device,
+    desc: str = "Val",
 ) -> tuple[float, dict[str, float]]:
     model.eval()
     total_loss = 0.0
     all_preds = []
 
     with torch.no_grad():
-        for batch in loader:
+        for batch in tqdm(loader, desc=desc, leave=False):
             input_ids = batch["input_ids"].to(device)
             attention_mask = batch["attention_mask"].to(device)
             batch_labels = batch["labels"].to(device)
@@ -123,9 +136,9 @@ def evaluate_test(
     dataset: str,
     out_dir: Path,
     logger: logging.Logger,
-) -> dict[str, float]:
+) -> None:
     model.load_state_dict(torch.load(out_dir / "best.pt", map_location=device, weights_only=True))
-    test_loss, test_metrics = evaluate_epoch(model, loader, samples, tokenizer, id2label, device)
+    test_loss, test_metrics = evaluate_epoch(model, loader, samples, tokenizer, id2label, device, desc="Test")
 
     final_results = {
         "model": "roberta",
@@ -146,7 +159,6 @@ def evaluate_test(
         test_metrics["recall"],
         test_metrics["f1"],
     )
-    return final_results
 
 
 def train_model(
@@ -158,7 +170,7 @@ def train_model(
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
-) -> dict[str, float]:
+) -> None:
     set_seed()
     repo_dir = get_repo_dir()
     out_dir = repo_dir / "results" / dataset / "roberta"
@@ -229,8 +241,12 @@ def train_model(
         history = []
 
         for epoch in range(1, epochs + 1):
-            train_loss = train_epoch(model, train_loader, optimizer, scaler, scheduler, device, use_amp, accum_steps)
-            val_loss, val_metrics = evaluate_epoch(model, val_loader, val_ds.samples, tokenizer, id2label, device)
+            train_loss = train_epoch(
+                model, train_loader, optimizer, scaler, scheduler, device, use_amp, epoch, epochs, accum_steps
+            )
+            val_loss, val_metrics = evaluate_epoch(
+                model, val_loader, val_ds.samples, tokenizer, id2label, device, desc=f"Epoch {epoch:02d}/{epochs:02d} [Val]"
+            )
 
             is_best = val_metrics["f1"] > best_f1
             logger.info(
@@ -267,10 +283,9 @@ def train_model(
                     break
 
         save_history(history, out_dir)
-        final_results = evaluate_test(
+        evaluate_test(
             model, test_loader, test_ds.samples, tokenizer, id2label, device, dataset, out_dir, logger
         )
-        return final_results
     finally:
         close_logger(logger)
         if torch.cuda.is_available():
