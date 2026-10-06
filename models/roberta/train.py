@@ -216,7 +216,7 @@ def train_model(
         )
         model.to(device)
 
-        no_decay = {"bias", "layernorm", "layer_norm"}
+        no_decay = {"bias", "layernorm"}
         param_groups = [
             {
                 "params": [p for n, p in model.named_parameters() if not any(nd in n.lower() for nd in no_decay)],

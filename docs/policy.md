@@ -31,6 +31,7 @@ def process(items: list[str], cfg: dict[str, float] | None) -> tuple[int, int]:
 - Kiểm tra điều kiện biên để phòng tránh lỗi chia cho 0, truy xuất khóa từ điển bằng `.get()` và đối chiếu độ dài trước khi ghép cặp.
 - Cố định seed ngẫu nhiên (`seed=42`) tại các bước phân chia dữ liệu và khởi tạo huấn luyện.
 - Không phòng thủ mù quáng hoặc kiểm tra các giá trị không tồn tại trong dữ liệu thực tế. Không dùng `try...except pass` để nuốt lỗi; ném ngoại lệ rõ ràng khi thiếu tệp hoặc sai cấu trúc dữ liệu.
+- Phân nhóm tham số tối ưu hóa: Miễn phạt weight decay (`weight_decay=0.0`) cho toàn bộ `bias` và các tham số của tầng chuẩn hóa (`LayerNorm`, `BatchNorm`), chỉ áp dụng weight decay lên các ma trận trọng số.
 
 ## 5. Chuẩn gán nhãn dữ liệu
 - Sử dụng chuẩn gán nhãn BIO (IOB2: `B-<field>`, `I-<field>`, `O`) cho toàn bộ tác vụ phân loại token và gán nhãn chuỗi.
