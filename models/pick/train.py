@@ -212,7 +212,8 @@ def train_model(
         test_ds = PickDataset(cache_dir / "test.jsonl", dataset, char2id, tag2id)
 
         logger.info(
-            "Config: epochs=%d, batch_size=%d, accum_steps=%d, lr_backbone=%s, lr_scratch=%s, patience=%d",
+            "Config: dataset=%s, epochs=%d, batch_size=%d, accum_steps=%d, lr_backbone=%s, lr_scratch=%s, patience=%d",
+            dataset,
             epochs,
             batch_size,
             accum_steps,

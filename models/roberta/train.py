@@ -194,7 +194,8 @@ def train_model(
         test_ds = RobertaDataset(cache_dir / "test.jsonl", tokenizer, label2id)
 
         logger.info(
-            "Config: epochs=%d, batch_size=%d, accum_steps=%d, lr=%s, patience=%d",
+            "Config: dataset=%s, epochs=%d, batch_size=%d, accum_steps=%d, lr=%s, patience=%d",
+            dataset,
             epochs,
             batch_size,
             accum_steps,

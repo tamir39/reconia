@@ -5,10 +5,16 @@ import json
 import logging
 import random
 import sys
+import warnings
 from pathlib import Path
+
+warnings.filterwarnings("ignore", message=".*nested tensor.*")
 
 import numpy as np
 import torch
+from transformers import logging as hf_logging
+
+hf_logging.set_verbosity_error()
 
 
 def get_repo_dir() -> Path:
