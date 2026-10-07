@@ -9,26 +9,23 @@ MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen2_5_vl")
 
 
 def collect_dataset_results(dataset_dir: Path) -> list[dict]:
-    records = []
-    for model in MODELS:
-        metric_file = dataset_dir / model / "test_metrics.json"
-        if metric_file.exists():
-            with open(metric_file, "r", encoding="utf-8") as file:
-                data = json.load(file)
-                records.append({
-                    "model": model,
-                    "test_loss": float(data.get("test_loss", 0.0)),
-                    "precision": float(data.get("precision", 0.0)),
-                    "recall": float(data.get("recall", 0.0)),
-                    "f1": float(data.get("f1", 0.0)),
-                })
-    return records
+    return [
+        {
+            "model": model,
+            "test_loss": float(data.get("test_loss", 0.0)),
+            "precision": float(data.get("precision", 0.0)),
+            "recall": float(data.get("recall", 0.0)),
+            "f1": float(data.get("f1", 0.0)),
+        }
+        for model in MODELS
+        if (metric_file := dataset_dir / model / "test_metrics.json").exists()
+        and (data := json.loads(metric_file.read_text(encoding="utf-8")))
+    ]
 
 
-def save_comparison_md(records: list[dict], out_dir: Path | str) -> None:
-    out_path = Path(out_dir)
-    out_path.mkdir(parents=True, exist_ok=True)
-    with open(out_path / "comparison.md", "w", encoding="utf-8") as file:
+def save_comparison_md(records: list[dict], out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with open(out_dir / "comparison.md", "w", encoding="utf-8") as file:
         file.write("| Model | Test Loss | Precision (%) | Recall (%) | F1 (%) |\n")
         file.write("| :--- | :---: | :---: | :---: | :---: |\n")
         for r in records:

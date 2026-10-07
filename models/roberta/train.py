@@ -17,14 +17,13 @@ from transformers import (
     get_linear_schedule_with_warmup,
 )
 
+from tools.common import get_repo_dir, get_labels, set_seed, setup_logger, close_logger
+from tools.plots import save_train_plots
 from evaluate.metrics import evaluate_dataset
 from models.roberta.dataset import (
-    get_labels,
     RobertaDataset,
     reconstruct_predictions,
 )
-from tools.common import get_repo_dir, set_seed, close_logger, setup_logger
-from tools.plots import save_train_plots
 
 
 def train_epoch(
@@ -91,7 +90,7 @@ def evaluate_epoch(
 ) -> tuple[float, dict[str, float]]:
     model.eval()
     total_loss = 0.0
-    all_preds = []
+    all_preds: list[list[int]] = []
 
     with torch.no_grad():
         for batch in tqdm(loader, desc=desc, leave=False):
@@ -245,7 +244,13 @@ def train_model(
                 model, train_loader, optimizer, scaler, scheduler, device, use_amp, epoch, epochs, accum_steps
             )
             val_loss, val_metrics = evaluate_epoch(
-                model, val_loader, val_ds.samples, tokenizer, id2label, device, desc=f"Epoch {epoch:02d}/{epochs:02d} [Val]"
+                model,
+                val_loader,
+                val_ds.samples,
+                tokenizer,
+                id2label,
+                device,
+                desc=f"Epoch {epoch:02d}/{epochs:02d} [Val]",
             )
 
             is_best = val_metrics["f1"] > best_f1
@@ -284,7 +289,15 @@ def train_model(
 
         save_history(history, out_dir)
         evaluate_test(
-            model, test_loader, test_ds.samples, tokenizer, id2label, device, dataset, out_dir, logger
+            model,
+            test_loader,
+            test_ds.samples,
+            tokenizer,
+            id2label,
+            device,
+            dataset,
+            out_dir,
+            logger,
         )
     finally:
         close_logger(logger)
@@ -309,9 +322,9 @@ def parse_args() -> argparse.Namespace:
 if __name__ == "__main__":
     args = parse_args()
     target_datasets = DATASETS if args.dataset == "all" else [args.dataset]
-    for dataset in target_datasets:
+    for target_dataset in target_datasets:
         train_model(
-            dataset=dataset,
+            dataset=target_dataset,
             epochs=args.epochs,
             batch_size=args.batch_size,
             accum_steps=args.accum_steps,

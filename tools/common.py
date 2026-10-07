@@ -1,3 +1,4 @@
+import json
 import logging
 import random
 import sys
@@ -23,14 +24,35 @@ def resolve_data_dir(dataset_name: str) -> Path:
     return repo_dir.parent / dataset_name
 
 
-def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
-    x_coords = [quad[0], quad[2], quad[4], quad[6]]
-    y_coords = [quad[1], quad[3], quad[5], quad[7]]
+def get_labels(cache_dir: Path) -> list[str]:
+    labels = set()
+    for split_file in ("train.jsonl", "val.jsonl"):
+        split_path = cache_dir / split_file
+        with open(split_path, "r", encoding="utf-8") as file:
+            for line in file:
+                data = json.loads(line)
+                for item in data.get("ocr", []):
+                    label = item.get("label")
+                    if label:
+                        labels.add(label)
 
-    x_min = max(0, min(1000, int(min(x_coords) / width * 1000)))
-    y_min = max(0, min(1000, int(min(y_coords) / height * 1000)))
-    x_max = max(0, min(1000, int(max(x_coords) / width * 1000)))
-    y_max = max(0, min(1000, int(max(y_coords) / height * 1000)))
+    return sorted(labels)
+
+
+def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
+    safe_w = max(width, 1)
+    safe_h = max(height, 1)
+    if len(quad) == 4:
+        x_coords = [quad[0], quad[2]]
+        y_coords = [quad[1], quad[3]]
+    else:
+        x_coords = [quad[0], quad[2], quad[4], quad[6]]
+        y_coords = [quad[1], quad[3], quad[5], quad[7]]
+
+    x_min = max(0, min(1000, int(min(x_coords) / safe_w * 1000)))
+    y_min = max(0, min(1000, int(min(y_coords) / safe_h * 1000)))
+    x_max = max(0, min(1000, int(max(x_coords) / safe_w * 1000)))
+    y_max = max(0, min(1000, int(max(y_coords) / safe_h * 1000)))
 
     if x_max <= x_min:
         x_max = min(1000, x_min + 1)
@@ -57,9 +79,8 @@ def close_logger(logger: logging.Logger) -> None:
     logger.handlers.clear()
 
 
-def setup_logger(out_dir: Path | str, name: str = "train") -> logging.Logger:
-    out_path = Path(out_dir)
-    out_path.mkdir(parents=True, exist_ok=True)
+def setup_logger(out_dir: Path, name: str = "train") -> logging.Logger:
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
@@ -72,7 +93,7 @@ def setup_logger(out_dir: Path | str, name: str = "train") -> logging.Logger:
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
-    file_handler = logging.FileHandler(out_path / "train.log", encoding="utf-8")
+    file_handler = logging.FileHandler(out_dir / "train.log", encoding="utf-8")
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 

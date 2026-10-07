@@ -5,26 +5,10 @@ from torch.utils.data import Dataset
 from transformers import PreTrainedTokenizerBase
 
 
-def get_labels(cache_dir: Path | str) -> list[str]:
-    cache_path = Path(cache_dir)
-    labels = set()
-    for split_file in ("train.jsonl", "val.jsonl"):
-        split_path = cache_path / split_file
-        with open(split_path, "r", encoding="utf-8") as file:
-            for line in file:
-                data = json.loads(line)
-                for item in data.get("ocr", []):
-                    label = item.get("label")
-                    if label:
-                        labels.add(label)
-
-    return sorted(labels)
-
-
 class RobertaDataset(Dataset):
     def __init__(
         self,
-        jsonl_path: Path | str,
+        jsonl_path: Path,
         tokenizer: PreTrainedTokenizerBase,
         label2id: dict[str, int],
         max_length: int = 512,
@@ -145,19 +129,19 @@ def reconstruct_predictions(
     samples: list[dict],
     tokenizer: PreTrainedTokenizerBase,
     id2label: dict[int, str],
-    max_length: int = 512,
 ) -> list[dict]:
     if len(preds) != len(samples):
         raise ValueError(f"preds ({len(preds)}) and samples ({len(samples)}) length mismatch.")
 
-    reconstructed = []
-
-    for pred_ids, sample in zip(preds, samples):
-        ocr_items = sample.get("ocr", [])
-        words = [item.get("text", "") for item in ocr_items]
-        box_labels = align_box_labels(pred_ids, words, tokenizer, id2label, max_length)
-
-        sample_pred = extract_entities(ocr_items, box_labels)
-        reconstructed.append(sample_pred)
-
-    return reconstructed
+    return [
+        extract_entities(
+            ocr_items := sample.get("ocr", []),
+            align_box_labels(
+                pred_ids,
+                [item.get("text", "") for item in ocr_items],
+                tokenizer,
+                id2label,
+            ),
+        )
+        for pred_ids, sample in zip(preds, samples)
+    ]

@@ -8,14 +8,13 @@ from tools.common import get_repo_dir, resolve_data_dir, normalize_box
 
 
 def load_class_map(class_list_file: Path) -> dict[int, str]:
-    class_map = {}
     with open(class_list_file, "r", encoding="utf-8") as file:
-        for line in file:
-            parts = line.strip().split()
-            if len(parts) == 2:
-                class_id, class_name = parts
-                class_map[int(class_id)] = class_name
-    return class_map
+        return {
+            int(parts[0]): parts[1]
+            for line in file
+            if len(parts := line.strip().split()) == 2
+        }
+
 
 
 def build_ground_truth(annotations: list[dict], class_map: dict[int, str]) -> dict[str, list[str]]:

@@ -1,3 +1,4 @@
+from collections import defaultdict
 import re
 
 
@@ -51,7 +52,10 @@ def match_field(pred: list[str] | str | None, gt: list[str] | str | None) -> tup
     return 0, 1, 1
 
 
-def evaluate_sample(pred: dict, gt: dict) -> dict[str, tuple[int, int, int]]:
+def evaluate_sample(
+    pred: dict[str, list[str] | str],
+    gt: dict[str, list[str] | str],
+) -> dict[str, tuple[int, int, int]]:
     all_keys = set(gt.keys()) | set(pred.keys())
     results = {}
 
@@ -74,20 +78,21 @@ def compute_metrics(tp: int, fp: int, fn: int) -> dict[str, float]:
     }
 
 
-def evaluate_dataset(preds: list[dict], gts: list[dict]) -> dict[str, float]:
+def evaluate_dataset(
+    preds: list[dict[str, list[str] | str]],
+    gts: list[dict[str, list[str] | str]],
+) -> dict[str, float]:
     if len(preds) != len(gts):
         raise ValueError(f"preds ({len(preds)}) and gts ({len(gts)}) length mismatch.")
 
-    field_counts = {}
+    field_counts: dict[str, list[int]] = defaultdict(lambda: [0, 0, 0])
 
     for pred, gt in zip(preds, gts):
-        sample_results = evaluate_sample(pred, gt)
-        for field, (tp, fp, fn) in sample_results.items():
-            if field not in field_counts:
-                field_counts[field] = [0, 0, 0]
-            field_counts[field][0] += tp
-            field_counts[field][1] += fp
-            field_counts[field][2] += fn
+        for field, (tp, fp, fn) in evaluate_sample(pred, gt).items():
+            counts = field_counts[field]
+            counts[0] += tp
+            counts[1] += fp
+            counts[2] += fn
 
     if not field_counts:
         return {"precision": 0.0, "recall": 0.0, "f1": 0.0}

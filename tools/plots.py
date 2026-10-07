@@ -3,9 +3,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 
-def save_train_plots(history: list[dict], out_dir: Path | str) -> None:
-    out_path = Path(out_dir)
-    out_path.mkdir(parents=True, exist_ok=True)
+def save_train_plots(history: list[dict], out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     epochs = [h["epoch"] for h in history]
 
@@ -19,7 +18,7 @@ def save_train_plots(history: list[dict], out_dir: Path | str) -> None:
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(out_path / "loss.png")
+    plt.savefig(out_dir / "loss.png")
     plt.close()
 
     # 2. Performance Metrics Curve
@@ -33,13 +32,12 @@ def save_train_plots(history: list[dict], out_dir: Path | str) -> None:
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(out_path / "metrics.png")
+    plt.savefig(out_dir / "metrics.png")
     plt.close()
 
 
-def save_comparison_plot(records: list[dict], out_dir: Path | str) -> None:
-    out_path = Path(out_dir)
-    out_path.mkdir(parents=True, exist_ok=True)
+def save_comparison_plot(records: list[dict], out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     models = [r["model"] for r in records]
     scores = [r["f1"] * 100 for r in records]
@@ -53,5 +51,5 @@ def save_comparison_plot(records: list[dict], out_dir: Path | str) -> None:
     plt.margins(y=0.1)
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(out_path / "comparison.png")
+    plt.savefig(out_dir / "comparison.png")
     plt.close()

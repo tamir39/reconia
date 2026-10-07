@@ -1,43 +1,36 @@
-# Quy Chuẩn Mã Nguồn
+# Quy chuẩn dự án
 
 ## 1. Phân bổ module
-- Thư mục `prepare/` xử lý dữ liệu thô và xuất tệp JSONL vào `.cache/<dataset>/`.
-- Thư mục `evaluate/` tính toán chỉ số đánh giá, không chứa thao tác đọc ghi tệp.
-- Thư mục `models/<model>/` chứa mã nguồn huấn luyện và nạp dữ liệu độc lập của từng mô hình.
-- Thư mục `tools/` chứa các tiện ích thực thi chung.
-- Thư mục `notebooks/` chứa các tệp Jupyter Notebook mô phỏng thực nghiệm tương ứng cho từng mô hình.
+- Thư mục `prepare/`: Chuyển đổi dữ liệu thô sang định dạng JSONL trong `.cache/<dataset>/`.
+- Thư mục `evaluate/`: Tính toán chỉ số đánh giá trường thông tin (field-level F1), không thao tác đọc ghi tệp.
+- Thư mục `models/<model>/`: Chứa mã nguồn mô hình, nạp dữ liệu và huấn luyện độc lập cho từng kiến trúc.
+- Thư mục `tools/`: Các tiện ích dùng chung (cấu hình đường dẫn, trực quan hóa, so sánh kết quả).
+- Thư mục `notebooks/`: Sổ tay Jupyter thực nghiệm tương ứng cho từng mô hình.
 
-## 2. Định dạng và định danh
+## 2. Định dạng mã nguồn và định danh
 - Tuân thủ PEP 8 về thụt lề và khoảng cách dòng.
-- Sắp xếp import theo 3 khối: thư viện chuẩn, thư viện bên thứ ba, module nội bộ.
-- Dùng tiếng Anh cho toàn bộ định danh trong mã nguồn, log console và chú thích.
-- Đặt tên theo quy ước `snake_case` cho hàm và biến, `PascalCase` cho lớp, `UPPER_SNAKE_CASE` cho hằng số.
-- Chú thích ngắn gọn, tập trung vào lý do kỹ thuật hoặc thuật toán, không mô tả lại cú pháp hiển nhiên.
+- Thứ tự import phân định 3 nhóm: thư viện chuẩn -> thư viện bên thứ ba -> module nội bộ.
+- Sử dụng tiếng Anh cho toàn bộ định danh trong mã nguồn, log console và chú thích.
+- Quy ước đặt tên: `snake_case` cho hàm và biến, `PascalCase` cho lớp, `UPPER_SNAKE_CASE` cho hằng số.
+- Chú thích mã nguồn súc tích, chỉ giải thích lý do kỹ thuật hoặc công thức thuật toán đặc thù.
 
 ## 3. Kiểu dữ liệu (Python 3.10+)
-- Dùng kiểu dựng sẵn chữ thường: `list`, `dict`, `tuple`, `set`.
-- Dùng toán tử `|` cho kiểu kết hợp hoặc giá trị tùy chọn (`str | None`, `int | float`).
+- Sử dụng kiểu dựng sẵn chữ thường: `list`, `dict`, `tuple`, `set`.
+- Sử dụng toán tử `|` cho kiểu kết hợp hoặc giá trị tùy chọn (`str | None`, `int | float`).
 - Không import từ thư viện `typing`.
 
-```python
-# Đúng
-def process(items: list[str], cfg: dict[str, float] | None) -> tuple[int, int]:
-    ...
-```
-
-## 4. Cấu trúc hàm và an toàn dữ liệu
+## 4. Thiết kế hàm và xử lý ngoại lệ
 - Viết hàm phẳng, ưu tiên thoát sớm bằng guard clauses.
-- Hàm xử lý dữ liệu không lưu trạng thái. Chỉ dùng lớp khi quản lý mô hình hoặc dữ liệu nạp theo batch.
-- Kiểm tra điều kiện biên để phòng tránh lỗi chia cho 0, truy xuất khóa từ điển bằng `.get()` và đối chiếu độ dài trước khi ghép cặp.
-- Cố định seed ngẫu nhiên (`seed=42`) tại các bước phân chia dữ liệu và khởi tạo huấn luyện.
-- Không phòng thủ mù quáng hoặc kiểm tra các giá trị không tồn tại trong dữ liệu thực tế. Không dùng `try...except pass` để nuốt lỗi; ném ngoại lệ rõ ràng khi thiếu tệp hoặc sai cấu trúc dữ liệu.
-- Phân nhóm tham số tối ưu hóa: Miễn phạt weight decay (`weight_decay=0.0`) cho toàn bộ `bias` và các tham số của tầng chuẩn hóa (`LayerNorm`, `BatchNorm`), chỉ áp dụng weight decay lên các ma trận trọng số.
+- Hàm xử lý dữ liệu bảo đảm tính thuần túy (stateless). Chỉ sử dụng lớp cho mô hình hoặc quản lý nạp dữ liệu theo batch.
+- Kiểm tra điều kiện biên để tránh chia cho 0 và đối chiếu kích thước dữ liệu trước khi ghép cặp.
+- Cố định seed ngẫu nhiên (`seed=42`) khi phân chia dữ liệu và khởi tạo huấn luyện.
+- Xử lý ngoại lệ minh bạch: Không bắt ngoại lệ im lặng (`silent fail`); ném ngoại lệ tường minh khi thiếu tệp hoặc sai định dạng dữ liệu.
 
 ## 5. Chuẩn gán nhãn dữ liệu
-- Sử dụng chuẩn gán nhãn BIO (IOB2: `B-<field>`, `I-<field>`, `O`) cho toàn bộ tác vụ phân loại token và gán nhãn chuỗi.
-- Ký hiệu `O` đại diện duy nhất cho các từ hoặc hộp ngoài lề, không sử dụng chuỗi thay thế tự chế.
+- Sử dụng chuẩn gán nhãn BIO (IOB2: `B-<field>`, `I-<field>`, `O`) cho tác vụ phân loại token và gán nhãn chuỗi.
+- Ký hiệu `O` đại diện cho các từ hoặc bounding box không thuộc thực thể cần trích xuất.
 
-## 6. Quy ước commit và tóm tắt thay đổi
-- Áp dụng cấu trúc `<loại>: <mô tả>` với các tiền tố chính: `feat`, `fix`, `refactor`, `docs`, `perf`.
-- Mô tả trực tiếp hành động kỹ thuật cụ thể, không dùng câu đánh giá chung chung hoặc văn mẫu sáo rỗng.
-- Viết ở thể mệnh lệnh, không dùng đại từ nhân xưng ngôi thứ nhất, độ dài tiêu đề không quá 72 ký tự.
+## 6. Quy ước commit
+- Áp dụng cấu trúc `<loại>: <mô tả>` với các tiền tố: `feat`, `fix`, `refactor`, `docs`, `perf`.
+- Mô tả trực tiếp hành động kỹ thuật cụ thể, súc tích và chính xác.
+- Viết ở thể mệnh lệnh, không dùng đại từ nhân xưng, độ dài tiêu đề không quá 72 ký tự.

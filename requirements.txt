@@ -1,5 +1,6 @@
 # Deep learning framework
 torch
+torchvision
 
 # Hugging Face ecosystem
 transformers
