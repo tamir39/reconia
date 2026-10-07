@@ -20,6 +20,7 @@ class MultimodalEncoder(nn.Module):
         self.d_model = d_model
 
         resnet = resnet50(weights=ResNet50_Weights.DEFAULT)
+
         self.conv1 = resnet.conv1
         self.bn1 = resnet.bn1
         self.relu = resnet.relu
@@ -122,7 +123,7 @@ class GLCN(nn.Module):
         e = F.leaky_relu(torch.matmul(diff, self.weight_gl))
 
         inv_mask = ~box_mask.unsqueeze(1).expand(-1, N, -1)
-        e = e.masked_fill(inv_mask, -1e9)
+        e = e.masked_fill(inv_mask, -1e4)
         A = F.softmax(e, dim=-1)
 
         dist = torch.norm(V0.unsqueeze(2) - V0.unsqueeze(1), dim=-1)
@@ -130,7 +131,7 @@ class GLCN(nn.Module):
         valid_pairs = (box_mask.unsqueeze(2) & box_mask.unsqueeze(1)).float()
         valid_counts = box_mask.float().sum(dim=-1).clamp(min=1.0)
         loss_gl1 = (torch.exp(dist_loss) * valid_pairs).sum(dim=(-2, -1)) / (valid_counts ** 2)
-        loss_gl2 = self.gamma * torch.norm(A * valid_pairs, dim=(-2, -1))
+        loss_gl2 = self.gamma * torch.sum((A * valid_pairs) ** 2, dim=(-2, -1))
         loss_gl = torch.mean(loss_gl1 + loss_gl2)
 
         alpha0 = self.linear_alpha(relations)
