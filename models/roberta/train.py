@@ -1,5 +1,6 @@
 import argparse
 import csv
+import gc
 import json
 import logging
 from pathlib import Path
@@ -162,9 +163,9 @@ def evaluate_test(
 
 def train_model(
     dataset: str = "sroie",
-    epochs: int = 20,
+    epochs: int = 30,
     batch_size: int = 8,
-    accum_steps: int = 2,
+    accum_steps: int = 1,
     lr: float = 3e-5,
     patience: int = 5,
     weight_decay: float = 0.01,
@@ -301,6 +302,7 @@ def train_model(
         )
     finally:
         close_logger(logger)
+        gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
@@ -311,9 +313,9 @@ DATASETS = ("sroie", "cord_v2", "wildreceipt")
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="all", choices=["all", *DATASETS])
-    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--batch_size", type=int, default=8)
-    parser.add_argument("--accum_steps", type=int, default=2)
+    parser.add_argument("--accum_steps", type=int, default=1)
     parser.add_argument("--lr", type=float, default=3e-5)
     parser.add_argument("--patience", type=int, default=5)
     return parser.parse_args()

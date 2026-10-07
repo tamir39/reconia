@@ -133,10 +133,10 @@ python -m tools.download_weights --model <model>
 ### Bước 3: Huấn luyện và đánh giá
 
 Thiết lập chung:
-- Kích thước batch hiệu dụng: 16 (`batch_size * accum_steps = 16`)
+- Kích thước batch hiệu dụng: 8 (`batch_size * accum_steps = 8`)
 - Bộ tối ưu hóa: AdamW (`weight_decay=0.01`, loại trừ `bias` và các lớp chuẩn hóa)
 - Hạt giống ngẫu nhiên: 42 (`seed=42`)
-- Số epoch tối đa: 20
+- Số epoch tối đa: 30
 - Dừng sớm: 5 (`patience=5`)
 
 Lệnh thực thi:
@@ -149,19 +149,19 @@ python -m models.<model>.train --dataset <dataset>
 
 | Mô hình | `lr` | `batch_size` | `accum_steps` | Batch hiệu dụng | `epochs` | `patience` |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `roberta` | `3e-5` | `8` | `2` | 16 | 20 | 5 |
-| `bros` | `3e-5` | `8` | `2` | 16 | 20 | 5 |
-| `layoutlmv3` | `3e-5` | `4` | `4` | 16 | 20 | 5 |
-| `donut` | `3e-5` | `2` | `8` | 16 | 20 | 5 |
-| `pick` | `1e-4` | `4` | `4` | 16 | 20 | 5 |
-| `qwen2_5_vl` | `1e-4` | `1` | `16` | 16 | 20 | 5 |
+| `roberta` | `3e-5` | `8` | `1` | 8 | 30 | 5 |
+| `bros` | `3e-5` | `4` | `2` | 8 | 30 | 5 |
+| `layoutlmv3` | `2e-5` | `4` | `2` | 8 | 30 | 5 |
+| `donut` | `3e-5` | `2` | `4` | 8 | 30 | 5 |
+| `pick` | `lr_backbone = 1e-4`<br>`lr_scratch = 5e-4` | `4` | `2` | 8 | 30 | 5 |
+| `qwen2_5_vl` | `1e-4` | `1` | `8` | 8 | 30 | 5 |
 
 #### Bảng tham số dòng lệnh:
 
 | Tham số | Mặc định | Lựa chọn | Mô tả |
 | :--- | :---: | :--- | :--- |
 | `--dataset` | `"all"` | `sroie`, `cord_v2`, `wildreceipt`, `all` | Tập dữ liệu huấn luyện |
-| `--epochs` | `20` | Số nguyên dương | Số epoch tối đa |
+| `--epochs` | `30` | Số nguyên dương | Số epoch tối đa |
 | `--batch_size` | Theo mô hình | Số nguyên dương | Kích thước batch cục bộ |
 | `--accum_steps` | Theo mô hình | Số nguyên dương | Số bước tích lũy gradient |
 | `--lr` | Theo mô hình | Số thực dương | Tốc độ học khởi tạo |

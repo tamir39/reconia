@@ -84,7 +84,7 @@ class PickDataset(Dataset):
         char2id: dict[str, int],
         tag2id: dict[str, int],
         max_boxes: int = 256,
-        max_text_len: int = 100,
+        max_text_len: int = 64,
         img_size: tuple[int, int] = (512, 512),
     ) -> None:
         self.dataset_name = dataset_name

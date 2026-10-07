@@ -1,5 +1,6 @@
 import argparse
 import csv
+import gc
 import json
 import logging
 from pathlib import Path
@@ -179,12 +180,17 @@ def evaluate_test(
     )
 
 
+def is_resnet_param(name: str) -> bool:
+    return name.startswith(("encoder.conv1", "encoder.bn1", "encoder.layer1", "encoder.layer2", "encoder.layer3"))
+
+
 def train_model(
     dataset: str = "sroie",
-    epochs: int = 20,
+    epochs: int = 30,
     batch_size: int = 4,
-    accum_steps: int = 4,
-    lr: float = 1e-4,
+    accum_steps: int = 2,
+    lr_backbone: float = 1e-4,
+    lr_scratch: float = 5e-4,
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
@@ -206,11 +212,12 @@ def train_model(
         test_ds = PickDataset(cache_dir / "test.jsonl", dataset, char2id, tag2id)
 
         logger.info(
-            "Config: epochs=%d, batch_size=%d, accum_steps=%d, lr=%s, patience=%d",
+            "Config: epochs=%d, batch_size=%d, accum_steps=%d, lr_backbone=%s, lr_scratch=%s, patience=%d",
             epochs,
             batch_size,
             accum_steps,
-            f"{lr:g}",
+            f"{lr_backbone:g}",
+            f"{lr_scratch:g}",
             patience,
         )
 
@@ -227,17 +234,30 @@ def train_model(
         model.to(device)
 
         no_decay = {"bias", "layernorm", "batchnorm"}
+
         param_groups = [
             {
-                "params": [p for n, p in model.named_parameters() if not any(nd in n.lower() for nd in no_decay)],
+                "params": [p for n, p in model.named_parameters() if is_resnet_param(n) and not any(nd in n.lower() for nd in no_decay)],
+                "lr": lr_backbone,
                 "weight_decay": weight_decay,
             },
             {
-                "params": [p for n, p in model.named_parameters() if any(nd in n.lower() for nd in no_decay)],
+                "params": [p for n, p in model.named_parameters() if is_resnet_param(n) and any(nd in n.lower() for nd in no_decay)],
+                "lr": lr_backbone,
+                "weight_decay": 0.0,
+            },
+            {
+                "params": [p for n, p in model.named_parameters() if not is_resnet_param(n) and not any(nd in n.lower() for nd in no_decay)],
+                "lr": lr_scratch,
+                "weight_decay": weight_decay,
+            },
+            {
+                "params": [p for n, p in model.named_parameters() if not is_resnet_param(n) and any(nd in n.lower() for nd in no_decay)],
+                "lr": lr_scratch,
                 "weight_decay": 0.0,
             },
         ]
-        optimizer = AdamW(param_groups, lr=lr)
+        optimizer = AdamW(param_groups)
         total_steps = (len(train_loader) + accum_steps - 1) // accum_steps * epochs
         warmup_steps = int(total_steps * warmup_ratio)
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
@@ -310,6 +330,7 @@ def train_model(
         )
     finally:
         close_logger(logger)
+        gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
@@ -320,10 +341,11 @@ DATASETS = ("sroie", "cord_v2", "wildreceipt")
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="all", choices=["all", *DATASETS])
-    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--batch_size", type=int, default=4)
-    parser.add_argument("--accum_steps", type=int, default=4)
-    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--accum_steps", type=int, default=2)
+    parser.add_argument("--lr_backbone", type=float, default=1e-4)
+    parser.add_argument("--lr_scratch", type=float, default=5e-4)
     parser.add_argument("--patience", type=int, default=5)
     return parser.parse_args()
 
@@ -337,6 +359,7 @@ if __name__ == "__main__":
             epochs=args.epochs,
             batch_size=args.batch_size,
             accum_steps=args.accum_steps,
-            lr=args.lr,
+            lr_backbone=args.lr_backbone,
+            lr_scratch=args.lr_scratch,
             patience=args.patience,
         )

@@ -14,7 +14,7 @@ class MultimodalEncoder(nn.Module):
         num_encoder_layers: int = 6,
         dim_feedforward: int = 2048,
         dropout: float = 0.1,
-        max_text_len: int = 100,
+        max_text_len: int = 64,
     ) -> None:
         super().__init__()
         self.d_model = d_model
@@ -117,7 +117,7 @@ class GLCN(nn.Module):
         relations: torch.Tensor,
         box_mask: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        B, N, D = V0.shape
+        N = V0.shape[1]
 
         diff = torch.abs(V0.unsqueeze(2) - V0.unsqueeze(1))
         e = F.leaky_relu(torch.matmul(diff, self.weight_gl))
@@ -210,7 +210,7 @@ class CRF(nn.Module):
         return score
 
     def _forward_alg(self, emissions: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
-        seq_len, batch_size, _ = emissions.shape
+        seq_len = emissions.shape[0]
         score = self.start_transitions + emissions[0]
         for i in range(1, seq_len):
             broadcast_score = score.unsqueeze(2)
@@ -264,7 +264,7 @@ class PICKModel(nn.Module):
         num_encoder_layers: int = 6,
         dim_feedforward: int = 2048,
         dropout: float = 0.1,
-        max_text_len: int = 100,
+        max_text_len: int = 64,
         lambda_gl: float = 0.01,
     ) -> None:
         super().__init__()
