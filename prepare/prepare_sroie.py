@@ -6,31 +6,27 @@ from pathlib import Path
 
 from PIL import Image
 
-from tools.common import get_repo_dir, resolve_data_dir, normalize_box
-
-
-def clean_text(text: str) -> str:
-    return re.sub(r"[^a-zA-Z0-9]", "", str(text)).lower()
+from tools.common import get_repo_dir, resolve_data_dir, get_labels, normalize_text, normalize_box
 
 
 def compute_token_quad(quad: list[int], start: int, end: int, total_len: int) -> list[int]:
     if total_len <= 0:
         return quad
 
-    ratio_start = start / total_len
-    ratio_end = end / total_len
+    start_ratio = start / total_len
+    end_ratio = end / total_len
     x1, y1, x2, y2, x3, y3, x4, y4 = quad
 
-    point1_x = int(round(x1 + ratio_start * (x2 - x1)))
-    point1_y = int(round(y1 + ratio_start * (y2 - y1)))
-    point2_x = int(round(x1 + ratio_end * (x2 - x1)))
-    point2_y = int(round(y1 + ratio_end * (y2 - y1)))
-    point3_x = int(round(x4 + ratio_end * (x3 - x4)))
-    point3_y = int(round(y4 + ratio_end * (y3 - y4)))
-    point4_x = int(round(x4 + ratio_start * (x3 - x4)))
-    point4_y = int(round(y4 + ratio_start * (y3 - y4)))
-
-    return [point1_x, point1_y, point2_x, point2_y, point3_x, point3_y, point4_x, point4_y]
+    return [
+        int(round(x1 + start_ratio * (x2 - x1))),
+        int(round(y1 + start_ratio * (y2 - y1))),
+        int(round(x1 + end_ratio * (x2 - x1))),
+        int(round(y1 + end_ratio * (y2 - y1))),
+        int(round(x4 + end_ratio * (x3 - x4))),
+        int(round(y4 + end_ratio * (y3 - y4))),
+        int(round(x4 + start_ratio * (x3 - x4))),
+        int(round(y4 + start_ratio * (y3 - y4))),
+    ]
 
 
 def parse_ocr_items(box_path: Path, width: int, height: int) -> list[dict]:
@@ -58,17 +54,19 @@ def parse_ocr_items(box_path: Path, width: int, height: int) -> list[dict]:
     return ocr_items
 
 
-def find_best_span(token_texts: list[str], target: str) -> tuple[int, int] | None:
+def find_best_span(
+    token_texts: list[str],
+    target: str,
+    is_reversed: bool = False,
+) -> tuple[int, int] | None:
     if not target:
         return None
 
     total = len(token_texts)
     target_len = len(target)
+    indices = range(total - 1, -1, -1) if is_reversed else range(total)
 
-    for start_idx in range(total):
-        if not token_texts[start_idx]:
-            continue
-
+    for start_idx in indices:
         accum = ""
         for end_idx in range(start_idx, min(total, start_idx + 80)):
             accum += token_texts[end_idx]
@@ -82,10 +80,7 @@ def find_best_span(token_texts: list[str], target: str) -> tuple[int, int] | Non
     min_len = int(target_len * 0.85)
     max_len = int(target_len * 1.15)
 
-    for start_idx in range(total):
-        if not token_texts[start_idx]:
-            continue
-
+    for start_idx in indices:
         accum = ""
         for end_idx in range(start_idx, min(total, start_idx + 80)):
             accum += token_texts[end_idx]
@@ -101,12 +96,12 @@ def find_best_span(token_texts: list[str], target: str) -> tuple[int, int] | Non
     return best_span
 
 
-def assign_labels(ocr_items: list[dict], gt: dict[str, str]) -> None:
-    token_texts = [clean_text(item["text"]) for item in ocr_items]
+def assign_labels(ocr_items: list[dict], raw_ground_truth: dict[str, str]) -> None:
+    token_texts = [normalize_text(item["text"]) for item in ocr_items]
 
     for field in ("company", "date", "address", "total"):
-        target = clean_text(gt.get(field, ""))
-        span = find_best_span(token_texts, target)
+        target = normalize_text(raw_ground_truth.get(field, ""))
+        span = find_best_span(token_texts, target, is_reversed=(field == "total"))
         if not span:
             continue
 
@@ -122,19 +117,19 @@ def process_sample(sample_id: str, split_dir: Path) -> dict:
 
     key_path = split_dir / "key" / f"{sample_id}.txt"
     with open(key_path, "r", encoding="utf-8", errors="ignore") as file:
-        gt_raw = json.load(file)
+        raw_ground_truth = json.load(file)
 
     box_path = split_dir / "box" / f"{sample_id}.txt"
     ocr_items = parse_ocr_items(box_path, width, height)
-    assign_labels(ocr_items, gt_raw)
+    assign_labels(ocr_items, raw_ground_truth)
 
-    gt = {key: [val] for key, val in gt_raw.items() if val}
+    ground_truth = {key: [val] for key, val in raw_ground_truth.items() if val}
 
     return {
         "id": sample_id,
         "image_path": f"{split_dir.name}/img/{sample_id}.jpg",
         "ocr": ocr_items,
-        "gt": gt,
+        "gt": ground_truth,
     }
 
 
@@ -171,6 +166,10 @@ def prepare_sroie() -> None:
     export_jsonl(train_ids, train_dir, cache_dir / "train.jsonl")
     export_jsonl(val_ids, train_dir, cache_dir / "val.jsonl")
     export_jsonl(test_ids, test_dir, cache_dir / "test.jsonl")
+
+    labels = get_labels(cache_dir)
+    with open(cache_dir / "labels.json", "w", encoding="utf-8") as file:
+        json.dump(labels, file, indent=2, ensure_ascii=False)
 
 
 if __name__ == "__main__":

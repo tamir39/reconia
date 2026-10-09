@@ -57,7 +57,7 @@ class MultimodalEncoder(nn.Module):
         input_ids: torch.Tensor,
         attention_mask: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        B, N, T = input_ids.shape
+        batch_size, num_boxes, text_len = input_ids.shape
 
         x = self.conv1(images)
         x = self.bn1(x)
@@ -68,28 +68,28 @@ class MultimodalEncoder(nn.Module):
         x = self.layer3(x)
         feat = self.conv_reduce(x)
 
-        boxes_list = [boxes[b] for b in range(B)]
+        boxes_list = [boxes[batch_idx] for batch_idx in range(batch_size)]
         rois = roi_align(feat, boxes_list, output_size=(7, 7), spatial_scale=1.0 / 16.0)
-        img_emb = F.relu(self.bn_roi(self.conv_roi(rois)))
-        img_emb = img_emb.squeeze(-1).squeeze(-1).view(B, N, 1, self.d_model)
-        img_emb = img_emb.expand(-1, -1, T, -1)
+        image_emb = F.relu(self.bn_roi(self.conv_roi(rois)))
+        image_emb = image_emb.squeeze(-1).squeeze(-1).view(batch_size, num_boxes, 1, self.d_model)
+        image_emb = image_emb.expand(-1, -1, text_len, -1)
 
         char_emb = self.char_embed(input_ids)
-        pos_emb = self.pos_embed[:, :, :T, :]
+        pos_emb = self.pos_embed[:, :, :text_len, :]
         text_emb = self.pe_dropout(char_emb + pos_emb)
 
-        text_flat = text_emb.view(B * N, T, self.d_model)
-        mask_flat = attention_mask.view(B * N, T)
+        text_flat = text_emb.view(batch_size * num_boxes, text_len, self.d_model)
+        mask_flat = attention_mask.view(batch_size * num_boxes, text_len)
         text_out = self.transformer(text_flat, src_key_padding_mask=mask_flat)
-        text_out = text_out.view(B, N, T, self.d_model)
+        text_out = text_out.view(batch_size, num_boxes, text_len, self.d_model)
 
-        fusion = self.layer_norm(text_out + img_emb)
-        X = self.output_dropout(fusion)
+        fusion = self.layer_norm(text_out + image_emb)
+        char_features = self.output_dropout(fusion)
 
         valid_chars = (~attention_mask).unsqueeze(-1).float()
-        V0 = (X * valid_chars).sum(dim=2) / valid_chars.sum(dim=2).clamp(min=1.0)
+        node_features = (char_features * valid_chars).sum(dim=2) / valid_chars.sum(dim=2).clamp(min=1.0)
 
-        return X, V0
+        return char_features, node_features
 
 
 class GLCN(nn.Module):
@@ -113,36 +113,36 @@ class GLCN(nn.Module):
 
     def forward(
         self,
-        V0: torch.Tensor,
+        node_features: torch.Tensor,
         relations: torch.Tensor,
         box_mask: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        N = V0.shape[1]
+        num_boxes = node_features.shape[1]
 
-        diff = torch.abs(V0.unsqueeze(2) - V0.unsqueeze(1))
-        e = F.leaky_relu(torch.matmul(diff, self.weight_gl))
+        diff = torch.abs(node_features.unsqueeze(2) - node_features.unsqueeze(1))
+        edge_logits = F.leaky_relu(torch.matmul(diff, self.weight_gl))
 
-        inv_mask = ~box_mask.unsqueeze(1).expand(-1, N, -1)
-        e = e.masked_fill(inv_mask, -1e4)
-        A = F.softmax(e, dim=-1)
+        inv_mask = ~box_mask.unsqueeze(1).expand(-1, num_boxes, -1)
+        edge_logits = edge_logits.masked_fill(inv_mask, -1e4)
+        adj_matrix = F.softmax(edge_logits, dim=-1)
 
-        dist = torch.norm(V0.unsqueeze(2) - V0.unsqueeze(1), dim=-1)
-        dist_loss = torch.clamp(A + self.eta * dist, max=10.0)
+        dist = torch.norm(node_features.unsqueeze(2) - node_features.unsqueeze(1), dim=-1)
+        dist_loss = torch.clamp(adj_matrix + self.eta * dist, max=10.0)
         valid_pairs = (box_mask.unsqueeze(2) & box_mask.unsqueeze(1)).float()
         valid_counts = box_mask.float().sum(dim=-1).clamp(min=1.0)
         loss_gl1 = (torch.exp(dist_loss) * valid_pairs).sum(dim=(-2, -1)) / (valid_counts ** 2)
-        loss_gl2 = self.gamma * torch.sum((A * valid_pairs) ** 2, dim=(-2, -1))
+        loss_gl2 = self.gamma * torch.sum((adj_matrix * valid_pairs) ** 2, dim=(-2, -1))
         loss_gl = torch.mean(loss_gl1 + loss_gl2)
 
         alpha0 = self.linear_alpha(relations)
-        vih = self.linear_vih(V0).unsqueeze(2)
-        vjh = self.linear_vjh(V0).unsqueeze(1)
-        h = F.relu(vih + vjh + alpha0)
+        vih = self.linear_vih(node_features).unsqueeze(2)
+        vjh = self.linear_vjh(node_features).unsqueeze(1)
+        transformed_features = F.relu(vih + vjh + alpha0)
 
-        h_agg = torch.sum(A.unsqueeze(-1) * h, dim=2)
-        VL = F.relu(self.linear_update(h_agg))
+        features_agg = torch.sum(adj_matrix.unsqueeze(-1) * transformed_features, dim=2)
+        graph_features = F.relu(self.linear_update(features_agg))
 
-        return VL, loss_gl
+        return graph_features, loss_gl
 
 
 class BiLSTMDecoder(nn.Module):
@@ -169,17 +169,17 @@ class BiLSTMDecoder(nn.Module):
 
     def forward(
         self,
-        X: torch.Tensor,
-        VL: torch.Tensor,
+        char_features: torch.Tensor,
+        graph_features: torch.Tensor,
     ) -> torch.Tensor:
-        B, N, T, D = X.shape
-        VL_expanded = VL.unsqueeze(2).expand(-1, -1, T, -1)
-        fused = self.linear_union(torch.cat([X, VL_expanded], dim=-1))
+        batch_size, num_boxes, text_len, d_model = char_features.shape
+        graph_expanded = graph_features.unsqueeze(2).expand(-1, -1, text_len, -1)
+        fused = self.linear_union(torch.cat([char_features, graph_expanded], dim=-1))
 
-        packed_X = fused.view(B * N, T, D)
-        lstm_out, _ = self.bilstm(packed_X)
+        packed_features = fused.view(batch_size * num_boxes, text_len, d_model)
+        lstm_out, _ = self.bilstm(packed_features)
         emissions = self.fc_emissions(lstm_out)
-        return emissions.view(B, N, T, -1)
+        return emissions.view(batch_size, num_boxes, text_len, -1)
 
 
 class CRF(nn.Module):
@@ -234,15 +234,15 @@ class CRF(nn.Module):
             history.append(indices)
         score = score + self.end_transitions
         best_tags_list = []
-        for b in range(batch_size):
-            seq_end = int(mask[:, b].long().sum().item()) - 1
+        for batch_idx in range(batch_size):
+            seq_end = int(mask[:, batch_idx].long().sum().item()) - 1
             if seq_end < 0:
                 best_tags_list.append([])
                 continue
-            best_last_tag = score[b].argmax().item()
+            best_last_tag = score[batch_idx].argmax().item()
             best_tags = [best_last_tag]
-            for hist in reversed(history[:seq_end]):
-                best_last_tag = hist[b, best_tags[-1]].item()
+            for step_history in reversed(history[:seq_end]):
+                best_last_tag = step_history[batch_idx, best_tags[-1]].item()
                 best_tags.append(best_last_tag)
             best_tags.reverse()
             best_tags_list.append(best_tags)
@@ -299,18 +299,18 @@ class PICKModel(nn.Module):
         labels: torch.Tensor | None = None,
         return_preds: bool = True,
     ) -> tuple[torch.Tensor, list[list[list[int]]] | None]:
-        B, N, T = input_ids.shape
-        X, V0 = self.encoder(images, boxes, input_ids, attention_mask)
-        VL, loss_gl = self.glcn(V0, relations, box_mask)
-        emissions = self.decoder(X, VL)
+        batch_size, num_boxes, text_len = input_ids.shape
+        char_features, node_features = self.encoder(images, boxes, input_ids, attention_mask)
+        graph_features, loss_gl = self.glcn(node_features, relations, box_mask)
+        emissions = self.decoder(char_features, graph_features)
 
         valid_char_mask = (~attention_mask) & box_mask.unsqueeze(-1)
-        mask_flat = valid_char_mask.view(B * N, T).transpose(0, 1)
-        emissions_flat = emissions.view(B * N, T, -1).transpose(0, 1)
+        mask_flat = valid_char_mask.view(batch_size * num_boxes, text_len).transpose(0, 1)
+        emissions_flat = emissions.view(batch_size * num_boxes, text_len, -1).transpose(0, 1)
 
         total_loss = torch.tensor(0.0, device=images.device)
         if labels is not None:
-            labels_flat = labels.view(B * N, T).transpose(0, 1)
+            labels_flat = labels.view(batch_size * num_boxes, text_len).transpose(0, 1)
             active_box_indices = mask_flat[0].nonzero(as_tuple=True)[0]
             if active_box_indices.numel() > 0:
                 active_emissions = emissions_flat[:, active_box_indices]
@@ -324,6 +324,6 @@ class PICKModel(nn.Module):
         preds = None
         if return_preds:
             decoded = self.crf.decode(emissions_flat, mask_flat)
-            preds = [decoded[b * N : (b + 1) * N] for b in range(B)]
+            preds = [decoded[batch_idx * num_boxes : (batch_idx + 1) * num_boxes] for batch_idx in range(batch_size)]
 
         return total_loss, preds

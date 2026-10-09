@@ -6,12 +6,12 @@ import matplotlib.pyplot as plt
 def save_train_plots(history: list[dict], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    epochs = [h["epoch"] for h in history]
+    epochs = [entry["epoch"] for entry in history]
 
     # 1. Loss Curve
     plt.figure()
-    plt.plot(epochs, [h["train_loss"] for h in history], label="Train Loss")
-    plt.plot(epochs, [h["val_loss"] for h in history], label="Val Loss")
+    plt.plot(epochs, [entry["train_loss"] for entry in history], label="Train Loss")
+    plt.plot(epochs, [entry["val_loss"] for entry in history], label="Val Loss")
     plt.title("Loss")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
@@ -23,9 +23,9 @@ def save_train_plots(history: list[dict], out_dir: Path) -> None:
 
     # 2. Performance Metrics Curve
     plt.figure()
-    plt.plot(epochs, [h["precision"] * 100 for h in history], label="Precision")
-    plt.plot(epochs, [h["recall"] * 100 for h in history], label="Recall")
-    plt.plot(epochs, [h["f1"] * 100 for h in history], label="F1")
+    plt.plot(epochs, [entry["precision"] * 100 for entry in history], label="Precision")
+    plt.plot(epochs, [entry["recall"] * 100 for entry in history], label="Recall")
+    plt.plot(epochs, [entry["f1"] * 100 for entry in history], label="F1")
     plt.title("Metrics")
     plt.xlabel("Epoch")
     plt.ylabel("Score (%)")
@@ -39,8 +39,8 @@ def save_train_plots(history: list[dict], out_dir: Path) -> None:
 def save_comparison_plot(records: list[dict], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    models = [r["model"] for r in records]
-    scores = [r["f1"] * 100 for r in records]
+    models = [record["model"] for record in records]
+    scores = [record["f1"] * 100 for record in records]
 
     plt.figure()
     bars = plt.bar(models, scores, width=0.5)

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from tools.common import get_repo_dir, resolve_data_dir, normalize_box
+from tools.common import get_repo_dir, resolve_data_dir, get_labels, normalize_box
 
 
 def load_class_map(class_list_file: Path) -> dict[int, str]:
@@ -17,7 +17,7 @@ def load_class_map(class_list_file: Path) -> dict[int, str]:
 
 
 def build_ground_truth(annotations: list[dict], class_map: dict[int, str]) -> dict[str, list[str]]:
-    gt: dict[str, list[str]] = {}
+    ground_truth: dict[str, list[str]] = {}
     for item in annotations:
         text = item.get("text", "").strip()
         if not text:
@@ -27,9 +27,9 @@ def build_ground_truth(annotations: list[dict], class_map: dict[int, str]) -> di
         if not label_name.endswith("_value"):
             continue
 
-        gt.setdefault(label_name, []).append(text)
+        ground_truth.setdefault(label_name, []).append(text)
 
-    return gt
+    return ground_truth
 
 
 def process_sample(raw_sample: dict, wildreceipt_dir: Path, class_map: dict[int, str]) -> dict:
@@ -59,13 +59,13 @@ def process_sample(raw_sample: dict, wildreceipt_dir: Path, class_map: dict[int,
             "label": label,
         })
 
-    gt = build_ground_truth(raw_sample.get("annotations", []), class_map)
+    ground_truth = build_ground_truth(raw_sample.get("annotations", []), class_map)
 
     return {
         "id": sample_id,
         "image_path": image_path,
         "ocr": ocr_items,
-        "gt": gt,
+        "gt": ground_truth,
     }
 
 
@@ -101,6 +101,10 @@ def prepare_wildreceipt() -> None:
     export_jsonl(train_raw_samples, wildreceipt_dir, class_map, cache_dir / "train.jsonl")
     export_jsonl(val_raw_samples, wildreceipt_dir, class_map, cache_dir / "val.jsonl")
     export_jsonl(test_raw_samples, wildreceipt_dir, class_map, cache_dir / "test.jsonl")
+
+    labels = get_labels(cache_dir)
+    with open(cache_dir / "labels.json", "w", encoding="utf-8") as file:
+        json.dump(labels, file, indent=2, ensure_ascii=False)
 
 
 if __name__ == "__main__":

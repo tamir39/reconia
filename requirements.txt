@@ -13,3 +13,6 @@ matplotlib
 
 # Demo interface
 gradio
+
+# OCR engine
+easyocr

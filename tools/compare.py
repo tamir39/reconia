@@ -28,11 +28,11 @@ def save_comparison_md(records: list[dict], out_dir: Path) -> None:
     with open(out_dir / "comparison.md", "w", encoding="utf-8") as file:
         file.write("| Model | Test Loss | Precision (%) | Recall (%) | F1 (%) |\n")
         file.write("| :--- | :---: | :---: | :---: | :---: |\n")
-        for r in records:
+        for record in records:
             file.write(
-                f"| {r['model']} | {r['test_loss']:.4f} | "
-                f"{r['precision'] * 100:.2f} | {r['recall'] * 100:.2f} | "
-                f"{r['f1'] * 100:.2f} |\n"
+                f"| {record['model']} | {record['test_loss']:.4f} | "
+                f"{record['precision'] * 100:.2f} | {record['recall'] * 100:.2f} | "
+                f"{record['f1'] * 100:.2f} |\n"
             )
 
 

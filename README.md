@@ -137,7 +137,7 @@ Thiết lập chung:
 - Bộ tối ưu hóa: AdamW (`weight_decay=0.01`, loại trừ `bias` và các lớp chuẩn hóa)
 - Hạt giống ngẫu nhiên: 42 (`seed=42`)
 - Số epoch tối đa: 30
-- Dừng sớm: 5 (`patience=5`)
+- Dừng sớm: 7 (`patience=7`)
 
 Lệnh thực thi:
 
@@ -165,7 +165,7 @@ python -m models.<model>.train --dataset <dataset>
 | `--batch_size` | Theo mô hình | Số nguyên dương | Kích thước batch cục bộ |
 | `--accum_steps` | Theo mô hình | Số nguyên dương | Số bước tích lũy gradient |
 | `--lr` | Theo mô hình | Số thực dương | Tốc độ học khởi tạo |
-| `--patience` | `5` | Số nguyên dương | Số epoch dừng sớm |
+| `--patience` | `7` | Số nguyên dương | Số epoch dừng sớm |
 
 Kết quả lưu tại `results/<dataset>/<model>/`.
 

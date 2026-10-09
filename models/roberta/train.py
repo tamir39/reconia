@@ -112,8 +112,8 @@ def evaluate_epoch(
 
     avg_loss = total_loss / len(loader) if len(loader) > 0 else 0.0
     reconstructed = reconstruct_predictions(all_preds, samples, tokenizer, id2label)
-    gts = [s.get("gt", {}) for s in samples]
-    metrics = evaluate_dataset(reconstructed, gts)
+    ground_truths = [sample.get("gt", {}) for sample in samples]
+    metrics = evaluate_dataset(reconstructed, ground_truths)
 
     return avg_loss, metrics
 
@@ -167,7 +167,7 @@ def train_model(
     batch_size: int = 8,
     accum_steps: int = 1,
     lr: float = 3e-5,
-    patience: int = 5,
+    patience: int = 7,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
 ) -> None:
@@ -318,7 +318,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--accum_steps", type=int, default=1)
     parser.add_argument("--lr", type=float, default=3e-5)
-    parser.add_argument("--patience", type=int, default=5)
+    parser.add_argument("--patience", type=int, default=7)
     return parser.parse_args()
 
 

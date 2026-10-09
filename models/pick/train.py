@@ -125,8 +125,8 @@ def evaluate_epoch(
 
     avg_loss = total_loss / len(loader) if len(loader) > 0 else 0.0
     reconstructed = reconstruct_predictions(all_preds, samples, id2tag)
-    gts = [s.get("gt", {}) for s in samples]
-    metrics = evaluate_dataset(reconstructed, gts)
+    ground_truths = [sample.get("gt", {}) for sample in samples]
+    metrics = evaluate_dataset(reconstructed, ground_truths)
 
     return avg_loss, metrics
 
@@ -191,7 +191,7 @@ def train_model(
     accum_steps: int = 2,
     lr_backbone: float = 1e-4,
     lr_scratch: float = 5e-4,
-    patience: int = 5,
+    patience: int = 7,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
 ) -> None:
@@ -347,7 +347,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--accum_steps", type=int, default=2)
     parser.add_argument("--lr_backbone", type=float, default=1e-4)
     parser.add_argument("--lr_scratch", type=float, default=5e-4)
-    parser.add_argument("--patience", type=int, default=5)
+    parser.add_argument("--patience", type=int, default=7)
     return parser.parse_args()
 
 

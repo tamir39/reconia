@@ -75,12 +75,12 @@ def align_box_labels(
     box_labels: dict[int, str] = {}
     prev_box_idx = None
 
-    for tok_idx, box_idx in enumerate(encoding.word_ids()):
+    for token_idx, box_idx in enumerate(encoding.word_ids()):
         if box_idx is None:
             continue
         if box_idx != prev_box_idx:
-            if tok_idx < len(pred_ids):
-                pred_label_id = pred_ids[tok_idx]
+            if token_idx < len(pred_ids):
+                pred_label_id = pred_ids[token_idx]
                 box_labels[box_idx] = id2label.get(pred_label_id, "O")
             prev_box_idx = box_idx
 

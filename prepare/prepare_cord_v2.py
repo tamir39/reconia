@@ -3,7 +3,7 @@ from pathlib import Path
 
 from datasets import Dataset, Image as ImageFeature, load_from_disk
 
-from tools.common import get_repo_dir, resolve_data_dir, normalize_box
+from tools.common import get_repo_dir, resolve_data_dir, get_labels, normalize_box
 
 
 def flatten_dict(
@@ -28,18 +28,18 @@ def flatten_dict(
 
 
 def process_sample(sample_id: str, raw_sample: dict, split_name: str) -> dict:
-    gt_data = (
+    ground_truth_data = (
         json.loads(raw_sample["ground_truth"])
         if isinstance(raw_sample["ground_truth"], str)
         else raw_sample["ground_truth"]
     )
-    meta = gt_data.get("meta", {})
+    meta = ground_truth_data.get("meta", {})
     image_size = meta.get("image_size", {})
     width = image_size.get("width")
     height = image_size.get("height")
 
     ocr_items = []
-    for line in gt_data.get("valid_line", []):
+    for line in ground_truth_data.get("valid_line", []):
         category = line.get("category")
         is_first = True
 
@@ -78,14 +78,14 @@ def process_sample(sample_id: str, raw_sample: dict, split_name: str) -> dict:
                 "label": label,
             })
 
-    raw_gt = gt_data.get("gt_parse", {})
-    gt = flatten_dict(raw_gt)
+    raw_ground_truth = ground_truth_data.get("gt_parse", {})
+    ground_truth = flatten_dict(raw_ground_truth)
 
     return {
         "id": sample_id,
         "image_path": f"images/{split_name}/{sample_id}.png",
         "ocr": ocr_items,
-        "gt": gt,
+        "gt": ground_truth,
     }
 
 
@@ -109,6 +109,10 @@ def prepare_cord_v2() -> None:
     export_jsonl(dataset["train"], "train", cache_dir / "train.jsonl")
     export_jsonl(dataset["validation"], "val", cache_dir / "val.jsonl")
     export_jsonl(dataset["test"], "test", cache_dir / "test.jsonl")
+
+    labels = get_labels(cache_dir)
+    with open(cache_dir / "labels.json", "w", encoding="utf-8") as file:
+        json.dump(labels, file, indent=2, ensure_ascii=False)
 
 
 if __name__ == "__main__":
