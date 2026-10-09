@@ -61,8 +61,10 @@ def process_sample(sample_id: str, raw_sample: dict, split_name: str) -> dict:
             ]
             box = normalize_box(quad, width, height)
 
-            if not category:
+            is_key = word.get("is_key", 0)
+            if is_key == 1 or not category:
                 label = "O"
+                is_first = True
             elif is_first:
                 label = f"B-{category}"
                 is_first = False

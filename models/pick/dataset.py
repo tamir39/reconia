@@ -10,10 +10,10 @@ from tools.common import resolve_data_dir
 
 
 DEFAULT_CHARS = (
-    " 0123456789"
-    "abcdefghijklmnopqrstuvwxyz"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+    r" 0123456789"
+    r"abcdefghijklmnopqrstuvwxyz"
+    r"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    r"""!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"""
 )
 
 

@@ -147,14 +147,14 @@ python -m models.<model>.train --dataset <dataset>
 
 #### Cấu hình theo mô hình:
 
-| Mô hình | `lr` | `batch_size` | `accum_steps` | Batch hiệu dụng | `epochs` | `patience` |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `roberta` | `3e-5` | `8` | `1` | 8 | 30 | 5 |
-| `bros` | `3e-5` | `4` | `2` | 8 | 30 | 5 |
-| `layoutlmv3` | `2e-5` | `4` | `2` | 8 | 30 | 5 |
-| `donut` | `3e-5` | `2` | `4` | 8 | 30 | 5 |
-| `pick` | `lr_backbone = 1e-4`<br>`lr_scratch = 5e-4` | `4` | `2` | 8 | 30 | 5 |
-| `qwen2_5_vl` | `1e-4` | `1` | `8` | 8 | 30 | 5 |
+| Mô hình | `lr` | `batch_size` | `accum_steps` |
+| :--- | :---: | :---: | :---: |
+| `roberta` | `3e-5` | `8` | `1` |
+| `bros` | `3e-5` | `4` | `2` |
+| `layoutlmv3` | `2e-5` | `4` | `2` |
+| `donut` | `3e-5` | `2` | `4` |
+| `pick` | `lr_backbone = 1e-4`<br>`lr_scratch = 5e-4` | `4` | `2` |
+| `qwen2_5_vl` | `1e-4` | `1` | `8` |
 
 #### Bảng tham số dòng lệnh:
 

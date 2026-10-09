@@ -16,9 +16,8 @@ def load_class_map(class_list_file: Path) -> dict[int, str]:
         }
 
 
-
 def build_ground_truth(annotations: list[dict], class_map: dict[int, str]) -> dict[str, list[str]]:
-    gt = {}
+    gt: dict[str, list[str]] = {}
     for item in annotations:
         text = item.get("text", "").strip()
         if not text:
@@ -28,9 +27,7 @@ def build_ground_truth(annotations: list[dict], class_map: dict[int, str]) -> di
         if not label_name.endswith("_value"):
             continue
 
-        values = gt.setdefault(label_name, [])
-        if label_name.startswith("Prod_") or text not in values:
-            values.append(text)
+        gt.setdefault(label_name, []).append(text)
 
     return gt
 
@@ -50,13 +47,10 @@ def process_sample(raw_sample: dict, wildreceipt_dir: Path, class_map: dict[int,
         if not text:
             continue
 
-        quad = [int(round(coord)) for coord in item.get("box", [])]
+        quad = [int(round(coord)) for coord in item["box"]]
         box = normalize_box(quad, width, height)
         raw_label = class_map.get(item.get("label"), "")
-        if raw_label.endswith("_value"):
-            label = f"B-{raw_label}"
-        else:
-            label = "O"
+        label = f"B-{raw_label}" if raw_label.endswith("_value") else "O"
 
         ocr_items.append({
             "text": text,
@@ -77,7 +71,6 @@ def process_sample(raw_sample: dict, wildreceipt_dir: Path, class_map: dict[int,
 
 def export_jsonl(raw_samples: list[dict], wildreceipt_dir: Path, class_map: dict[int, str], output_file: Path) -> None:
     output_file.parent.mkdir(parents=True, exist_ok=True)
-
     with open(output_file, "w", encoding="utf-8") as file:
         for raw_sample in raw_samples:
             sample = process_sample(raw_sample, wildreceipt_dir, class_map)
