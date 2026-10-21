@@ -1,6 +1,7 @@
 # Reconia
 
-Nghiên cứu và so sánh thực nghiệm các phương pháp học sâu cho bài toán trích xuất thông tin hóa đơn (Invoice Information Extraction - IIE).
+- Tiếng Việt: Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin từ hóa đơn
+- Tiếng Anh: Evaluation and Comparison of Deep Learning Methods for Invoice Information Extraction
 
 ## 1. Phạm vi nghiên cứu
 
@@ -11,8 +12,7 @@ Nghiên cứu và so sánh thực nghiệm các phương pháp học sâu cho b�
   3. `pick`: Mạng đồ thị kết hợp văn bản, tọa độ 2D và hình ảnh.
   4. `layoutlmv3`: Đa phương thức kết hợp văn bản, tọa độ 2D và hình ảnh.
   5. `donut`: Biến đổi trực tiếp từ ảnh sang văn bản cấu trúc (OCR-free).
-  6. `qwen2_5_vl`: Thị giác - ngôn ngữ lớn (VLM) theo câu lệnh chỉ dẫn.
-- **Nguyên tắc so sánh:** Đánh giá độc lập trên từng tập dữ liệu, không so sánh chéo.
+  6. `qwen_vl`: Thị giác - ngôn ngữ lớn (VLM) theo câu lệnh chỉ dẫn (Qwen2.5-VL-3B-Instruct).
 
 ## 2. Cấu trúc thư mục
 
@@ -20,9 +20,9 @@ Nghiên cứu và so sánh thực nghiệm các phương pháp học sâu cho b�
 reconia/
 ├── .cache/
 │   └── <dataset>/
-├── app/
-├── docs/
-│   └── policy.md
+│       ├── test.jsonl
+│       ├── train.jsonl
+│       └── val.jsonl
 ├── evaluate/
 │   └── metrics.py
 ├── models/
@@ -47,7 +47,8 @@ reconia/
 │       │   ├── test_metrics.json
 │       │   └── train.log
 │       ├── comparison.md
-│       └── comparison.png
+│       ├── comparison.png
+│       └── labels.json
 ├── tools/
 │   ├── common.py
 │   ├── compare.py
@@ -56,6 +57,7 @@ reconia/
 ├── weights/
 │   └── <model>/
 ├── .gitignore
+├── config.json
 ├── README.md
 └── requirements.txt
 ```
@@ -70,48 +72,15 @@ pip install -r requirements.txt
 
 ## 4. Dữ liệu gốc
 
-Tải 3 bộ dữ liệu gốc và đặt tại thư mục ngoài song song với `reconia` (hoặc `/kaggle/input/datasets/vhngthnh/reconia-data/` trên Kaggle):
+Dữ liệu được lưu trữ trên Kaggle tại [`vhngthnh/reconia-data`](https://www.kaggle.com/datasets/vhngthnh/reconia-data):
 - **SROIE:** [ICDAR 2019 Robust Reading Challenge](https://rrc.cvc.uab.es/?ch=13).
 - **CORD-v2:** [clovaai/cord](https://github.com/clovaai/cord).
 - **WildReceipt:** [MMOCR KIE Dataset](https://github.com/open-mmlab/mmocr/blob/12558969ee6f11b469a8e964a57730d5df3df6b1/docs/en/datasets/kie.md).
 
-Chuẩn bị thư mục dữ liệu cho SROIE và tải CORD-v2:
-
-```bash
-python -m tools.setup_data --dataset <dataset>
-```
-
-| Tham số | Mặc định | Lựa chọn | Mô tả |
-| :--- | :---: | :--- | :--- |
-| `--dataset` | `"all"` | `sroie`, `cord_v2`, `all` | Tập dữ liệu cần khởi tạo hoặc toàn bộ |
-
-### Cấu trúc thư mục dữ liệu gốc
-
-```
-../ (thư mục cha song song với reconia)
-├── sroie/
-│   ├── 0325updated.task1train(626p)/
-│   ├── 0325updated.task2train(626p)/
-│   ├── SROIE_test_gt_task_3/
-│   ├── SROIE_test_images_task_3/
-│   └── text.task1&2-test（361p)/
-├── cord_v2/
-│   ├── dataset_dict.json
-│   ├── train/
-│   ├── validation/
-│   └── test/
-└── wildreceipt/
-    ├── class_list.txt
-    ├── dict.txt
-    ├── image_files/
-    ├── test.txt
-    └── train.txt
-```
-
 ## 5. Quy trình thực nghiệm
 
 ### Bước 1: Chuẩn bị dữ liệu
-Chuyển đổi dữ liệu gốc sang JSONL trong `.cache/<dataset>/`:
+Chuyển đổi dữ liệu gốc sang JSONL trong `.cache/<dataset>/` và xuất danh sách nhãn ra `results/<dataset>/labels.json`:
 
 ```bash
 python -m prepare.prepare_sroie
@@ -128,7 +97,7 @@ python -m tools.download_weights --model <model>
 
 | Tham số | Mặc định | Lựa chọn | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `--model` | `"all"` | `roberta`, `bros`, `layoutlmv3`, `donut`, `qwen2_5_vl`, `all` | Tên mô hình cần tải hoặc toàn bộ |
+| `--model` | `"all"` | `roberta`, `bros`, `layoutlmv3`, `donut`, `qwen_vl`, `all` | Tên mô hình cần tải hoặc toàn bộ |
 
 ### Bước 3: Huấn luyện và đánh giá
 
@@ -145,16 +114,16 @@ Lệnh thực thi:
 python -m models.<model>.train --dataset <dataset>
 ```
 
-#### Cấu hình theo mô hình:
+#### Cấu hình theo mô hình (từ `config.json`):
 
 | Mô hình | `lr` | `batch_size` | `accum_steps` |
 | :--- | :---: | :---: | :---: |
 | `roberta` | `3e-5` | `8` | `1` |
 | `bros` | `3e-5` | `4` | `2` |
-| `layoutlmv3` | `2e-5` | `4` | `2` |
+| `pick` | `1e-4` | `4` | `2` |
+| `layoutlmv3` | `3e-5` | `4` | `2` |
 | `donut` | `3e-5` | `2` | `4` |
-| `pick` | `lr_backbone = 1e-4`<br>`lr_scratch = 5e-4` | `4` | `2` |
-| `qwen2_5_vl` | `1e-4` | `1` | `8` |
+| `qwen_vl` | `1e-4` | `1` | `8` |
 
 #### Bảng tham số dòng lệnh:
 

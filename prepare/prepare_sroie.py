@@ -6,170 +6,162 @@ from pathlib import Path
 
 from PIL import Image
 
-from tools.common import get_repo_dir, resolve_data_dir, get_labels, normalize_text, normalize_box
+from tools.common import get_repo_dir, get_data_dir, normalize_text, normalize_box, export_labels
 
 
-def compute_token_quad(quad: list[int], start: int, end: int, total_len: int) -> list[int]:
-    if total_len <= 0:
-        return quad
+def load_ocr(box_file: Path, width: int, height: int) -> list[dict]:
+    ocr: list[dict] = []
 
-    start_ratio = start / total_len
-    end_ratio = end / total_len
-    x1, y1, x2, y2, x3, y3, x4, y4 = quad
-
-    return [
-        int(round(x1 + start_ratio * (x2 - x1))),
-        int(round(y1 + start_ratio * (y2 - y1))),
-        int(round(x1 + end_ratio * (x2 - x1))),
-        int(round(y1 + end_ratio * (y2 - y1))),
-        int(round(x4 + end_ratio * (x3 - x4))),
-        int(round(y4 + end_ratio * (y3 - y4))),
-        int(round(x4 + start_ratio * (x3 - x4))),
-        int(round(y4 + start_ratio * (y3 - y4))),
-    ]
-
-
-def parse_ocr_items(box_path: Path, width: int, height: int) -> list[dict]:
-    ocr_items: list[dict] = []
-
-    with open(box_path, "r", encoding="utf-8", errors="ignore") as file:
+    with open(box_file, "r", encoding="utf-8", errors="ignore") as file:
         for line in file:
             parts = line.strip().split(",", 8)
             if len(parts) != 9:
                 continue
 
-            quad = [int(coord) for coord in parts[:8]]
-            line_text = parts[8].strip()
-            total_len = len(line_text)
+            text = parts[8].strip()
+            if not text:
+                continue
 
-            for match in re.finditer(r"\S+", line_text):
-                token_quad = compute_token_quad(quad, match.start(), match.end(), total_len)
-                ocr_items.append({
+            text_len = len(text)
+            x1, y1, x2, y2, x3, y3, x4, y4 = map(int, parts[:8])
+
+            for match in re.finditer(r"[^\s:]+|:", text):
+                start_ratio = match.start() / text_len
+                end_ratio = match.end() / text_len
+                quad = [
+                    int(round(x1 + start_ratio * (x2 - x1))),
+                    int(round(y1 + start_ratio * (y2 - y1))),
+                    int(round(x1 + end_ratio * (x2 - x1))),
+                    int(round(y1 + end_ratio * (y2 - y1))),
+                    int(round(x4 + end_ratio * (x3 - x4))),
+                    int(round(y4 + end_ratio * (y3 - y4))),
+                    int(round(x4 + start_ratio * (x3 - x4))),
+                    int(round(y4 + start_ratio * (y3 - y4))),
+                ]
+                ocr.append({
                     "text": match.group(),
-                    "quad": token_quad,
-                    "box": normalize_box(token_quad, width, height),
+                    "box": normalize_box(quad, width, height),
                     "label": "O",
                 })
 
-    return ocr_items
+    return ocr
 
 
-def find_best_span(
-    token_texts: list[str],
+def match_target(
+    texts: list[str],
     target: str,
-    is_reversed: bool = False,
 ) -> tuple[int, int] | None:
     if not target:
         return None
 
-    total = len(token_texts)
-    target_len = len(target)
-    indices = range(total - 1, -1, -1) if is_reversed else range(total)
+    num_texts = len(texts)
+    target_clean = target.replace(" ", "")
+    target_len = len(target_clean)
 
-    for start_idx in indices:
-        accum = ""
-        for end_idx in range(start_idx, min(total, start_idx + 80)):
-            accum += token_texts[end_idx]
-            if accum == target:
-                return start_idx, end_idx + 1
-            if len(accum) >= target_len:
+    for start in range(num_texts):
+        current_text = ""
+        for end in range(start, min(num_texts, start + 64)):
+            current_text += texts[end]
+            if current_text == target_clean:
+                return start, end + 1
+            if len(current_text) >= target_len:
                 break
 
-    best_span = None
-    best_score = 0.90
-    min_len = int(target_len * 0.85)
-    max_len = int(target_len * 1.15)
+    best_match = None
+    best_score = 0.85
+    min_len = int(target_len * 0.80)
+    max_len = int(target_len * 1.20)
 
-    for start_idx in indices:
-        accum = ""
-        for end_idx in range(start_idx, min(total, start_idx + 80)):
-            accum += token_texts[end_idx]
-            accum_len = len(accum)
-            if accum_len >= min_len:
-                score = difflib.SequenceMatcher(None, accum, target).ratio()
+    for start in range(num_texts):
+        current_text = ""
+        for end in range(start, min(num_texts, start + 64)):
+            current_text += texts[end]
+            if len(current_text) >= min_len:
+                score = difflib.SequenceMatcher(None, current_text, target_clean).ratio()
                 if score > best_score:
                     best_score = score
-                    best_span = (start_idx, end_idx + 1)
-            if accum_len > max_len:
+                    best_match = (start, end + 1)
+            if len(current_text) > max_len:
                 break
 
-    return best_span
+    return best_match
 
 
-def assign_labels(ocr_items: list[dict], raw_ground_truth: dict[str, str]) -> None:
-    token_texts = [normalize_text(item["text"]) for item in ocr_items]
+def assign_labels(ocr: list[dict], raw_gt: dict[str, str]) -> None:
+    texts = [normalize_text(item["text"]) for item in ocr]
 
     for field in ("company", "date", "address", "total"):
-        target = normalize_text(raw_ground_truth.get(field, ""))
-        span = find_best_span(token_texts, target, is_reversed=(field == "total"))
-        if not span:
+        target = normalize_text(raw_gt.get(field))
+        match = match_target(texts, target)
+        if not match:
             continue
 
-        ocr_items[span[0]]["label"] = f"B-{field}"
-        for idx in range(span[0] + 1, span[1]):
-            ocr_items[idx]["label"] = f"I-{field}"
+        start, end = match
+        ocr[start]["label"] = f"B-{field}"
+        for idx in range(start + 1, end):
+            ocr[idx]["label"] = f"I-{field}"
 
 
 def process_sample(sample_id: str, split_dir: Path) -> dict:
-    image_path = split_dir / "img" / f"{sample_id}.jpg"
-    with Image.open(image_path) as image:
+    image_file = split_dir / "img" / f"{sample_id}.jpg"
+    with Image.open(image_file) as image:
         width, height = image.size
 
-    key_path = split_dir / "key" / f"{sample_id}.txt"
-    with open(key_path, "r", encoding="utf-8", errors="ignore") as file:
-        raw_ground_truth = json.load(file)
+    key_file = split_dir / "key" / f"{sample_id}.txt"
+    with open(key_file, "r", encoding="utf-8", errors="ignore") as file:
+        raw_gt = json.load(file)
 
-    box_path = split_dir / "box" / f"{sample_id}.txt"
-    ocr_items = parse_ocr_items(box_path, width, height)
-    assign_labels(ocr_items, raw_ground_truth)
+    box_file = split_dir / "box" / f"{sample_id}.txt"
+    ocr = load_ocr(box_file, width, height)
+    assign_labels(ocr, raw_gt)
 
-    ground_truth = {key: [val] for key, val in raw_ground_truth.items() if val}
+    image_path = f"{split_dir.name}/img/{sample_id}.jpg"
+    gt = {field: [text] for field, text in raw_gt.items() if text}
 
     return {
         "id": sample_id,
-        "image_path": f"{split_dir.name}/img/{sample_id}.jpg",
-        "ocr": ocr_items,
-        "gt": ground_truth,
+        "image_path": image_path,
+        "ocr": ocr,
+        "gt": gt,
     }
 
 
-def export_jsonl(sample_ids: list[str], split_dir: Path, output_file: Path) -> None:
-    output_file.parent.mkdir(parents=True, exist_ok=True)
+def export_split(sample_ids: list[str], split_dir: Path, out_file: Path) -> set[str]:
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    labels: set[str] = set()
 
-    with open(output_file, "w", encoding="utf-8") as file:
+    with open(out_file, "w", encoding="utf-8") as file:
         for sample_id in sample_ids:
             sample = process_sample(sample_id, split_dir)
+            labels.update(item["label"] for item in sample["ocr"])
             file.write(json.dumps(sample, ensure_ascii=False) + "\n")
+
+    return labels
 
 
 def prepare_sroie() -> None:
     cache_dir = get_repo_dir() / ".cache" / "sroie"
-    sroie_dir = resolve_data_dir("sroie")
+    sroie_dir = get_data_dir("sroie")
 
-    # Train: 626 samples
     train_dir = sroie_dir / "train"
-    # Test: 347 samples
     test_dir = sroie_dir / "test"
 
-    train_ids = sorted(file_path.stem for file_path in (train_dir / "img").glob("*.jpg"))
-    test_ids = sorted(file_path.stem for file_path in (test_dir / "img").glob("*.jpg"))
+    train_ids = sorted(path.stem for path in (train_dir / "img").glob("*.jpg"))
+    test_ids = sorted(path.stem for path in (test_dir / "img").glob("*.jpg"))
 
     random.seed(42)
     random.shuffle(train_ids)
 
-    # 80/20 train/validation split with fixed seed 42
-    val_ratio = 0.2
-    val_count = int(len(train_ids) * val_ratio)
+    val_count = int(len(train_ids) * 0.2)
     val_ids = train_ids[:val_count]
     train_ids = train_ids[val_count:]
 
-    export_jsonl(train_ids, train_dir, cache_dir / "train.jsonl")
-    export_jsonl(val_ids, train_dir, cache_dir / "val.jsonl")
-    export_jsonl(test_ids, test_dir, cache_dir / "test.jsonl")
+    train_labels = export_split(train_ids, train_dir, cache_dir / "train.jsonl")
+    val_labels = export_split(val_ids, train_dir, cache_dir / "val.jsonl")
+    test_labels = export_split(test_ids, test_dir, cache_dir / "test.jsonl")
 
-    labels = get_labels(cache_dir)
-    with open(cache_dir / "labels.json", "w", encoding="utf-8") as file:
-        json.dump(labels, file, indent=2, ensure_ascii=False)
+    result_dir = get_repo_dir() / "results" / "sroie"
+    export_labels(train_labels | val_labels | test_labels, result_dir)
 
 
 if __name__ == "__main__":

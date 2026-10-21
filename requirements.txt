@@ -3,16 +3,11 @@ torch
 torchvision
 
 # Hugging Face ecosystem
-transformers
-accelerate
 datasets
+transformers
+peft
+accelerate
 
 # Image processing & visualization
 pillow
 matplotlib
-
-# Demo interface
-gradio
-
-# OCR engine
-easyocr

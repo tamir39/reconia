@@ -1,15 +1,12 @@
-import os
-os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
-
 import json
 import logging
+import os
 import random
 import re
 import sys
-import warnings
 from pathlib import Path
 
-warnings.filterwarnings("ignore", message=".*nested tensor.*")
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
 import numpy as np
 import torch
@@ -30,39 +27,24 @@ def get_repo_dir() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def resolve_data_dir(dataset_name: str) -> Path:
-    repo_dir = get_repo_dir()
-    candidates = [
-        repo_dir.parent / dataset_name,
-        Path("/kaggle/input/datasets/vhngthnh/reconia-data") / dataset_name,
-    ]
-    for path in candidates:
-        if path.exists():
-            return path
-    return repo_dir.parent / dataset_name
+def get_data_dir(dataset_name: str) -> Path:
+    return Path("/kaggle/input/datasets/vhngthnh/reconia-data") / dataset_name
 
 
 def normalize_text(text: str | None) -> str:
     if not text:
         return ""
-    text = re.sub(r"\s+([,.:;!?])", r"\1", str(text).lower())
-    return re.sub(r"\s+", " ", text).strip()
+    return re.sub(r"\s+", " ", text.lower()).strip()
 
 
 def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
-    safe_width = max(width, 1)
-    safe_height = max(height, 1)
-    if len(quad) == 4:
-        x_coords = [quad[0], quad[2]]
-        y_coords = [quad[1], quad[3]]
-    else:
-        x_coords = [quad[0], quad[2], quad[4], quad[6]]
-        y_coords = [quad[1], quad[3], quad[5], quad[7]]
+    x_coords = quad[0::2]
+    y_coords = quad[1::2]
 
-    x_min = max(0, min(1000, int(min(x_coords) / safe_width * 1000)))
-    y_min = max(0, min(1000, int(min(y_coords) / safe_height * 1000)))
-    x_max = max(0, min(1000, int(max(x_coords) / safe_width * 1000)))
-    y_max = max(0, min(1000, int(max(y_coords) / safe_height * 1000)))
+    x_min = max(0, min(1000, int(min(x_coords) / width * 1000)))
+    y_min = max(0, min(1000, int(min(y_coords) / height * 1000)))
+    x_max = max(0, min(1000, int(max(x_coords) / width * 1000)))
+    y_max = max(0, min(1000, int(max(y_coords) / height * 1000)))
 
     if x_max <= x_min:
         x_max = min(1000, x_min + 1)
@@ -75,20 +57,22 @@ def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
     return [x_min, y_min, x_max, y_max]
 
 
-def get_labels(cache_dir: Path) -> list[str]:
-    labels_file = cache_dir / "labels.json"
-    if labels_file.exists():
-        with open(labels_file, "r", encoding="utf-8") as file:
-            return json.load(file)
+def export_labels(labels: set[str], out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    ordered_labels = ["O"] + sorted(lbl for lbl in labels if lbl != "O")
+    with open(out_dir / "labels.json", "w", encoding="utf-8") as file:
+        json.dump(ordered_labels, file, indent=2, ensure_ascii=False)
 
-    split_path = cache_dir / "train.jsonl"
-    with open(split_path, "r", encoding="utf-8") as file:
-        return sorted({
-            item["label"]
-            for line in file
-            for item in json.loads(line).get("ocr", [])
-            if item.get("label")
-        })
+
+def load_labels(out_dir: Path) -> list[str]:
+    with open(out_dir / "labels.json", "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def load_config(model_name: str) -> dict:
+    config_path = get_repo_dir() / "config.json"
+    with open(config_path, "r", encoding="utf-8") as file:
+        return json.load(file)[model_name]
 
 
 def close_logger(logger: logging.Logger) -> None:
@@ -97,10 +81,10 @@ def close_logger(logger: logging.Logger) -> None:
     logger.handlers.clear()
 
 
-def setup_logger(out_dir: Path, name: str = "train") -> logging.Logger:
+def setup_logger(out_dir: Path) -> logging.Logger:
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    logger = logging.getLogger(name)
+    logger = logging.getLogger("train")
     logger.setLevel(logging.INFO)
     logger.propagate = False
     close_logger(logger)

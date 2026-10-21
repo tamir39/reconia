@@ -1,0 +1,44 @@
+{
+  "roberta": {
+    "epochs": 30,
+    "batch_size": 8,
+    "accum_steps": 1,
+    "lr": 3e-5,
+    "patience": 7
+  },
+  "bros": {
+    "epochs": 30,
+    "batch_size": 4,
+    "accum_steps": 2,
+    "lr": 3e-5,
+    "patience": 7
+  },
+  "pick": {
+    "epochs": 30,
+    "batch_size": 4,
+    "accum_steps": 2,
+    "lr": 1e-4,
+    "patience": 7
+  },
+  "layoutlmv3": {
+    "epochs": 30,
+    "batch_size": 4,
+    "accum_steps": 2,
+    "lr": 3e-5,
+    "patience": 7
+  },
+  "donut": {
+    "epochs": 30,
+    "batch_size": 2,
+    "accum_steps": 4,
+    "lr": 3e-5,
+    "patience": 7
+  },
+  "qwen_vl": {
+    "epochs": 30,
+    "batch_size": 1,
+    "accum_steps": 8,
+    "lr": 1e-4,
+    "patience": 7
+  }
+}
