@@ -108,7 +108,7 @@ Thiết lập chung:
 - Optimizer: AdamW (`weight_decay=0.01`, không áp dụng cho `bias` và các lớp chuẩn hóa)
 - Random seed: 42 (`seed=42`)
 - Số epoch tối đa: 30 (`epochs=30`)
-- Số epoch chạy tối thiểu: 10 (`min_epochs=10`)
+- Số epoch chạy tối thiểu: 5 (`min_epochs=5`)
 - Dừng sớm: 5 epoch không cải thiện (`patience=5`)
 
 Lệnh thực thi:
@@ -137,7 +137,7 @@ python -m models.<model>.train --dataset <dataset>
 | `--batch_size` | Theo mô hình | `int` | Batch size mỗi step |
 | `--accum_steps` | Theo mô hình | `int` | Số bước tích lũy gradient |
 | `--lr` | Theo mô hình | `float` | Learning rate khởi tạo |
-| `--min_epochs` | `10` | `int` | Số epoch chạy tối thiểu trước khi xét dừng sớm |
+| `--min_epochs` | `5` | `int` | Số epoch chạy tối thiểu trước khi xét dừng sớm |
 | `--patience` | `5` | `int` | Số epoch chờ không cải thiện trước khi dừng sớm |
 | `--resume` | `False` | `flag` | Tiếp tục huấn luyện từ checkpoint gần nhất (`last_checkpoint.pt`) |
 
