@@ -14,6 +14,9 @@ from transformers import logging as hf_logging
 
 hf_logging.set_verbosity_error()
 
+DATASETS = ("sroie", "cord_v2", "wildreceipt")
+MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen_vl")
+
 
 def set_seed(seed: int = 42) -> None:
     random.seed(seed)
@@ -57,22 +60,18 @@ def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
     return [x_min, y_min, x_max, y_max]
 
 
-def export_labels(labels: set[str], out_dir: Path) -> None:
-    out_dir.mkdir(parents=True, exist_ok=True)
+def export_labels(labels: set[str], dataset_name: str) -> None:
+    checkpoint_dir = get_repo_dir() / "checkpoints" / dataset_name
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
     ordered_labels = ["O"] + sorted(lbl for lbl in labels if lbl != "O")
-    with open(out_dir / "labels.json", "w", encoding="utf-8") as file:
+    with open(checkpoint_dir / "labels.json", "w", encoding="utf-8") as file:
         json.dump(ordered_labels, file, indent=2, ensure_ascii=False)
 
 
-def load_labels(out_dir: Path) -> list[str]:
-    with open(out_dir / "labels.json", "r", encoding="utf-8") as file:
+def load_labels(dataset_name: str) -> list[str]:
+    labels_file = get_repo_dir() / "checkpoints" / dataset_name / "labels.json"
+    with open(labels_file, "r", encoding="utf-8") as file:
         return json.load(file)
-
-
-def load_config(model_name: str) -> dict:
-    config_path = get_repo_dir() / "config.json"
-    with open(config_path, "r", encoding="utf-8") as file:
-        return json.load(file)[model_name]
 
 
 def close_logger(logger: logging.Logger) -> None:

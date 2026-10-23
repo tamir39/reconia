@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from tools.common import get_repo_dir, get_data_dir, normalize_text, normalize_box, export_labels
+from utils.common import get_repo_dir, get_data_dir, normalize_text, normalize_box, export_labels
 
 
 def load_ocr(box_file: Path, width: int, height: int) -> list[dict]:
@@ -90,16 +90,16 @@ def match_target(
 def assign_labels(ocr: list[dict], raw_gt: dict[str, str]) -> None:
     texts = [normalize_text(item["text"]) for item in ocr]
 
-    for field in ("company", "date", "address", "total"):
-        target = normalize_text(raw_gt.get(field))
+    for entity in ("company", "date", "address", "total"):
+        target = normalize_text(raw_gt.get(entity))
         match = match_target(texts, target)
         if not match:
             continue
 
         start, end = match
-        ocr[start]["label"] = f"B-{field}"
+        ocr[start]["label"] = f"B-{entity}"
         for idx in range(start + 1, end):
-            ocr[idx]["label"] = f"I-{field}"
+            ocr[idx]["label"] = f"I-{entity}"
 
 
 def process_sample(sample_id: str, split_dir: Path) -> dict:
@@ -116,7 +116,7 @@ def process_sample(sample_id: str, split_dir: Path) -> dict:
     assign_labels(ocr, raw_gt)
 
     image_path = f"{split_dir.name}/img/{sample_id}.jpg"
-    gt = {field: [text] for field, text in raw_gt.items() if text}
+    gt = {entity: [text] for entity, text in raw_gt.items() if text}
 
     return {
         "id": sample_id,
@@ -160,8 +160,7 @@ def prepare_sroie() -> None:
     val_labels = export_split(val_ids, train_dir, cache_dir / "val.jsonl")
     test_labels = export_split(test_ids, test_dir, cache_dir / "test.jsonl")
 
-    result_dir = get_repo_dir() / "results" / "sroie"
-    export_labels(train_labels | val_labels | test_labels, result_dir)
+    export_labels(train_labels | val_labels | test_labels, "sroie")
 
 
 if __name__ == "__main__":

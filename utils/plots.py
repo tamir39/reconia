@@ -6,12 +6,11 @@ import matplotlib.pyplot as plt
 def save_train_plots(history: list[dict], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    epochs = [entry["epoch"] for entry in history]
+    epochs = [log["epoch"] for log in history]
 
-    # 1. Loss Curve
     plt.figure()
-    plt.plot(epochs, [entry["train_loss"] for entry in history], label="Train Loss")
-    plt.plot(epochs, [entry["val_loss"] for entry in history], label="Val Loss")
+    plt.plot(epochs, [log["train_loss"] for log in history], label="Train Loss")
+    plt.plot(epochs, [log["val_loss"] for log in history], label="Val Loss")
     plt.title("Loss")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
@@ -21,12 +20,11 @@ def save_train_plots(history: list[dict], out_dir: Path) -> None:
     plt.savefig(out_dir / "loss.png")
     plt.close()
 
-    # 2. Performance Metrics Curve
     plt.figure()
-    plt.plot(epochs, [entry["precision"] * 100 for entry in history], label="Precision")
-    plt.plot(epochs, [entry["recall"] * 100 for entry in history], label="Recall")
-    plt.plot(epochs, [entry["f1"] * 100 for entry in history], label="F1")
-    plt.title("Metrics")
+    plt.plot(epochs, [log["precision"] * 100 for log in history], label="Precision")
+    plt.plot(epochs, [log["recall"] * 100 for log in history], label="Recall")
+    plt.plot(epochs, [log["f1"] * 100 for log in history], label="F1")
+    plt.title("Validation Metrics")
     plt.xlabel("Epoch")
     plt.ylabel("Score (%)")
     plt.grid(True)
@@ -36,16 +34,16 @@ def save_train_plots(history: list[dict], out_dir: Path) -> None:
     plt.close()
 
 
-def save_comparison_plot(records: list[dict], out_dir: Path) -> None:
+def save_comparison_plot(results: list[dict], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    models = [record["model"] for record in records]
-    scores = [record["f1"] * 100 for record in records]
+    models = [item["model"] for item in results]
+    scores = [item["f1"] * 100 for item in results]
 
     plt.figure()
     bars = plt.bar(models, scores, width=0.5)
     plt.bar_label(bars, fmt="%.2f%%", padding=3)
-    plt.title("Comparison")
+    plt.title("Model Comparison")
     plt.xlabel("Model")
     plt.ylabel("F1 (%)")
     plt.margins(y=0.1)

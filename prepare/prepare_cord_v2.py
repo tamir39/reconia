@@ -3,7 +3,7 @@ from pathlib import Path
 
 from datasets import Dataset, Image as ImageFeature, load_from_disk
 
-from tools.common import get_repo_dir, get_data_dir, normalize_box, export_labels
+from utils.common import get_repo_dir, get_data_dir, normalize_box, export_labels
 
 
 def build_gt(
@@ -34,11 +34,11 @@ def process_sample(raw_sample: dict, split_name: str) -> dict:
     width, height = image_size["width"], image_size["height"]
 
     ocr: list[dict] = []
-    for valid_line in annotation["valid_line"]:
-        category = valid_line.get("category")
+    for line in annotation["valid_line"]:
+        category = line["category"]
         is_first = True
 
-        for word in valid_line["words"]:
+        for word in line["words"]:
             text = word["text"].strip()
             if not text:
                 continue
@@ -97,8 +97,7 @@ def prepare_cord_v2() -> None:
     val_labels = export_split(dataset["validation"], "val", cache_dir / "val.jsonl")
     test_labels = export_split(dataset["test"], "test", cache_dir / "test.jsonl")
 
-    result_dir = get_repo_dir() / "results" / "cord_v2"
-    export_labels(train_labels | val_labels | test_labels, result_dir)
+    export_labels(train_labels | val_labels | test_labels, "cord_v2")
 
 
 if __name__ == "__main__":

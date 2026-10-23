@@ -1,50 +1,46 @@
 import json
 from pathlib import Path
 
-from tools.common import get_repo_dir
-from tools.plots import save_comparison_plot
-
-DATASETS = ("sroie", "cord_v2", "wildreceipt")
-MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen2_5_vl")
+from utils.common import DATASETS, MODELS, get_repo_dir
+from utils.plots import save_comparison_plot
 
 
-def collect_dataset_results(dataset_dir: Path) -> list[dict]:
+def collect_results(out_dir: Path) -> list[dict]:
     return [
         {
-            "model": model,
-            "test_loss": float(data.get("test_loss", 0.0)),
-            "precision": float(data.get("precision", 0.0)),
-            "recall": float(data.get("recall", 0.0)),
-            "f1": float(data.get("f1", 0.0)),
+            "model": data["model"],
+            "loss": data["loss"],
+            "precision": data["precision"],
+            "recall": data["recall"],
+            "f1": data["f1"],
         }
         for model in MODELS
-        if (metric_file := dataset_dir / model / "test_metrics.json").exists()
+        if (metric_file := out_dir / model / "test_metrics.json").exists()
         and (data := json.loads(metric_file.read_text(encoding="utf-8")))
     ]
 
 
-def save_comparison_md(records: list[dict], out_dir: Path) -> None:
+def save_comparison_md(results: list[dict], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / "comparison.md", "w", encoding="utf-8") as file:
-        file.write("| Model | Test Loss | Precision (%) | Recall (%) | F1 (%) |\n")
+        file.write("| Model | Loss | Precision | Recall | F1 |\n")
         file.write("| :--- | :---: | :---: | :---: | :---: |\n")
-        for record in records:
+        for item in results:
             file.write(
-                f"| {record['model']} | {record['test_loss']:.4f} | "
-                f"{record['precision'] * 100:.2f} | {record['recall'] * 100:.2f} | "
-                f"{record['f1'] * 100:.2f} |\n"
+                f"| {item['model']} | {item['loss']:.4f} | "
+                f"{item['precision']:.4f} | "
+                f"{item['recall']:.4f} | "
+                f"{item['f1']:.4f} |\n"
             )
 
 
 def compare_results() -> None:
-    results_dir = get_repo_dir() / "results"
-
-    for dataset in DATASETS:
-        dataset_dir = results_dir / dataset
-        records = collect_dataset_results(dataset_dir)
-        if records:
-            save_comparison_md(records, dataset_dir)
-            save_comparison_plot(records, dataset_dir)
+    for dataset_name in DATASETS:
+        out_dir = get_repo_dir() / "results" / dataset_name
+        results = collect_results(out_dir)
+        if results:
+            save_comparison_md(results, out_dir)
+            save_comparison_plot(results, out_dir)
 
 
 if __name__ == "__main__":

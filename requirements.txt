@@ -1,13 +1,17 @@
-# Deep learning framework
+# Deep learning
 torch
 torchvision
 
-# Hugging Face ecosystem
-datasets
+# Hugging Face
 transformers
 peft
-accelerate
+datasets
+huggingface_hub
 
-# Image processing & visualization
-pillow
+# Processing
+Pillow
+numpy
+
+# Utilities
+tqdm
 matplotlib

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from tools.common import get_repo_dir, get_data_dir, normalize_box, export_labels
+from utils.common import get_repo_dir, get_data_dir, normalize_box, export_labels
 
 
 def load_class_map(class_list_file: Path) -> dict[int, str]:
@@ -109,8 +109,7 @@ def prepare_wildreceipt() -> None:
     val_labels = export_split(val_raw_samples, wildreceipt_dir, cache_dir / "val.jsonl", class_map)
     test_labels = export_split(test_raw_samples, wildreceipt_dir, cache_dir / "test.jsonl", class_map)
 
-    result_dir = get_repo_dir() / "results" / "wildreceipt"
-    export_labels(train_labels | val_labels | test_labels, result_dir)
+    export_labels(train_labels | val_labels | test_labels, "wildreceipt")
 
 
 if __name__ == "__main__":

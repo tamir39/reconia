@@ -23,15 +23,19 @@ reconia/
 │       ├── test.jsonl
 │       ├── train.jsonl
 │       └── val.jsonl
-├── evaluate/
-│   └── metrics.py
+├── checkpoints/
+│   └── <dataset>/
+│       ├── labels.json
+│       └── <model>/
+│           ├── best_weights.pt
+│           └── last_checkpoint.pt
 ├── models/
 │   └── <model>/
 │       ├── dataset.py
 │       ├── model.py
 │       └── train.py
 ├── notebooks/
-│   └── <model>.ipynb
+│   └── <model>_model.ipynb
 ├── prepare/
 │   ├── prepare_cord_v2.py
 │   ├── prepare_sroie.py
@@ -39,25 +43,23 @@ reconia/
 ├── results/
 │   └── <dataset>/
 │       ├── <model>/
-│       │   ├── best.pt
 │       │   ├── history.csv
-│       │   ├── last.pt
 │       │   ├── loss.png
 │       │   ├── metrics.png
 │       │   ├── test_metrics.json
 │       │   └── train.log
 │       ├── comparison.md
-│       ├── comparison.png
-│       └── labels.json
+│       └── comparison.png
 ├── tools/
-│   ├── common.py
 │   ├── compare.py
-│   ├── download_weights.py
+│   └── download_weights.py
+├── utils/
+│   ├── common.py
+│   ├── metrics.py
 │   └── plots.py
 ├── weights/
 │   └── <model>/
 ├── .gitignore
-├── config.json
 ├── README.md
 └── requirements.txt
 ```
@@ -80,7 +82,7 @@ Dữ liệu được lưu trữ trên Kaggle tại [`vhngthnh/reconia-data`](htt
 ## 5. Quy trình thực nghiệm
 
 ### Bước 1: Chuẩn bị dữ liệu
-Chuyển đổi dữ liệu gốc sang JSONL trong `.cache/<dataset>/` và xuất danh sách nhãn ra `results/<dataset>/labels.json`:
+Chuyển đổi dữ liệu gốc sang JSONL trong `.cache/<dataset>/` và xuất danh sách nhãn ra `checkpoints/<dataset>/labels.json`:
 
 ```bash
 python -m prepare.prepare_sroie
@@ -114,7 +116,7 @@ Lệnh thực thi:
 python -m models.<model>.train --dataset <dataset>
 ```
 
-#### Cấu hình theo mô hình (từ `config.json`):
+#### Cấu hình mặc định theo mô hình:
 
 | Mô hình | `lr` | `batch_size` | `accum_steps` |
 | :--- | :---: | :---: | :---: |
@@ -148,4 +150,4 @@ python -m tools.compare
 Lệnh tự động trích xuất bảng `comparison.md` và biểu đồ `comparison.png` theo field-level F1 cho từng tập dữ liệu.
 
 ### Thực nghiệm trên Jupyter Notebook
-Mỗi mô hình có notebook tương ứng tại `notebooks/<model>.ipynb`, hỗ trợ thực thi trên máy cục bộ và Kaggle.
+Mỗi mô hình có notebook tương ứng tại `notebooks/<model>_model.ipynb`, hỗ trợ thực thi trên máy cục bộ và Kaggle.

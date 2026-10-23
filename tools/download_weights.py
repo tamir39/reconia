@@ -6,7 +6,7 @@ os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
 
 from huggingface_hub import snapshot_download
 
-from tools.common import get_repo_dir
+from utils.common import get_repo_dir
 
 MODELS = {
     "roberta": "roberta-base",

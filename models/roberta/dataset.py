@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import torch
 from torch.utils.data import Dataset
 from transformers import PreTrainedTokenizerBase
 
@@ -8,7 +9,7 @@ from transformers import PreTrainedTokenizerBase
 class RobertaDataset(Dataset):
     def __init__(
         self,
-        jsonl_path: Path,
+        data_file: Path,
         tokenizer: PreTrainedTokenizerBase,
         label2id: dict[str, int],
         max_length: int = 512,
@@ -16,7 +17,7 @@ class RobertaDataset(Dataset):
         self.tokenizer = tokenizer
         self.label2id = label2id
         self.max_length = max_length
-        with open(jsonl_path, "r", encoding="utf-8") as file:
+        with open(data_file, "r", encoding="utf-8") as file:
             self.samples = [json.loads(line) for line in file]
 
     def __len__(self) -> int:
@@ -24,31 +25,26 @@ class RobertaDataset(Dataset):
 
     def __getitem__(self, idx: int) -> dict[str, list[int]]:
         sample = self.samples[idx]
-        ocr_items = sample.get("ocr", [])
-
-        words = [item.get("text", "") for item in ocr_items]
-        box_labels = [item.get("label", "O") for item in ocr_items]
+        ocr = sample["ocr"]
+        words = [item["text"] for item in ocr]
+        word_labels = [item["label"] for item in ocr]
 
         encoding = self.tokenizer(
             words,
+            max_length=self.max_length,
             is_split_into_words=True,
             truncation=True,
-            max_length=self.max_length,
             add_prefix_space=True,
         )
 
-        box_ids = encoding.word_ids()
-        labels = []
-        prev_box_idx = None
-
-        default_label_id = self.label2id.get("O", 0)
-        for box_idx in box_ids:
-            if box_idx is not None and box_idx != prev_box_idx:
-                label_name = box_labels[box_idx]
-                labels.append(self.label2id.get(label_name, default_label_id))
+        labels: list[int] = []
+        prev_word_idx = None
+        for word_idx in encoding.word_ids():
+            if word_idx is not None and word_idx != prev_word_idx:
+                labels.append(self.label2id[word_labels[word_idx]])
             else:
                 labels.append(-100)
-            prev_box_idx = box_idx
+            prev_word_idx = word_idx
 
         return {
             "input_ids": encoding["input_ids"],
@@ -57,91 +53,105 @@ class RobertaDataset(Dataset):
         }
 
 
-def align_box_labels(
+def align_labels(
     pred_ids: list[int],
-    words: list[str],
-    tokenizer: PreTrainedTokenizerBase,
+    word_ids: list[int | None],
     id2label: dict[int, str],
-    max_length: int = 512,
 ) -> dict[int, str]:
-    encoding = tokenizer(
-        words,
-        is_split_into_words=True,
-        truncation=True,
-        max_length=max_length,
-        add_prefix_space=True,
-    )
+    labels: dict[int, str] = {}
+    prev_word_idx = None
 
-    box_labels: dict[int, str] = {}
-    prev_box_idx = None
+    for token_idx, word_idx in enumerate(word_ids):
+        if word_idx is not None and word_idx != prev_word_idx:
+            labels[word_idx] = id2label[pred_ids[token_idx]]
+            prev_word_idx = word_idx
 
-    for token_idx, box_idx in enumerate(encoding.word_ids()):
-        if box_idx is None:
-            continue
-        if box_idx != prev_box_idx:
-            if token_idx < len(pred_ids):
-                pred_label_id = pred_ids[token_idx]
-                box_labels[box_idx] = id2label.get(pred_label_id, "O")
-            prev_box_idx = box_idx
-
-    return box_labels
+    return labels
 
 
-def extract_entities(ocr_items: list[dict], box_labels: dict[int, str]) -> dict[str, list[str]]:
-    sample_pred: dict[str, list[str]] = {}
-    current_label = None
-    current_tokens: list[str] = []
+def extract_entities(
+    ocr: list[dict], 
+    labels: dict[int, str]
+) -> dict[str, list[str]]:
+    entities: dict[str, list[str]] = {}
+    current_entity = None
+    current_texts: list[str] = []
 
-    for box_idx, item in enumerate(ocr_items):
-        tag = box_labels.get(box_idx, "O")
-        text = item.get("text", "").strip()
+    for word_idx, item in enumerate(ocr):
+        label = labels.get(word_idx, "O")
+        text = item["text"].strip()
         if not text:
             continue
 
-        if tag.startswith("B-"):
-            if current_label and current_tokens:
-                sample_pred.setdefault(current_label, []).append(" ".join(current_tokens))
-            current_label = tag[2:]
-            current_tokens = [text]
-        elif tag.startswith("I-"):
-            entity_type = tag[2:]
-            if current_label == entity_type:
-                current_tokens.append(text)
-            else:
-                if current_label and current_tokens:
-                    sample_pred.setdefault(current_label, []).append(" ".join(current_tokens))
-                current_label = entity_type
-                current_tokens = [text]
+        if label.startswith("I-") and label[2:] == current_entity:
+            current_texts.append(text)
         else:
-            if current_label and current_tokens:
-                sample_pred.setdefault(current_label, []).append(" ".join(current_tokens))
-                current_label = None
-                current_tokens = []
+            if current_entity and current_texts:
+                entities.setdefault(current_entity, []).append(" ".join(current_texts))
 
-    if current_label and current_tokens:
-        sample_pred.setdefault(current_label, []).append(" ".join(current_tokens))
+            if label.startswith(("B-", "I-")):
+                current_entity = label[2:]
+                current_texts = [text]
+            else:
+                current_entity = None
+                current_texts = []
 
-    return sample_pred
+    if current_entity and current_texts:
+        entities.setdefault(current_entity, []).append(" ".join(current_texts))
+
+    return entities
 
 
-def reconstruct_predictions(
-    preds: list[list[int]],
+def decode_predictions(
+    all_pred_ids: list[list[int]],
     samples: list[dict],
     tokenizer: PreTrainedTokenizerBase,
     id2label: dict[int, str],
-) -> list[dict]:
-    if len(preds) != len(samples):
-        raise ValueError(f"preds ({len(preds)}) and samples ({len(samples)}) length mismatch.")
+    max_length: int = 512,
+) -> list[dict[str, list[str]]]:
+    preds: list[dict[str, list[str]]] = []
 
-    return [
-        extract_entities(
-            ocr_items := sample.get("ocr", []),
-            align_box_labels(
-                pred_ids,
-                [item.get("text", "") for item in ocr_items],
-                tokenizer,
-                id2label,
-            ),
+    for pred_ids, sample in zip(all_pred_ids, samples):
+        ocr = sample["ocr"]
+        words = [item["text"] for item in ocr]
+        encoding = tokenizer(
+            words,
+            max_length=max_length,
+            is_split_into_words=True,
+            truncation=True,
+            add_prefix_space=True,
         )
-        for pred_ids, sample in zip(preds, samples)
-    ]
+        labels = align_labels(pred_ids, encoding.word_ids(), id2label)
+        preds.append(extract_entities(ocr, labels))
+
+    return preds
+
+
+def predict_sample(
+    ocr: list[dict],
+    model: torch.nn.Module,
+    tokenizer: PreTrainedTokenizerBase,
+    id2label: dict[int, str],
+    device: torch.device,
+    max_length: int = 512,
+) -> dict[str, list[str]]:
+    words = [item["text"] for item in ocr]
+    encoding = tokenizer(
+        words,
+        max_length=max_length,
+        is_split_into_words=True,
+        truncation=True,
+        add_prefix_space=True,
+        return_tensors="pt",
+    )
+
+    model.eval()
+    with torch.no_grad():
+        outputs = model(
+            input_ids=encoding["input_ids"].to(device),
+            attention_mask=encoding["attention_mask"].to(device),
+        )
+
+    pred_ids = torch.argmax(outputs.logits, dim=-1)[0].cpu().tolist()
+    labels = align_labels(pred_ids, encoding.word_ids(), id2label)
+    return extract_entities(ocr, labels)

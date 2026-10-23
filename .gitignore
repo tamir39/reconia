@@ -3,14 +3,15 @@ __pycache__/
 .ipynb_checkpoints/
 .cache/
 
-# Heavy files, Weights & Results
-weights/
-results/
-
 # Virtual environments
 .venv/
 
+# Outputs
+checkpoints/
+weights/
+results/
+
 # OS & IDE
-.vscode/
 .DS_Store
 Thumbs.db
+.vscode/
