@@ -119,14 +119,14 @@ python -m models.<model>.train --dataset <dataset>
 
 #### Cấu hình mặc định theo mô hình:
 
-| Mô hình | `lr` | `batch_size` | `accum_steps` |
-| :--- | :---: | :---: | :---: |
-| `roberta` | `3e-5` | `8` | `1` |
-| `bros` | `3e-5` | `4` | `2` |
-| `pick` | `1e-4` | `4` | `2` |
-| `layoutlmv3` | `3e-5` | `4` | `2` |
-| `donut` | `3e-5` | `2` | `4` |
-| `qwen_vl` | `1e-4` | `1` | `8` |
+| Mô hình | Learning Rate | `batch_size` | `accum_steps` |
+| :--- | :--- | :---: | :---: |
+| `roberta` | `lr = 3e-5` | `8` | `1` |
+| `bros` | `lr = 3e-5` | `4` | `2` |
+| `pick` | `lr_backbone = 1e-4`, `lr_scratch = 1e-3` | `4` | `2` |
+| `layoutlmv3` | `lr = 3e-5` | `4` | `2` |
+| `donut` | `lr = 3e-5` | `2` | `4` |
+| `qwen_vl` | `lr = 1e-4` | `1` | `8` |
 
 #### Bảng tham số dòng lệnh:
 
@@ -136,7 +136,9 @@ python -m models.<model>.train --dataset <dataset>
 | `--epochs` | `30` | `int` | Số epoch tối đa |
 | `--batch_size` | Theo mô hình | `int` | Batch size mỗi step |
 | `--accum_steps` | Theo mô hình | `int` | Số bước tích lũy gradient |
-| `--lr` | Theo mô hình | `float` | Learning rate khởi tạo |
+| `--lr` | Theo mô hình | `float` | Learning rate cho các mô hình đơn LR (`roberta`, `bros`, `layoutlmv3`, `donut`, `qwen_vl`) |
+| `--lr_backbone` | `1e-4` | `float` | Learning rate cho pretrained ResNet-50 backbone (chỉ dùng cho `pick`) |
+| `--lr_scratch` | `1e-3` | `float` | Learning rate cho các tầng huấn luyện từ đầu: BiLSTM, GCN, CRF (chỉ dùng cho `pick`) |
 | `--min_epochs` | `5` | `int` | Số epoch chạy tối thiểu trước khi xét dừng sớm |
 | `--patience` | `5` | `int` | Số epoch chờ không cải thiện trước khi dừng sớm |
 | `--resume` | `False` | `flag` | Tiếp tục huấn luyện từ checkpoint gần nhất (`last_checkpoint.pt`) |

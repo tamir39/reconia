@@ -183,12 +183,17 @@ def save_history(history: list[dict], out_dir: Path) -> None:
     save_train_plots(history, out_dir)
 
 
+def is_resnet_param(name: str) -> bool:
+    return name.startswith(("encoder.conv1", "encoder.bn1", "encoder.layer1", "encoder.layer2", "encoder.layer3"))
+
+
 def train_model(
     dataset_name: str,
     epochs: int = 30,
     batch_size: int = 4,
     accum_steps: int = 2,
-    lr: float = 1e-4,
+    lr_backbone: float = 1e-4,
+    lr_scratch: float = 1e-3,
     min_epochs: int = 5,
     patience: int = 5,
     weight_decay: float = 0.01,
@@ -207,7 +212,8 @@ def train_model(
     try:
         logger.info(
             f"Config: dataset={dataset_name}, epochs={epochs}, batch_size={batch_size}, "
-            f"accum_steps={accum_steps}, lr={lr:g}, min_epochs={min_epochs}, patience={patience}"
+            f"accum_steps={accum_steps}, lr_backbone={lr_backbone:g}, lr_scratch={lr_scratch:g}, "
+            f"min_epochs={min_epochs}, patience={patience}"
         )
 
         cache_dir = repo_dir / ".cache" / dataset_name
@@ -242,19 +248,37 @@ def train_model(
             {
                 "params": [
                     param for name, param in model.named_parameters()
-                    if not any(nd in name.lower() for nd in no_decay)
+                    if is_resnet_param(name) and not any(nd in name.lower() for nd in no_decay)
                 ],
+                "lr": lr_backbone,
                 "weight_decay": weight_decay,
             },
             {
                 "params": [
                     param for name, param in model.named_parameters()
-                    if any(nd in name.lower() for nd in no_decay)
+                    if is_resnet_param(name) and any(nd in name.lower() for nd in no_decay)
                 ],
+                "lr": lr_backbone,
+                "weight_decay": 0.0,
+            },
+            {
+                "params": [
+                    param for name, param in model.named_parameters()
+                    if not is_resnet_param(name) and not any(nd in name.lower() for nd in no_decay)
+                ],
+                "lr": lr_scratch,
+                "weight_decay": weight_decay,
+            },
+            {
+                "params": [
+                    param for name, param in model.named_parameters()
+                    if not is_resnet_param(name) and any(nd in name.lower() for nd in no_decay)
+                ],
+                "lr": lr_scratch,
                 "weight_decay": 0.0,
             },
         ]
-        optimizer = AdamW(param_groups, lr=lr)
+        optimizer = AdamW(param_groups)
 
         total_steps = (len(train_loader) + accum_steps - 1) // accum_steps * epochs
         warmup_steps = int(total_steps * warmup_ratio)
@@ -384,7 +408,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--accum_steps", type=int, default=2)
-    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--lr_backbone", type=float, default=1e-4)
+    parser.add_argument("--lr_scratch", type=float, default=1e-3)
     parser.add_argument("--min_epochs", type=int, default=5)
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--resume", action="store_true")
@@ -400,7 +425,8 @@ if __name__ == "__main__":
             epochs=args.epochs,
             batch_size=args.batch_size,
             accum_steps=args.accum_steps,
-            lr=args.lr,
+            lr_backbone=args.lr_backbone,
+            lr_scratch=args.lr_scratch,
             min_epochs=args.min_epochs,
             patience=args.patience,
             resume=args.resume,
