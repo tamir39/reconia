@@ -23,6 +23,7 @@ from utils.common import (
     DATASETS,
     close_logger,
     get_repo_dir,
+    get_cache_dir,
     load_labels,
     set_seed,
     setup_logger,
@@ -63,8 +64,12 @@ def train_epoch(
                 attention_mask=attention_mask,
                 labels=labels,
             )
-            loss = outputs.loss / accum_steps
+            raw_loss = outputs.loss
+            group_size = min(accum_steps, len(loader) - ((step - 1) // accum_steps) * accum_steps)
+            loss = raw_loss / group_size
 
+        if not torch.isfinite(loss):
+            raise FloatingPointError(f"Non-finite loss at epoch {epoch}, batch {step}")
         scaler.scale(loss).backward()
 
         if step % accum_steps == 0 or step == len(loader):
@@ -77,9 +82,12 @@ def train_epoch(
             optimizer.zero_grad()
             if scale_before <= scale_after:
                 scheduler.step()
+            else:
+                logging.getLogger("train").warning(
+                    f"AMP skip: epoch={epoch} batch={step} scale={scale_before}->{scale_after}")
 
-        total_loss += loss.item() * accum_steps
-        progress_loader.set_postfix(loss=f"{loss.item() * accum_steps:.4f}")
+        total_loss += raw_loss.item()
+        progress_loader.set_postfix(loss=f"{raw_loss.item():.4f}")
 
     return total_loss / len(loader)
 
@@ -176,6 +184,7 @@ def train_model(
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
     resume: bool = False,
+    test_only: bool = False,
 ) -> None:
     set_seed()
     repo_dir = get_repo_dir()
@@ -192,7 +201,7 @@ def train_model(
             f"accum_steps={accum_steps}, lr={lr:g}, min_epochs={min_epochs}, patience={patience}"
         )
 
-        cache_dir = repo_dir / ".cache" / dataset_name
+        cache_dir = get_cache_dir(dataset_name)
         labels = load_labels(dataset_name)
         label2id = {lbl: idx for idx, lbl in enumerate(labels)}
         id2label = dict(enumerate(labels))
@@ -203,16 +212,12 @@ def train_model(
 
         train_ds = RobertaDataset(cache_dir / "train.jsonl", tokenizer, label2id)
         val_ds = RobertaDataset(cache_dir / "val.jsonl", tokenizer, label2id)
-        test_ds = RobertaDataset(cache_dir / "test.jsonl", tokenizer, label2id)
 
         train_loader = DataLoader(
             train_ds, batch_size=batch_size, shuffle=True, collate_fn=collator
         )
         val_loader = DataLoader(
             val_ds, batch_size=batch_size, shuffle=False, collate_fn=collator
-        )
-        test_loader = DataLoader(
-            test_ds, batch_size=batch_size, shuffle=False, collate_fn=collator
         )
 
         model = RobertaForTokenClassification.from_pretrained(
@@ -223,6 +228,23 @@ def train_model(
         )
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model.to(device)
+
+        if test_only:
+            test_ds = RobertaDataset(cache_dir / "test.jsonl", tokenizer, label2id)
+            test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, collate_fn=collator)
+            evaluate_test(
+                model,
+                test_loader,
+                test_ds.samples,
+                tokenizer,
+                id2label,
+                device,
+                dataset_name,
+                checkpoint_dir,
+                out_dir,
+                logger,
+            )
+            return
 
         no_decay = {"bias", "layernorm"}
         param_groups = [
@@ -261,6 +283,10 @@ def train_model(
         patience_counter = 0
 
         checkpoint_file = checkpoint_dir / "last_checkpoint.pt"
+        if checkpoint_file.exists() and not resume:
+            raise FileExistsError(f"Existing run: {checkpoint_dir}; use resume or move the previous run")
+        if resume and not checkpoint_file.exists():
+            raise FileNotFoundError(checkpoint_file)
         if resume and checkpoint_file.exists():
             checkpoint = torch.load(checkpoint_file, map_location=device, weights_only=True)
             model.load_state_dict(checkpoint["model_state_dict"])
@@ -269,6 +295,7 @@ def train_model(
             scaler.load_state_dict(checkpoint["scaler_state_dict"])
             start_epoch = checkpoint["epoch"] + 1
             best_f1 = checkpoint["best_f1"]
+            best_epoch = checkpoint["best_epoch"]
             patience_counter = checkpoint["patience_counter"]
             history = checkpoint["history"]
             if start_epoch > epochs or patience_counter >= patience:
@@ -335,6 +362,7 @@ def train_model(
                     "scheduler_state_dict": scheduler.state_dict(),
                     "scaler_state_dict": scaler.state_dict(),
                     "best_f1": best_f1,
+                    "best_epoch": best_epoch,
                     "patience_counter": patience_counter,
                     "history": history,
                 },
@@ -348,18 +376,7 @@ def train_model(
                 break
 
         save_history(history, out_dir)
-        evaluate_test(
-            model,
-            test_loader,
-            test_ds.samples,
-            tokenizer,
-            id2label,
-            device,
-            dataset_name,
-            checkpoint_dir,
-            out_dir,
-            logger,
-        )
+
     finally:
         close_logger(logger)
         gc.collect()
@@ -377,6 +394,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min_epochs", type=int, default=5)
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--test-only", action="store_true")
     return parser.parse_args()
 
 
@@ -393,4 +411,5 @@ if __name__ == "__main__":
             min_epochs=args.min_epochs,
             patience=args.patience,
             resume=args.resume,
+            test_only=args.test_only,
         )

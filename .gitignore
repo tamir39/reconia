@@ -10,6 +10,15 @@ __pycache__/
 checkpoints/
 weights/
 results/
+data/
+backups/
+.pytest_cache/
+*.zip
+*.pt
+*.pth
+*.safetensors
+.env
+.env.*
 
 # OS & IDE
 .DS_Store

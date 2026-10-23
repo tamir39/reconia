@@ -31,7 +31,21 @@ def get_repo_dir() -> Path:
 
 
 def get_data_dir(dataset_name: str) -> Path:
-    return Path("/kaggle/input/datasets/vhngthnh/reconia-data") / dataset_name
+    root = os.environ.get("RECONIA_DATA_DIR")
+    candidates = [Path(root)] if root else [
+        Path("/kaggle/input/datasets/vhngthnh/reconia-data"),
+        Path("/kaggle/input/reconia-data"),
+        get_repo_dir() / "data" / "raw",
+    ]
+    for candidate in candidates:
+        if (candidate / dataset_name).is_dir():
+            return candidate / dataset_name
+    raise FileNotFoundError("Set RECONIA_DATA_DIR to the raw dataset root")
+
+
+def get_cache_dir(dataset_name: str) -> Path:
+    root = Path(os.environ.get("RECONIA_PREPARED_DIR", get_repo_dir() / ".cache"))
+    return root / dataset_name
 
 
 def normalize_text(text: str | None) -> str:
@@ -61,15 +75,16 @@ def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
 
 
 def export_labels(labels: set[str], dataset_name: str) -> None:
-    checkpoint_dir = get_repo_dir() / "checkpoints" / dataset_name
+    checkpoint_dir = get_cache_dir(dataset_name)
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    ordered_labels = ["O"] + sorted(lbl for lbl in labels if lbl != "O")
+    fields = {label[2:] for label in labels if label.startswith(("B-", "I-"))}
+    ordered_labels = ["O"] + sorted(f"{prefix}-{field}" for field in fields for prefix in ("B", "I"))
     with open(checkpoint_dir / "labels.json", "w", encoding="utf-8") as file:
         json.dump(ordered_labels, file, indent=2, ensure_ascii=False)
 
 
 def load_labels(dataset_name: str) -> list[str]:
-    labels_file = get_repo_dir() / "checkpoints" / dataset_name / "labels.json"
+    labels_file = get_cache_dir(dataset_name) / "labels.json"
     with open(labels_file, "r", encoding="utf-8") as file:
         return json.load(file)
 

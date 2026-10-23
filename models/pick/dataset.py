@@ -75,6 +75,9 @@ class PickDataset(Dataset):
 
         with open(data_file, "r", encoding="utf-8") as file:
             self.samples = [json.loads(line) for line in file]
+        for sample in self.samples:
+            if len(sample["ocr"]) > max_boxes or any(len(item["text"]) > max_text_len for item in sample["ocr"]):
+                raise ValueError(f"PICK input exceeds capacity: {sample['id']}")
 
     def __len__(self) -> int:
         return len(self.samples)

@@ -1,9 +1,11 @@
 import json
+from io import BytesIO
 from pathlib import Path
 
 from datasets import Dataset, Image as ImageFeature, load_from_disk
+from PIL import Image
 
-from utils.common import get_repo_dir, get_data_dir, normalize_box, export_labels
+from utils.common import get_cache_dir, get_data_dir, normalize_box, export_labels
 
 
 def build_gt(
@@ -80,6 +82,14 @@ def export_split(split_dataset: Dataset, split_name: str, out_file: Path) -> set
     with open(out_file, "w", encoding="utf-8") as file:
         for raw_sample in split_dataset:
             sample = process_sample(raw_sample, split_name)
+            image_file = get_data_dir("cord_v2") / sample["image_path"]
+            if not image_file.exists():
+                image_file = out_file.parent / "images" / split_name / f"{sample['id']}.png"
+                image_file.parent.mkdir(parents=True, exist_ok=True)
+                source = raw_sample["image"]
+                with Image.open(BytesIO(source["bytes"]) if source.get("bytes") else source["path"]) as image:
+                    image.save(image_file)
+                sample["image_path"] = str(image_file.resolve())
             labels.update(item["label"] for item in sample["ocr"])
             file.write(json.dumps(sample, ensure_ascii=False) + "\n")
 
@@ -87,7 +97,7 @@ def export_split(split_dataset: Dataset, split_name: str, out_file: Path) -> set
 
 
 def prepare_cord_v2() -> None:
-    cache_dir = get_repo_dir() / ".cache" / "cord_v2"
+    cache_dir = get_cache_dir("cord_v2")
     cord_v2_dir = get_data_dir("cord_v2")
 
     dataset = load_from_disk(cord_v2_dir)

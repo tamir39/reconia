@@ -41,6 +41,8 @@ def evaluate_dataset(
     gts: list[dict[str, list[str]]],
     preds: list[dict[str, list[str]]],
 ) -> dict[str, float]:
+    if len(gts) != len(preds) or not gts:
+        raise ValueError("Expected one prediction per document in a nonempty split")
     field_counts: dict[str, list[int]] = {}
 
     for gt, pred in zip(gts, preds):
@@ -60,7 +62,7 @@ def evaluate_dataset(
         total_r += r
         total_f1 += f1
 
-    num_fields = len(field_counts)
+    num_fields = max(len(field_counts), 1)
     
     return {
         "precision": total_p / num_fields,

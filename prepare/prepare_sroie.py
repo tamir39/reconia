@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from utils.common import get_repo_dir, get_data_dir, normalize_text, normalize_box, export_labels
+from utils.common import get_cache_dir, get_data_dir, normalize_text, normalize_box, export_labels
 
 
 def load_ocr(box_file: Path, width: int, height: int) -> list[dict]:
@@ -140,7 +140,7 @@ def export_split(sample_ids: list[str], split_dir: Path, out_file: Path) -> set[
 
 
 def prepare_sroie() -> None:
-    cache_dir = get_repo_dir() / ".cache" / "sroie"
+    cache_dir = get_cache_dir("sroie")
     sroie_dir = get_data_dir("sroie")
 
     train_dir = sroie_dir / "train"
@@ -149,8 +149,10 @@ def prepare_sroie() -> None:
     train_ids = sorted(path.stem for path in (train_dir / "img").glob("*.jpg"))
     test_ids = sorted(path.stem for path in (test_dir / "img").glob("*.jpg"))
 
-    random.seed(42)
-    random.shuffle(train_ids)
+    if not train_ids or not test_ids:
+        raise ValueError("SROIE requires nonempty original train/test image folders")
+
+    random.Random(42).shuffle(train_ids)
 
     val_count = int(len(train_ids) * 0.2)
     val_ids = train_ids[:val_count]
