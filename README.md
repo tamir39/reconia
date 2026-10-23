@@ -108,7 +108,6 @@ Thiết lập chung:
 - Optimizer: AdamW (`weight_decay=0.01`, không áp dụng cho `bias` và các lớp chuẩn hóa)
 - Random seed: 42 (`seed=42`)
 - Số epoch tối đa: 30 (`epochs=30`)
-- Số epoch chạy tối thiểu: 5 (`min_epochs=5`)
 - Dừng sớm: 5 epoch không cải thiện (`patience=5`)
 
 Lệnh thực thi:
@@ -139,7 +138,6 @@ python -m models.<model>.train --dataset <dataset>
 | `--lr` | Theo mô hình | `float` | Learning rate cho các mô hình đơn LR (`roberta`, `bros`, `layoutlmv3`, `donut`, `qwen_vl`) |
 | `--lr_backbone` | `1e-4` | `float` | Learning rate cho pretrained ResNet-50 backbone (chỉ dùng cho `pick`) |
 | `--lr_scratch` | `1e-3` | `float` | Learning rate cho các tầng huấn luyện từ đầu: BiLSTM, GCN, CRF (chỉ dùng cho `pick`) |
-| `--min_epochs` | `5` | `int` | Số epoch chạy tối thiểu trước khi xét dừng sớm |
 | `--patience` | `5` | `int` | Số epoch chờ không cải thiện trước khi dừng sớm |
 | `--resume` | `False` | `flag` | Tiếp tục huấn luyện từ checkpoint gần nhất (`last_checkpoint.pt`) |
 

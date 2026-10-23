@@ -194,7 +194,6 @@ def train_model(
     accum_steps: int = 2,
     lr_backbone: float = 1e-4,
     lr_scratch: float = 1e-3,
-    min_epochs: int = 5,
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
@@ -211,9 +210,14 @@ def train_model(
 
     try:
         logger.info(
-            f"Config: dataset={dataset_name}, epochs={epochs}, batch_size={batch_size}, "
-            f"accum_steps={accum_steps}, lr_backbone={lr_backbone:g}, lr_scratch={lr_scratch:g}, "
-            f"min_epochs={min_epochs}, patience={patience}"
+            f"\n--------------------------------------------------\n"
+            f"Config -> {dataset_name}\n"
+            f"  epochs       : {epochs}\n"
+            f"  batch_size   : {batch_size} (accum_steps={accum_steps})\n"
+            f"  lr_backbone  : {lr_backbone:g}\n"
+            f"  lr_scratch   : {lr_scratch:g}\n"
+            f"  patience     : {patience}\n"
+            f"--------------------------------------------------"
         )
 
         cache_dir = repo_dir / ".cache" / dataset_name
@@ -293,8 +297,8 @@ def train_model(
 
         history: list[dict] = []
         start_epoch = 1
-        best_epoch = 0
         best_f1 = -1.0
+        best_epoch = 0
         patience_counter = 0
 
         checkpoint_file = checkpoint_dir / "last_checkpoint.pt"
@@ -306,16 +310,17 @@ def train_model(
             scaler.load_state_dict(checkpoint["scaler_state_dict"])
             start_epoch = checkpoint["epoch"] + 1
             best_f1 = checkpoint["best_f1"]
+            best_epoch = checkpoint["best_epoch"]
             patience_counter = checkpoint["patience_counter"]
             history = checkpoint["history"]
             if start_epoch > epochs or patience_counter >= patience:
                 logger.info(
-                    f"Resume -> Training already completed at epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f})."
+                    f"Resume -> Completed at epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
                 )
                 return
 
             logger.info(
-                f"Resume -> Epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f})"
+                f"Resume -> Epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
             )
 
         for epoch in range(start_epoch, epochs + 1):
@@ -360,7 +365,7 @@ def train_model(
                 best_epoch = epoch
                 patience_counter = 0
                 torch.save(model.state_dict(), checkpoint_dir / "best_weights.pt")
-            elif epoch >= min_epochs:
+            else:
                 patience_counter += 1
 
             torch.save(
@@ -371,17 +376,23 @@ def train_model(
                     "scheduler_state_dict": scheduler.state_dict(),
                     "scaler_state_dict": scaler.state_dict(),
                     "best_f1": best_f1,
+                    "best_epoch": best_epoch,
                     "patience_counter": patience_counter,
                     "history": history,
                 },
                 checkpoint_file,
             )
 
-            if epoch >= min_epochs and patience_counter >= patience:
+            if patience_counter >= patience:
                 logger.info(
                     f"Early Stop -> Epoch {epoch:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
                 )
                 break
+
+        if epoch == epochs:
+            logger.info(
+                f"Completed -> Epoch {epochs:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
+            )
 
         save_history(history, out_dir)
         evaluate_test(
@@ -410,7 +421,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--accum_steps", type=int, default=2)
     parser.add_argument("--lr_backbone", type=float, default=1e-4)
     parser.add_argument("--lr_scratch", type=float, default=1e-3)
-    parser.add_argument("--min_epochs", type=int, default=5)
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--resume", action="store_true")
     return parser.parse_args()
@@ -427,7 +437,6 @@ if __name__ == "__main__":
             accum_steps=args.accum_steps,
             lr_backbone=args.lr_backbone,
             lr_scratch=args.lr_scratch,
-            min_epochs=args.min_epochs,
             patience=args.patience,
             resume=args.resume,
         )
