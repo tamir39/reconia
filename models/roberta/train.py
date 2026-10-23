@@ -166,12 +166,13 @@ def save_history(history: list[dict], out_dir: Path) -> None:
 
 
 def train_model(
-    dataset_name: str = "sroie",
+    dataset_name: str,
     epochs: int = 30,
     batch_size: int = 8,
     accum_steps: int = 1,
     lr: float = 3e-5,
-    patience: int = 7,
+    min_epochs: int = 10,
+    patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
     resume: bool = False,
@@ -188,7 +189,7 @@ def train_model(
     try:
         logger.info(
             f"Config: dataset={dataset_name}, epochs={epochs}, batch_size={batch_size}, "
-            f"accum_steps={accum_steps}, lr={lr:g}, patience={patience}"
+            f"accum_steps={accum_steps}, lr={lr:g}, min_epochs={min_epochs}, patience={patience}"
         )
 
         cache_dir = repo_dir / ".cache" / dataset_name
@@ -323,7 +324,7 @@ def train_model(
                 best_epoch = epoch
                 patience_counter = 0
                 torch.save(model.state_dict(), checkpoint_dir / "best_weights.pt")
-            else:
+            elif epoch >= min_epochs:
                 patience_counter += 1
 
             torch.save(
@@ -340,7 +341,7 @@ def train_model(
                 checkpoint_file,
             )
 
-            if patience_counter >= patience:
+            if epoch >= min_epochs and patience_counter >= patience:
                 logger.info(
                     f"Early Stop -> Epoch {epoch:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
                 )
@@ -373,7 +374,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--accum_steps", type=int, default=1)
     parser.add_argument("--lr", type=float, default=3e-5)
-    parser.add_argument("--patience", type=int, default=7)
+    parser.add_argument("--min_epochs", type=int, default=10)
+    parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--resume", action="store_true")
     return parser.parse_args()
 
@@ -388,6 +390,7 @@ if __name__ == "__main__":
             batch_size=args.batch_size,
             accum_steps=args.accum_steps,
             lr=args.lr,
+            min_epochs=args.min_epochs,
             patience=args.patience,
             resume=args.resume,
         )

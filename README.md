@@ -7,12 +7,12 @@
 
 - **3 tập dữ liệu:** `sroie`, `cord_v2`, `wildreceipt`.
 - **6 mô hình:**
-  1. `roberta`: Xử lý chuỗi văn bản thuần túy.
-  2. `bros`: Kết hợp văn bản và tọa độ 2D.
-  3. `pick`: Mạng đồ thị kết hợp văn bản, tọa độ 2D và hình ảnh.
-  4. `layoutlmv3`: Đa phương thức kết hợp văn bản, tọa độ 2D và hình ảnh.
-  5. `donut`: Biến đổi trực tiếp từ ảnh sang văn bản cấu trúc (OCR-free).
-  6. `qwen_vl`: Thị giác - ngôn ngữ lớn (VLM) theo câu lệnh chỉ dẫn (Qwen2.5-VL-3B-Instruct).
+  1. `roberta`: Mô hình thuần văn bản (Text-only).
+  2. `bros`: Mô hình kết hợp văn bản và tọa độ 2D (Text + Layout).
+  3. `pick`: Mạng đồ thị kết hợp văn bản, tọa độ 2D và hình ảnh (Graph-based Multimodal).
+  4. `layoutlmv3`: Mô hình đa phương thức kết hợp văn bản, tọa độ 2D và hình ảnh (Multimodal Transformer).
+  5. `donut`: Mô hình trực tiếp từ ảnh sang văn bản cấu trúc (OCR-free).
+  6. `qwen_vl`: Mô hình thị giác - ngôn ngữ lớn (Vision-Language Model - VLM).
 
 ## 2. Cấu trúc thư mục
 
@@ -97,18 +97,19 @@ Tải trọng số tiền huấn luyện từ Hugging Face về `weights/<model>
 python -m tools.download_weights --model <model>
 ```
 
-| Tham số | Mặc định | Lựa chọn | Mô tả |
+| Tham số | Mặc định | Kiểu / Lựa chọn | Mô tả |
 | :--- | :---: | :--- | :--- |
-| `--model` | `"all"` | `roberta`, `bros`, `layoutlmv3`, `donut`, `qwen_vl`, `all` | Tên mô hình cần tải hoặc toàn bộ |
+| `--model` | `"all"` | `roberta`, `bros`, `layoutlmv3`, `donut`, `qwen_vl`, `all` | Tên mô hình cần tải (hoặc `"all"` để tải toàn bộ) |
 
 ### Bước 3: Huấn luyện và đánh giá
 
 Thiết lập chung:
-- Kích thước batch hiệu dụng: 8 (`batch_size * accum_steps = 8`)
-- Bộ tối ưu hóa: AdamW (`weight_decay=0.01`, loại trừ `bias` và các lớp chuẩn hóa)
-- Hạt giống ngẫu nhiên: 42 (`seed=42`)
-- Số epoch tối đa: 30
-- Dừng sớm: 7 (`patience=7`)
+- Batch size hiệu dụng: 8 (`batch_size * accum_steps = 8`)
+- Optimizer: AdamW (`weight_decay=0.01`, không áp dụng cho `bias` và các lớp chuẩn hóa)
+- Random seed: 42 (`seed=42`)
+- Số epoch tối đa: 30 (`epochs=30`)
+- Số epoch chạy tối thiểu: 10 (`min_epochs=10`)
+- Dừng sớm: 5 epoch không cải thiện (`patience=5`)
 
 Lệnh thực thi:
 
@@ -129,14 +130,16 @@ python -m models.<model>.train --dataset <dataset>
 
 #### Bảng tham số dòng lệnh:
 
-| Tham số | Mặc định | Lựa chọn | Mô tả |
+| Tham số | Mặc định | Kiểu / Lựa chọn | Mô tả |
 | :--- | :---: | :--- | :--- |
 | `--dataset` | `"all"` | `sroie`, `cord_v2`, `wildreceipt`, `all` | Tập dữ liệu huấn luyện |
-| `--epochs` | `30` | Số nguyên dương | Số epoch tối đa |
-| `--batch_size` | Theo mô hình | Số nguyên dương | Kích thước batch cục bộ |
-| `--accum_steps` | Theo mô hình | Số nguyên dương | Số bước tích lũy gradient |
-| `--lr` | Theo mô hình | Số thực dương | Tốc độ học khởi tạo |
-| `--patience` | `7` | Số nguyên dương | Số epoch dừng sớm |
+| `--epochs` | `30` | `int` | Số epoch tối đa |
+| `--batch_size` | Theo mô hình | `int` | Batch size mỗi step |
+| `--accum_steps` | Theo mô hình | `int` | Số bước tích lũy gradient |
+| `--lr` | Theo mô hình | `float` | Learning rate khởi tạo |
+| `--min_epochs` | `10` | `int` | Số epoch chạy tối thiểu trước khi xét dừng sớm |
+| `--patience` | `5` | `int` | Số epoch chờ không cải thiện trước khi dừng sớm |
+| `--resume` | `False` | `flag` | Tiếp tục huấn luyện từ checkpoint gần nhất (`last_checkpoint.pt`) |
 
 Kết quả lưu tại `results/<dataset>/<model>/`.
 
