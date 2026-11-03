@@ -90,8 +90,8 @@ class QwenVLDataset(Dataset):
         )
 
         full_inputs = self.processor(
-            text=[full_chat],
-            images=[image],
+            [image],
+            [full_chat],
             return_tensors="pt",
         )
 
@@ -99,8 +99,8 @@ class QwenVLDataset(Dataset):
         attention_mask = full_inputs["attention_mask"][0]
 
         prompt_inputs = self.processor(
-            text=[prompt_chat],
-            images=[image],
+            [image],
+            [prompt_chat],
             return_tensors="pt",
         )
         prompt_len = prompt_inputs["input_ids"].shape[1]
@@ -116,9 +116,10 @@ class QwenVLDataset(Dataset):
         }
 
         if "pixel_values" in full_inputs:
-            item["pixel_values"] = full_inputs["pixel_values"][0]
+            item["pixel_values"] = full_inputs["pixel_values"]
+
         if "image_grid_thw" in full_inputs:
-            item["image_grid_thw"] = full_inputs["image_grid_thw"][0]
+            item["image_grid_thw"] = full_inputs["image_grid_thw"]
 
         return item
 
@@ -156,43 +157,44 @@ class QwenVLDataCollator:
 
 
 def extract_entities(text: str) -> dict[str, list[str]]:
-    text = re.sub(r"<[^>]+>", "", text).strip()
+    text = text.strip()
 
-    block = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL)
+    block = re.search(
+        r"```(?:json)?\s*(.*?)\s*```",
+        text,
+        re.DOTALL | re.IGNORECASE,
+    )
     content = block.group(1) if block else text
 
-    match = re.search(r"\{.*\}", content, re.DOTALL)
-    if match:
+    decoder = json.JSONDecoder()
+
+    for position, character in enumerate(content):
+        if character != "{":
+            continue
+
         try:
-            parsed = json.loads(match.group(0))
-            if isinstance(parsed, dict):
-                entities: dict[str, list[str]] = {}
-                for key, val in parsed.items():
-                    if isinstance(val, list):
-                        entities[str(key)] = [str(v).strip() for v in val if str(v).strip()]
-                    elif isinstance(val, (str, int, float)):
-                        val_str = str(val).strip()
-                        if val_str:
-                            entities[str(key)] = [val_str]
-                return entities
-        except Exception:
-            pass
+            parsed, _ = decoder.raw_decode(content[position:])
+        except json.JSONDecodeError:
+            continue
 
-    entities: dict[str, list[str]] = {}
-    pattern = r'"([^"]+)":\s*(?:\[([^\]]*)\]|"([^"]*)")'
-    for match in re.finditer(pattern, text):
-        key = match.group(1).strip()
-        if match.group(2) is not None:
-            raw_items = re.findall(r'"([^"]*)"', match.group(2))
-            clean_items = [item.strip() for item in raw_items if item.strip()]
-            if clean_items:
-                entities.setdefault(key, []).extend(clean_items)
-        elif match.group(3) is not None:
-            val = match.group(3).strip()
-            if val:
-                entities.setdefault(key, []).append(val)
+        if not isinstance(parsed, dict):
+            continue
 
-    return entities
+        entities = {}
+
+        for key, value in parsed.items():
+            values = value if isinstance(value, list) else [value]
+            clean_values = [
+                item.strip()
+                for item in values
+                if isinstance(item, str) and item.strip()
+            ]
+            if clean_values:
+                entities[key] = clean_values
+
+        return entities
+
+    return {}
 
 
 def decode_predictions(
@@ -230,8 +232,8 @@ def predict_sample(
     )
 
     prompt_inputs = processor(
-        text=[prompt_chat],
-        images=[image],
+        [image],
+        [prompt_chat],
         return_tensors="pt",
     ).to(device)
 

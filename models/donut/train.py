@@ -97,8 +97,13 @@ def evaluate_epoch(
     model.eval()
     total_loss = 0.0
     all_preds: list[dict[str, list[str]]] = []
+
     task_prompt = f"<s_{dataset_name}>"
-    prompt_ids = processor.tokenizer.encode(task_prompt, add_special_tokens=False, return_tensors="pt").to(device)
+    prompt_ids = processor.tokenizer.encode(
+        task_prompt,
+        add_special_tokens=False,
+        return_tensors="pt",
+    ).to(device)
 
     with torch.no_grad():
         for batch in tqdm(loader, desc=desc, leave=False):
@@ -112,13 +117,12 @@ def evaluate_epoch(
             total_loss += outputs.loss.item()
 
             batch_size = pixel_values.shape[0]
-            decoder_prompts = prompt_ids.repeat(batch_size, 1)
+            decoder_input_ids = prompt_ids.repeat(batch_size, 1)
 
             generated_ids = model.generate(
                 pixel_values,
-                decoder_input_ids=decoder_prompts,
+                decoder_input_ids=decoder_input_ids,
                 max_length=max_length,
-                early_stopping=True,
                 pad_token_id=processor.tokenizer.pad_token_id,
                 eos_token_id=processor.tokenizer.eos_token_id,
                 use_cache=True,

@@ -37,7 +37,11 @@ class DonutDataset(Dataset):
             else Image.new("RGB", (1280, 960))
         )
 
-        pixel_values = self.processor(image, return_tensors="pt")["pixel_values"][0]
+        encoding = self.processor(
+            image,
+            return_tensors="pt",
+        )
+        pixel_values = encoding["pixel_values"][0]
 
         gt = sample.get("gt", {})
         target_json = json.dumps(gt, ensure_ascii=False)
@@ -82,41 +86,42 @@ class DonutDataCollator:
 def extract_entities(text: str) -> dict[str, list[str]]:
     text = re.sub(r"<[^>]+>", "", text).strip()
 
-    block = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL)
+    block = re.search(
+        r"```(?:json)?\s*(.*?)\s*```",
+        text,
+        re.DOTALL | re.IGNORECASE,
+    )
     content = block.group(1) if block else text
 
-    match = re.search(r"\{.*\}", content, re.DOTALL)
-    if match:
+    decoder = json.JSONDecoder()
+
+    for position, character in enumerate(content):
+        if character != "{":
+            continue
+
         try:
-            parsed = json.loads(match.group(0))
-            if isinstance(parsed, dict):
-                entities: dict[str, list[str]] = {}
-                for key, val in parsed.items():
-                    if isinstance(val, list):
-                        entities[str(key)] = [str(v).strip() for v in val if str(v).strip()]
-                    elif isinstance(val, (str, int, float)):
-                        val_str = str(val).strip()
-                        if val_str:
-                            entities[str(key)] = [val_str]
-                return entities
-        except Exception:
-            pass
+            parsed, _ = decoder.raw_decode(content[position:])
+        except json.JSONDecodeError:
+            continue
 
-    entities: dict[str, list[str]] = {}
-    pattern = r'"([^"]+)":\s*(?:\[([^\]]*)\]|"([^"]*)")'
-    for match in re.finditer(pattern, text):
-        key = match.group(1).strip()
-        if match.group(2) is not None:
-            raw_items = re.findall(r'"([^"]*)"', match.group(2))
-            clean_items = [item.strip() for item in raw_items if item.strip()]
-            if clean_items:
-                entities.setdefault(key, []).extend(clean_items)
-        elif match.group(3) is not None:
-            val = match.group(3).strip()
-            if val:
-                entities.setdefault(key, []).append(val)
+        if not isinstance(parsed, dict):
+            continue
 
-    return entities
+        entities = {}
+
+        for key, value in parsed.items():
+            values = value if isinstance(value, list) else [value]
+            clean_values = [
+                str(item).strip()
+                for item in values
+                if item is not None and str(item).strip()
+            ]
+            if clean_values:
+                entities[str(key)] = clean_values
+
+        return entities
+
+    return {}
 
 
 def decode_predictions(
@@ -135,12 +140,21 @@ def predict_sample(
     dataset_name: str,
     max_length: int = 512,
 ) -> dict[str, list[str]]:
-    encoding = processor(image.convert("RGB"), return_tensors="pt")
+    encoding = processor(
+        image.convert("RGB"),
+        return_tensors="pt",
+    )
     pixel_values = encoding["pixel_values"].to(device)
+
     task_prompt = f"<s_{dataset_name}>"
-    decoder_input_ids = processor.tokenizer.encode(
-        task_prompt, add_special_tokens=False, return_tensors="pt"
+    prompt_ids = processor.tokenizer.encode(
+        task_prompt,
+        add_special_tokens=False,
+        return_tensors="pt",
     ).to(device)
+
+    batch_size = pixel_values.shape[0]
+    decoder_input_ids = prompt_ids.repeat(batch_size, 1)
 
     model.eval()
     with torch.no_grad():
@@ -148,7 +162,6 @@ def predict_sample(
             pixel_values,
             decoder_input_ids=decoder_input_ids,
             max_length=max_length,
-            early_stopping=True,
             pad_token_id=processor.tokenizer.pad_token_id,
             eos_token_id=processor.tokenizer.eos_token_id,
             use_cache=True,

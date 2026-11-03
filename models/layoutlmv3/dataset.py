@@ -42,7 +42,6 @@ class LayoutLMv3Dataset(Dataset):
             words,
             boxes=boxes,
             max_length=self.max_length,
-            is_split_into_words=True,
             truncation=True,
             return_tensors="pt",
         )
@@ -188,7 +187,6 @@ def predict_sample(
         words,
         boxes=boxes,
         max_length=max_length,
-        is_split_into_words=True,
         truncation=True,
         return_tensors="pt",
     )

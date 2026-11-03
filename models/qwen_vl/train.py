@@ -5,6 +5,8 @@ import json
 import logging
 from pathlib import Path
 
+from matplotlib.pyplot import grid
+
 from peft import LoraConfig, TaskType, get_peft_model
 import torch
 from torch.optim import AdamW
@@ -57,7 +59,11 @@ def train_epoch(
         leave=False,
     )
     for step, batch in enumerate(progress_loader, start=1):
-        batch = {k: v.to(device) for k, v in batch.items() if k != "prompt_len"}
+        batch = {
+            key: value.to(device)
+            for key, value in batch.items() 
+            if key != "prompt_len"
+        }
 
         with torch.amp.autocast(device_type=device.type, enabled=use_amp):
             outputs = model(**batch)
@@ -96,36 +102,53 @@ def evaluate_epoch(
     all_preds: list[dict[str, list[str]]] = []
 
     with torch.no_grad():
-        progress_loader = tqdm(loader, desc=desc, leave=False)
-        for batch in progress_loader:
-            batch_gpu = {k: v.to(device) for k, v in batch.items()}
-            batch_loss = {k: v for k, v in batch_gpu.items() if k != "prompt_len"}
+        for batch in tqdm(loader, desc=desc, leave=False):
+            batch_gpu = {
+                key: value.to(device)
+                for key, value in batch.items()
+            }
+
+            batch_loss = {
+                key: value
+                for key, value in batch_gpu.items()
+                if key != "prompt_len"
+            }
+
             outputs = model(**batch_loss)
             total_loss += outputs.loss.item()
 
-            p_len = batch_gpu["prompt_len"][0].item()
-            prompt_input_ids = batch_gpu["input_ids"][:, :p_len]
-            prompt_attention_mask = batch_gpu["attention_mask"][:, :p_len]
+            patch_offset = 0
+            for sample_index in range(batch_gpu["input_ids"].size(0)):
+                prompt_len = batch_gpu["prompt_len"][sample_index].item()
+                prompt_input_ids = batch_gpu["input_ids"][sample_index:sample_index + 1, :prompt_len]
+                prompt_attention_mask = batch_gpu["attention_mask"][sample_index:sample_index + 1, :prompt_len]
 
-            kwargs = {
-                "input_ids": prompt_input_ids,
-                "attention_mask": prompt_attention_mask,
-                "max_new_tokens": max_new_tokens,
-                "do_sample": False,
-            }
-            if "pixel_values" in batch_gpu:
-                kwargs["pixel_values"] = batch_gpu["pixel_values"]
-            if "image_grid_thw" in batch_gpu:
-                kwargs["image_grid_thw"] = batch_gpu["image_grid_thw"]
+                kwargs = {
+                    "input_ids": prompt_input_ids,
+                    "attention_mask": prompt_attention_mask,
+                    "max_new_tokens": max_new_tokens,
+                    "do_sample": False,
+                }
 
-            generated_ids = model.generate(**kwargs)
-            new_tokens = generated_ids[:, p_len:]
-            all_preds.extend(decode_predictions(new_tokens, processor))
+                grid = batch_gpu["image_grid_thw"][sample_index:sample_index + 1]
+                patch_count = int(grid.prod(dim=1).sum().item())
 
+                kwargs["pixel_values"] = batch_gpu["pixel_values"][
+                    patch_offset:patch_offset + patch_count
+                ]
+                kwargs["image_grid_thw"] = grid
+
+                patch_offset += patch_count
+
+                generated_ids = model.generate(**kwargs)
+                new_tokens = generated_ids[:, prompt_len:]
+                all_preds.extend(decode_predictions(new_tokens, processor))
+
+    avg_loss = total_loss / len(loader)
     gts = [sample.get("gt", {}) for sample in samples]
     metrics = evaluate_dataset(gts, all_preds)
 
-    return total_loss / len(loader), metrics
+    return avg_loss, metrics
 
 
 def evaluate_test(
