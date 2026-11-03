@@ -235,3 +235,27 @@ Các bài toán ảnh → JSON của Donut/Qwen vẫn có input riêng, nhưng c
 cho cùng kết quả; cả 9 bộ điểm khớp kết quả đã lưu ở 4 chữ số thập phân. Không chạy lại
 inference/train và không thay kết quả cũ. Bằng chứng nằm trong
 `reports/completed-baseline-alignment-20261027.json`.
+
+## Donut: căn chỉnh loss seq2seq (2026-11-03)
+
+Lượt `phvngtngtm/donut-model` version 1 dùng Transformers 4.57.6 kết thúc
+epoch 9 nhưng F1 validation/test đều 0. Chẩn đoán checkpoint cho thấy JSON sinh
+ra mất xen kẽ token; tokenizer round-trip đúng và tắt cache không sửa được lỗi.
+`VisionEncoderDecoderModel.loss_function` mặc định rơi vào `ForCausalLMLoss`,
+dịch labels thêm một bước dù decoder input đã right-shift. Tham khảo
+[upstream issue #40111](https://github.com/huggingface/transformers/issues/40111).
+
+Donut hiện đặt cross-entropy seq2seq tường minh, căn logits với labels cùng vị trí,
+bỏ padding -100 và vẫn chấm EOS. Không đổi GT, parser/schema hay cách chấm Macro-F1.
+Log validation/test ghi số JSON hợp lệ và ví dụ lỗi đầu tiên. Checkpoint mới ghi
+`loss_protocol=donut-aligned-seq2seq-v1`; resume checkpoint cũ bị chặn.
+Lượt train đầy đủ kế tiếp phải bắt đầu lại từ pretrained; không dùng điểm/checkpoint
+version 1 để công bố kết quả hoặc tiếp tục train chính.
+
+Smoke GPU `phvngtngtm/reconia-donut-fixed-smoke-20261103` đã pass:
+thử sửa checkpoint cũ trên 2 mẫu TRAIN, sau 20 lượt qua loader nhỏ sinh đúng JSON
+và exact-value F1=1 trên chính 2 mẫu đó. Đây chỉ là kiểm chứng đường học/generate/scorer,
+không phải benchmark; 3 mẫu validation thử thêm chỉ có 1 JSON hợp lệ.
+Không dùng checkpoint chẩn đoán này cho train chính. 13 test regression Donut,
+pipeline/metrics và Qwen pass. Bằng chứng local:
+`.cache/kaggle-donut-fixed-smoke-20261103/verification.json`.

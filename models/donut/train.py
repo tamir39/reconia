@@ -32,10 +32,24 @@ from utils.metrics import evaluate_dataset
 from utils.plots import save_train_plots
 
 
+LOSS_PROTOCOL = "donut-aligned-seq2seq-v1"
+
+
+def seq2seq_loss(logits, labels, vocab_size, num_items_in_batch=None, **kwargs):
+    # Decoder inputs are already right-shifted. Transformers 4.57 otherwise
+    # defaults VisionEncoderDecoderModel to a causal loss that shifts labels again.
+    loss = torch.nn.functional.cross_entropy(
+        logits.float().reshape(-1, vocab_size), labels.to(logits.device).reshape(-1),
+        ignore_index=-100, reduction="sum" if num_items_in_batch is not None else "mean",
+    )
+    return loss / num_items_in_batch if num_items_in_batch is not None else loss
+
+
 def build_model(weights_dir, device):
     processor = DonutProcessor.from_pretrained(weights_dir)
     processor.image_processor.size = {"height": 1280, "width": 960}
     model = VisionEncoderDecoderModel.from_pretrained(weights_dir)
+    model.loss_function = seq2seq_loss
     model.config.pad_token_id = processor.tokenizer.pad_token_id
     model.config.decoder_start_token_id = processor.tokenizer.bos_token_id
     model.generation_config.decoder_start_token_id = processor.tokenizer.bos_token_id
@@ -123,6 +137,7 @@ def evaluate_epoch(
     preds: list[dict] = []
     use_amp = device.type == "cuda"
     tokenizer = processor.tokenizer
+    invalid_json = 0
 
     with torch.no_grad():
         for batch in tqdm(loader, desc=f"{desc} Loss", leave=False):
@@ -143,9 +158,20 @@ def evaluate_epoch(
                     eos_token_id=tokenizer.eos_token_id,
                 )
             texts = tokenizer.batch_decode(sequences[:, prefix_width:], skip_special_tokens=True)
-            preds.extend(parse_output(text) for text in texts)
+            for text in texts:
+                try:
+                    preds.append(parse_output(text, strict=True))
+                except ValueError as error:
+                    if invalid_json == 0:
+                        logging.getLogger("train").warning(
+                            "%s invalid generated JSON: %s; excerpt=%r", desc, error, text[:240])
+                    invalid_json += 1
+                    preds.append({})
 
     avg_loss = total_loss / len(loader)
+    logging.getLogger("train").info(
+        "%s Generated JSON: valid=%d/%d, invalid=%d", desc,
+        len(preds) - invalid_json, len(preds), invalid_json)
     gts = [sample["gt"] for sample in samples]
     metrics = evaluate_dataset(gts, preds)
     return avg_loss, metrics
@@ -232,6 +258,7 @@ def train_model(
         cache_dir = get_cache_dir(dataset_name)
         verify_baseline_data(dataset_name, cache_dir)
         logger.info("Data protocol: completed-baselines-20261024; prepared splits verified")
+        logger.info("Loss protocol: %s", LOSS_PROTOCOL)
         data_dir = get_data_dir(dataset_name)
         weights_dir = repo_dir / "weights" / "donut"
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -309,6 +336,8 @@ def train_model(
             raise FileNotFoundError(checkpoint_file)
         if resume and checkpoint_file.exists():
             checkpoint = torch.load(checkpoint_file, map_location=device, weights_only=True)
+            if checkpoint.get("loss_protocol") != LOSS_PROTOCOL:
+                raise ValueError("Donut checkpoint uses the old shifted loss; start a fresh run")
             if checkpoint.get("data_protocol") != "completed-baselines-20261024":
                 raise ValueError("Resume checkpoint uses a different data protocol; start a separate run")
             model.load_state_dict(checkpoint["model_state_dict"])
@@ -380,6 +409,7 @@ def train_model(
             torch.save(
                 {
                     "epoch": epoch,
+                    "loss_protocol": LOSS_PROTOCOL,
                     "data_protocol": "completed-baselines-20261024",
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),

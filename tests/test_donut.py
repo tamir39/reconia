@@ -101,6 +101,35 @@ class DonutTests(unittest.TestCase):
             self.assertTrue(torch.isfinite(torch.tensor(loss)))
             self.assertEqual(metrics["f1"], expected_f1)
 
+    def test_model_loss_aligns_bos_with_first_json_token_and_scores_eos(self):
+        model, processor = self.build_model(self.weights_dir, torch.device("cpu"))
+        model.eval()
+        feature = self.dataset()[0]
+        shorter = dict(feature, labels=feature["labels"][:3],
+                       decoder_input_ids=feature["decoder_input_ids"][:3])
+        batch = DonutDataCollator(processor)([feature, shorter])
+        with torch.no_grad():
+            output = model(**batch)
+        expected = torch.nn.functional.cross_entropy(
+            output.logits.float().reshape(-1, output.logits.shape[-1]),
+            batch["labels"].reshape(-1), ignore_index=-100)
+        self.assertTrue(torch.allclose(output.loss, expected))
+        # A near-perfect aligned prediction must have near-zero loss, including EOS.
+        labels = torch.tensor([[5, 6, processor.tokenizer.eos_token_id, -100]])
+        logits = torch.full((1, 4, 7), -20.0)
+        for i, token in enumerate(labels[0, :3]):
+            logits[0, i, token] = 20
+        self.assertLess(trainer.seq2seq_loss(logits, labels, 7).item(), 1e-6)
+
+    def test_invalid_json_is_visible_without_relaxing_the_scorer(self):
+        from utils.generation import parse_output
+        for text in ['"dres"[LO PT 28]', '{"total":100}', '[]']:
+            self.assertEqual(parse_output(text), {})
+            with self.assertRaises(ValueError):
+                parse_output(text, strict=True)
+        self.assertEqual(parse_output('{"item":["Tea","Tea"]}', strict=True),
+                         {"item": ["Tea", "Tea"]})
+
     def test_real_train_generation_resume_and_separate_test(self):
         original_build = trainer.build_model
 
@@ -132,6 +161,10 @@ class DonutTests(unittest.TestCase):
             self.assertEqual(result["model"], "donut")
             self.assertTrue(all(0 <= result[key] <= 1 for key in ("precision", "recall", "f1")))
             self.assertEqual(best_before, (checkpoint_dir / "best_weights.pt").read_bytes())
+            checkpoint.pop("loss_protocol")
+            torch.save(checkpoint, checkpoint_dir / "last_checkpoint.pt")
+            with self.assertRaisesRegex(ValueError, "old shifted loss"):
+                trainer.train_model("sroie", epochs=3, resume=True, max_new_tokens=40)
 
 
 if __name__ == "__main__":

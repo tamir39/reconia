@@ -8,16 +8,18 @@ from utils.metrics import evaluate_dataset
 from utils.training import fit, load_weights
 
 
-def parse_output(text):
+def parse_output(text, *, strict=False):
     try:
         value = json.loads(text)
         if not isinstance(value, dict) or any(
             not isinstance(key, str) or not isinstance(values, list)
             or any(not isinstance(item, str) for item in values) for key, values in value.items()
         ):
-            return {}
+            raise ValueError("Expected a JSON object mapping fields to lists of strings")
         return value
-    except (ValueError, TypeError):
+    except (ValueError, TypeError) as error:
+        if strict:
+            raise ValueError(str(error)) from error
         return {}
 
 
