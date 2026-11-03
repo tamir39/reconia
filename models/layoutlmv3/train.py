@@ -227,7 +227,7 @@ def train_model(
         id2label = dict(enumerate(labels))
 
         weights_dir = repo_dir / "weights" / "layoutlmv3"
-        tokenizer = AutoTokenizer.from_pretrained(weights_dir)
+        tokenizer = AutoTokenizer.from_pretrained(weights_dir, use_fast=True)
         collator = LayoutLMv3DataCollator(tokenizer=tokenizer)
 
         train_ds = LayoutLMv3Dataset(cache_dir / "train.jsonl", tokenizer, label2id, data_dir)
