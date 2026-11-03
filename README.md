@@ -45,7 +45,8 @@ Cài môi trường: `pip install -r requirements.txt`.
 
 **Kaggle:** mở notebook tương ứng trong `notebooks/`, gắn dataset
 [`vhngthnh/reconia-data`](https://www.kaggle.com/datasets/vhngthnh/reconia-data), chọn `DATASET`, chạy lần lượt sáu mục.
-Dùng source mới trên nhánh `codex/original-data-six-models`; notebook không tự cập nhật checkout đã tồn tại.
+Dùng source mới trên nhánh `dev`; notebook kiểm tra đúng nhánh,
+in commit đang dùng và không tự cập nhật checkout đã tồn tại.
 
 **Local:** đặt dữ liệu ở `data/raw/<dataset>/`, hoặc đặt `RECONIA_DATA_DIR`
 tới thư mục chứa ba dataset. Ví dụ LayoutLMv3/SROIE:
