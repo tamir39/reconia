@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import (
     AutoProcessor,
+    LayoutLMv3TokenizerFast,
     LayoutLMv3ForTokenClassification,
     get_linear_schedule_with_warmup,
 )
@@ -214,7 +215,8 @@ def train_model(
         id2label = dict(enumerate(labels))
 
         weights_dir = repo_dir / "weights" / "layoutlmv3"
-        processor = AutoProcessor.from_pretrained(weights_dir, tokenizer_class="LayoutLMv3TokenizerFast")
+        tokenizer = LayoutLMv3TokenizerFast.from_pretrained(weights_dir)
+        processor = AutoProcessor.from_pretrained(weights_dir, tokenizer=tokenizer)
         processor.image_processor.apply_ocr = False
         collator = LayoutLMv3DataCollator(processor=processor)
 

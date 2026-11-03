@@ -49,11 +49,11 @@ class LayoutLMv3Dataset(Dataset):
 
         labels: list[int] = []
         prev_word_idx = None
-        for word_idx in encoding.word_ids():    
-            if word_idx is None or word_idx == prev_word_idx:
-                labels.append(-100)
-            else:
+        for word_idx in encoding.word_ids():
+            if word_idx is not None and word_idx != prev_word_idx:
                 labels.append(self.label2id[word_labels[word_idx]])
+            else:
+                labels.append(-100)
             prev_word_idx = word_idx
 
         return {
