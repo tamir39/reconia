@@ -51,6 +51,7 @@ class LayoutLMv3Dataset(Dataset):
 
         encoding = self.tokenizer(
             words,
+            boxes=boxes,
             max_length=self.max_length,
             is_split_into_words=True,
             truncation=True,
@@ -106,7 +107,7 @@ class LayoutLMv3DataCollator:
         for item in batch:
             pad_len = max_len - len(item["input_ids"])
             input_ids.append(item["input_ids"] + [self.pad_token_id] * pad_len)
-            bbox.append(item["bbox"] + [[0, 0, 0, 0]] * pad_len)
+            bbox.append(item["bbox"] + [[0, 0, 1000, 1000]] * pad_len)
             attention_mask.append(item["attention_mask"] + [0] * pad_len)
             labels.append(item["labels"] + [-100] * pad_len)
             pixel_values.append(item["pixel_values"])
@@ -181,8 +182,10 @@ def decode_predictions(
     for pred_ids, sample in zip(all_pred_ids, samples):
         ocr = sample["ocr"]
         words = [item["text"] for item in ocr]
+        boxes = [item["box"] for item in ocr]
         encoding = tokenizer(
             words,
+            boxes=boxes,
             max_length=max_length,
             is_split_into_words=True,
             truncation=True,
@@ -208,6 +211,7 @@ def predict_sample(
 
     encoding = tokenizer(
         words,
+        boxes=boxes,
         max_length=max_length,
         is_split_into_words=True,
         truncation=True,
