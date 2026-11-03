@@ -63,13 +63,17 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(result, [{"item": [" ".join(["tea"] * 1200)]}])
 
     def test_last_accumulation_group_uses_actual_size(self):
-        for name in ("roberta", "bros", "pick"):
+        for name in ("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen_vl"):
             with self.subTest(model=name):
                 trainer = importlib.import_module(f"models.{name}.train")
                 model = ToyModel()
                 optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
                 scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda _: 1.0)
-                keys = ("images", "boxes", "input_ids", "attention_mask", "box_mask", "relations", "labels") if name == "pick" else ("input_ids", "attention_mask", "labels", "bbox")
+                keys = ("images", "boxes", "input_ids", "attention_mask", "box_mask", "relations", "labels") if name == "pick" else ("input_ids", "attention_mask", "labels", "bbox", "pixel_values")
+                if name == "donut":
+                    keys = ("pixel_values", "decoder_input_ids", "decoder_attention_mask", "labels")
+                elif name == "qwen_vl":
+                    keys = ("pixel_values", "input_ids", "attention_mask", "image_grid_thw", "labels")
                 loader = [{key: torch.zeros(1) for key in keys} for _ in range(3)]
                 trainer.train_epoch(model, loader, optimizer, scheduler,
                                     torch.amp.GradScaler("cpu", enabled=False), torch.device("cpu"),

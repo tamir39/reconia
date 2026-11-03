@@ -1,0 +1,388 @@
+{
+  "date": "2026-10-27",
+  "runtime": {
+    "torch": "2.6.0+cpu",
+    "transformers": "4.57.6",
+    "peft": "0.17.1",
+    "cuda_available": false
+  },
+  "models": {
+    "roberta": {
+      "functions": [
+        "train_epoch",
+        "evaluate_epoch",
+        "evaluate_test",
+        "save_history",
+        "train_model",
+        "parse_args"
+      ],
+      "shared_metric": true,
+      "cli_defaults": {
+        "dataset": "sroie",
+        "epochs": 30,
+        "batch_size": 8,
+        "accum_steps": 1,
+        "lr": 3e-05,
+        "min_epochs": 5,
+        "patience": 5,
+        "resume": false,
+        "test_only": false
+      },
+      "notebook_cells": 14,
+      "headings": [
+        "## 1. Environment",
+        "## 2. Prepare and inspect the selected dataset",
+        "## 3. Pretrained weights",
+        "## 4. Train and validate",
+        "## 5. Validation history",
+        "## 6. Final test (run after experiments are fixed)"
+      ],
+      "local_weight_files": [],
+      "trainer_sha256": "58cd5f15c0d139219ab467c62cf9170531a28b191cb4d2b5b8f91c8f60197511"
+    },
+    "bros": {
+      "functions": [
+        "train_epoch",
+        "evaluate_epoch",
+        "evaluate_test",
+        "save_history",
+        "train_model",
+        "parse_args"
+      ],
+      "shared_metric": true,
+      "cli_defaults": {
+        "dataset": "sroie",
+        "epochs": 30,
+        "batch_size": 4,
+        "accum_steps": 2,
+        "lr": 3e-05,
+        "min_epochs": 5,
+        "patience": 5,
+        "resume": false,
+        "test_only": false
+      },
+      "notebook_cells": 14,
+      "headings": [
+        "## 1. Environment",
+        "## 2. Prepare and inspect the selected dataset",
+        "## 3. Pretrained weights",
+        "## 4. Train and validate",
+        "## 5. Validation history",
+        "## 6. Final test (run after experiments are fixed)"
+      ],
+      "local_weight_files": [],
+      "trainer_sha256": "6726d5491a9ba395b27ba1f262ec18d2c38cdbdc9a1bb8b1aac08e3d13559220"
+    },
+    "pick": {
+      "functions": [
+        "train_epoch",
+        "evaluate_epoch",
+        "evaluate_test",
+        "save_history",
+        "train_model",
+        "parse_args"
+      ],
+      "shared_metric": true,
+      "cli_defaults": {
+        "dataset": "sroie",
+        "epochs": 30,
+        "batch_size": 4,
+        "accum_steps": 2,
+        "lr": 0.0001,
+        "min_epochs": 5,
+        "patience": 5,
+        "resume": false,
+        "test_only": false
+      },
+      "notebook_cells": 14,
+      "headings": [
+        "## 1. Environment",
+        "## 2. Prepare and inspect the selected dataset",
+        "## 3. Pretrained weights",
+        "## 4. Train and validate",
+        "## 5. Validation history",
+        "## 6. Final test (run after experiments are fixed)"
+      ],
+      "local_weight_files": [],
+      "trainer_sha256": "0e3b274d895f3008b1e0667b2ce5b1736273aaa7a66d9db5600bd79f7a330faf"
+    },
+    "layoutlmv3": {
+      "functions": [
+        "train_epoch",
+        "evaluate_epoch",
+        "evaluate_test",
+        "save_history",
+        "train_model",
+        "parse_args"
+      ],
+      "shared_metric": true,
+      "cli_defaults": {
+        "dataset": "sroie",
+        "epochs": 30,
+        "batch_size": 4,
+        "accum_steps": 2,
+        "lr": 3e-05,
+        "min_epochs": 5,
+        "patience": 5,
+        "resume": false,
+        "test_only": false
+      },
+      "notebook_cells": 14,
+      "headings": [
+        "## 1. Environment",
+        "## 2. Prepare and inspect the selected dataset",
+        "## 3. Pretrained weights",
+        "## 4. Train and validate",
+        "## 5. Validation history",
+        "## 6. Final test (run after experiments are fixed)"
+      ],
+      "local_weight_files": [],
+      "trainer_sha256": "a2af4978d855fa89243db9ef2f0d52234ef2a5aaebbae5d5ab0f38e032465a63"
+    },
+    "donut": {
+      "functions": [
+        "build_model",
+        "train_epoch",
+        "evaluate_epoch",
+        "evaluate_test",
+        "save_history",
+        "train_model",
+        "parse_args"
+      ],
+      "shared_metric": true,
+      "cli_defaults": {
+        "dataset": "sroie",
+        "epochs": 30,
+        "batch_size": 1,
+        "accum_steps": 8,
+        "lr": 3e-05,
+        "min_epochs": 5,
+        "patience": 5,
+        "resume": false,
+        "test_only": false,
+        "max_new_tokens": 1535
+      },
+      "notebook_cells": 14,
+      "headings": [
+        "## 1. Environment",
+        "## 2. Prepare and inspect the selected dataset",
+        "## 3. Pretrained weights",
+        "## 4. Train and validate",
+        "## 5. Validation history",
+        "## 6. Final test (run after experiments are fixed)"
+      ],
+      "local_weight_files": [],
+      "trainer_sha256": "363c7de5ea2e72bf30874d05652bddd2f82048fcc4bd8fc7cb847adf137601f2"
+    },
+    "qwen_vl": {
+      "functions": [
+        "build_model",
+        "train_epoch",
+        "evaluate_epoch",
+        "evaluate_test",
+        "save_history",
+        "train_model",
+        "parse_args"
+      ],
+      "shared_metric": true,
+      "cli_defaults": {
+        "dataset": "sroie",
+        "epochs": 30,
+        "batch_size": 1,
+        "accum_steps": 8,
+        "lr": 0.0001,
+        "min_epochs": 5,
+        "patience": 5,
+        "resume": false,
+        "test_only": false,
+        "max_new_tokens": 2048
+      },
+      "notebook_cells": 14,
+      "headings": [
+        "## 1. Environment",
+        "## 2. Prepare and inspect the selected dataset",
+        "## 3. Pretrained weights",
+        "## 4. Train and validate",
+        "## 5. Validation history",
+        "## 6. Final test (run after experiments are fixed)"
+      ],
+      "local_weight_files": [],
+      "trainer_sha256": "72e084523dd7986c8d070fcf98687514f3f2825f124863c50a4ff6552e5f1653"
+    }
+  },
+  "datasets": {
+    "sroie": {
+      "configured_raw_root_error": "Set RECONIA_DATA_DIR to the raw dataset root",
+      "train": {
+        "samples": 501,
+        "duplicate_image_paths": 0,
+        "empty_ocr": 0,
+        "bad_boxes": 0,
+        "unknown_labels": [],
+        "max_boxes": 252,
+        "max_characters_per_box": 36,
+        "sha256": "9ae1879561ce747f5010457d1c7a39d8b5e478e3fc9deaa2fea4ffbb1e917e99"
+      },
+      "val": {
+        "samples": 125,
+        "duplicate_image_paths": 0,
+        "empty_ocr": 0,
+        "bad_boxes": 0,
+        "unknown_labels": [],
+        "max_boxes": 247,
+        "max_characters_per_box": 28,
+        "sha256": "7ca824d85c8aa68f6652d79244fec39aeb91a4c2fddc2ca7232790f4a10c7d10"
+      },
+      "test": {
+        "samples": 347,
+        "duplicate_image_paths": 0,
+        "empty_ocr": 0,
+        "bad_boxes": 0,
+        "unknown_labels": [],
+        "max_boxes": 227,
+        "max_characters_per_box": 35,
+        "sha256": "aa3aad366e2f32c72b9a8b65b4b581ea5a048712d962361f024395f4e1e3e03c"
+      },
+      "path_overlap": {
+        "train_val": 0,
+        "train_test": 0,
+        "val_test": 0
+      }
+    },
+    "cord_v2": {
+      "configured_raw_root_error": "Set RECONIA_DATA_DIR to the raw dataset root",
+      "train": {
+        "samples": 800,
+        "duplicate_image_paths": 0,
+        "empty_ocr": 0,
+        "bad_boxes": 0,
+        "unknown_labels": [],
+        "max_boxes": 135,
+        "max_characters_per_box": 25,
+        "sha256": "6498963d5105d53709c608cfa75907376dfb3bd0f18f913d915d5156097f17a6"
+      },
+      "val": {
+        "samples": 100,
+        "duplicate_image_paths": 0,
+        "empty_ocr": 0,
+        "bad_boxes": 0,
+        "unknown_labels": [],
+        "max_boxes": 70,
+        "max_characters_per_box": 20,
+        "sha256": "7a5c1e6a77ff76e5e416080ef337a158f3681a004382104f6bfa153639c43562"
+      },
+      "test": {
+        "samples": 100,
+        "duplicate_image_paths": 0,
+        "empty_ocr": 0,
+        "bad_boxes": 0,
+        "unknown_labels": [],
+        "max_boxes": 66,
+        "max_characters_per_box": 32,
+        "sha256": "5ec31e75382798317fa4d590ec2fcd13280cc91b054945889b124ce60cbb8a3a"
+      },
+      "path_overlap": {
+        "train_val": 0,
+        "train_test": 0,
+        "val_test": 0
+      }
+    },
+    "wildreceipt": {
+      "configured_raw_root_error": "Set RECONIA_DATA_DIR to the raw dataset root",
+      "train": {
+        "samples": 1014,
+        "duplicate_image_paths": 0,
+        "empty_ocr": 0,
+        "bad_boxes": 0,
+        "unknown_labels": [],
+        "max_boxes": 228,
+        "max_characters_per_box": 59,
+        "sha256": "5735b2465c6f89042c2ca84d72b6dd3081470e1bf0bae2c017336d1802dd638c"
+      },
+      "val": {
+        "samples": 253,
+        "duplicate_image_paths": 0,
+        "empty_ocr": 0,
+        "bad_boxes": 0,
+        "unknown_labels": [],
+        "max_boxes": 170,
+        "max_characters_per_box": 45,
+        "sha256": "f656620db9576802bb52e6d94b253d91889317279b250f19bb9af53a8c85b7c0"
+      },
+      "test": {
+        "samples": 472,
+        "duplicate_image_paths": 0,
+        "empty_ocr": 0,
+        "bad_boxes": 0,
+        "unknown_labels": [],
+        "max_boxes": 196,
+        "max_characters_per_box": 59,
+        "sha256": "538dd9eeb487ab39ecafcb2e1f7c2219417eeecf0cdedec9ee2eb73838e4f5b8"
+      },
+      "path_overlap": {
+        "train_val": 0,
+        "train_test": 0,
+        "val_test": 0
+      }
+    }
+  },
+  "limitations": [
+    "No full-size pretrained GPU train/validation smoke run performed.",
+    "No pretrained weight files found in the configured local weights directories unless listed below.",
+    "Kaggle checkout must contain the current local changes; existing notebook checkouts do not auto-pull.",
+    "Paper benchmark scores and previous truncated-token runs are not directly comparable to this protocol."
+  ],
+  "papers": [
+    {
+      "model": "roberta",
+      "authors": "Liu et al.",
+      "year": 2019,
+      "url": "https://arxiv.org/abs/1907.11692",
+      "reviewed_full_text": true
+    },
+    {
+      "model": "bros",
+      "authors": "Hong et al.",
+      "year": 2022,
+      "url": "https://arxiv.org/abs/2108.04539",
+      "reviewed_full_text": true
+    },
+    {
+      "model": "pick",
+      "authors": "Yu et al.",
+      "year": 2020,
+      "url": "https://arxiv.org/abs/2004.07464",
+      "reviewed_full_text": true
+    },
+    {
+      "model": "layoutlmv3",
+      "authors": "Huang et al.",
+      "year": 2022,
+      "url": "https://arxiv.org/abs/2204.08387",
+      "reviewed_full_text": true
+    },
+    {
+      "model": "donut",
+      "authors": "Kim et al.",
+      "year": 2022,
+      "url": "https://arxiv.org/abs/2111.15664",
+      "reviewed_full_text": true
+    },
+    {
+      "model": "qwen_vl",
+      "authors": "Bai et al.",
+      "year": 2025,
+      "url": "https://arxiv.org/abs/2502.13923",
+      "reviewed_full_text": true
+    }
+  ],
+  "tests": {
+    "passed": true,
+    "count": 15,
+    "log": ".cache/six-model-final-audit/tests.log"
+  },
+  "readiness": {
+    "code_cpu_checks_passed": true,
+    "full_training_verified": false
+  }
+}

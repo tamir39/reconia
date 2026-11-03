@@ -14,9 +14,9 @@ from transformers import get_linear_schedule_with_warmup
 
 from models.pick.dataset import (
     PickDataset,
+    PickDataCollator,
     build_char_vocab,
     build_tag_vocab,
-    collate_fn,
     decode_predictions,
 )
 from models.pick.model import PICKModel
@@ -224,15 +224,16 @@ def train_model(
         labels = load_labels(dataset_name)
         char2id = build_char_vocab()
         tag2id, id2tag = build_tag_vocab(labels)
+        collator = PickDataCollator()
 
         train_ds = PickDataset(cache_dir / "train.jsonl", data_dir, char2id, tag2id)
         val_ds = PickDataset(cache_dir / "val.jsonl", data_dir, char2id, tag2id)
 
         train_loader = DataLoader(
-            train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn
+            train_ds, batch_size=batch_size, shuffle=True, collate_fn=collator
         )
         val_loader = DataLoader(
-            val_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn
+            val_ds, batch_size=batch_size, shuffle=False, collate_fn=collator
         )
 
         model = PICKModel(
@@ -244,7 +245,7 @@ def train_model(
 
         if test_only:
             test_ds = PickDataset(cache_dir / "test.jsonl", get_data_dir(dataset_name), char2id, tag2id)
-            test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn)
+            test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, collate_fn=collator)
             evaluate_test(
                 model,
                 test_loader,

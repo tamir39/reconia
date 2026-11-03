@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 
 class DonutDataset(Dataset):
-    def __init__(self, data_file, processor, data_dir, *, fields=None, training=True, max_new_tokens=1535):
+    def __init__(self, data_file, processor, data_dir, *, training=True, max_new_tokens=1535):
         self.samples = [json.loads(line) for line in Path(data_file).read_text(encoding="utf-8").splitlines() if line.strip()]
         self.processor, self.data_dir = processor, Path(data_dir)
         self.training, self.max_new_tokens = training, max_new_tokens
@@ -31,15 +31,15 @@ class DonutDataset(Dataset):
         return feature
 
 
-class DonutCollator:
+class DonutDataCollator:
     def __init__(self, processor, training=True):
-        self.pad_id, self.training = processor.tokenizer.pad_token_id, training
+        self.pad_token_id, self.training = processor.tokenizer.pad_token_id, training
 
     def __call__(self, features):
         width = max(len(item["decoder_input_ids"]) for item in features)
         batch = {"pixel_values": torch.stack([item["pixel_values"] for item in features])}
         batch["decoder_input_ids"] = torch.tensor([
-            item["decoder_input_ids"] + [self.pad_id] * (width - len(item["decoder_input_ids"])) for item in features])
+            item["decoder_input_ids"] + [self.pad_token_id] * (width - len(item["decoder_input_ids"])) for item in features])
         batch["decoder_attention_mask"] = torch.tensor([
             [1] * len(item["decoder_input_ids"]) + [0] * (width - len(item["decoder_input_ids"])) for item in features])
         if self.training:

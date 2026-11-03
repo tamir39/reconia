@@ -1,0 +1,158 @@
+{
+  "protocol": "completed-baselines-20261024",
+  "reference_models": [
+    "roberta",
+    "bros",
+    "pick"
+  ],
+  "datasets": {
+    "sroie": {
+      "splits": {
+        "train": {
+          "count": 501,
+          "sha256": "ec3eb7c9c55134e296532d6d232a7d751d3badfbadfce492932f22dfbebb1774"
+        },
+        "val": {
+          "count": 125,
+          "sha256": "100ef6ebf0b4846b0162ae8ae2f7cc999d6ff13661c79852ec224b6bfead5d7d"
+        },
+        "test": {
+          "count": 347,
+          "sha256": "5f477e4f7d24ac35cee4b7cce890a7127a41d9b2ba336edbdfce704d7528b93b"
+        }
+      },
+      "labels": [
+        "O",
+        "B-address",
+        "B-company",
+        "B-date",
+        "B-total",
+        "I-address",
+        "I-company",
+        "I-date",
+        "I-total"
+      ]
+    },
+    "cord_v2": {
+      "splits": {
+        "train": {
+          "count": 800,
+          "sha256": "42a29d4367c10fb51cde9a5181a9c81a8275e299b7b0633251c7f69939d3b5cc"
+        },
+        "val": {
+          "count": 100,
+          "sha256": "6889191d73d00a9f29bbbaaeceecb05b6728e434ae6f5b9363e196a9e2c0a152"
+        },
+        "test": {
+          "count": 100,
+          "sha256": "7d511190e0deb7b45a288445383dce40b71a150c96d1393b142ece1303524fd8"
+        }
+      },
+      "labels": [
+        "O",
+        "B-menu.cnt",
+        "B-menu.discountprice",
+        "B-menu.etc",
+        "B-menu.itemsubtotal",
+        "B-menu.nm",
+        "B-menu.num",
+        "B-menu.price",
+        "B-menu.sub.cnt",
+        "B-menu.sub.nm",
+        "B-menu.sub.price",
+        "B-menu.sub.unitprice",
+        "B-menu.unitprice",
+        "B-menu.vatyn",
+        "B-sub_total.discount_price",
+        "B-sub_total.etc",
+        "B-sub_total.othersvc_price",
+        "B-sub_total.service_price",
+        "B-sub_total.subtotal_price",
+        "B-sub_total.tax_price",
+        "B-total.cashprice",
+        "B-total.changeprice",
+        "B-total.creditcardprice",
+        "B-total.emoneyprice",
+        "B-total.menuqty_cnt",
+        "B-total.menutype_cnt",
+        "B-total.total_etc",
+        "B-total.total_price",
+        "B-void_menu.nm",
+        "B-void_menu.price",
+        "I-menu.cnt",
+        "I-menu.etc",
+        "I-menu.nm",
+        "I-menu.price",
+        "I-menu.sub.cnt",
+        "I-menu.sub.nm",
+        "I-menu.sub.price",
+        "I-menu.unitprice",
+        "I-menu.vatyn",
+        "I-sub_total.service_price",
+        "I-sub_total.subtotal_price",
+        "I-sub_total.tax_price",
+        "I-total.cashprice",
+        "I-total.changeprice",
+        "I-total.emoneyprice",
+        "I-total.menuqty_cnt",
+        "I-total.menutype_cnt",
+        "I-total.total_price",
+        "I-void_menu.nm"
+      ]
+    },
+    "wildreceipt": {
+      "splits": {
+        "train": {
+          "count": 1014,
+          "sha256": "5f4a0fa1150de5503b6b1317caf3b13a9c467e763fd0690e10c9cd9894ecda76"
+        },
+        "val": {
+          "count": 253,
+          "sha256": "52b8e0c92e1877dd482356a5763fa904938100dd64b8ad6c098e450123d6f25c"
+        },
+        "test": {
+          "count": 472,
+          "sha256": "21f17dc27c074b423595df0ec2ec1d6fe9a56d08849fc95848f2c1d878bfab84"
+        }
+      },
+      "labels": [
+        "O",
+        "B-Date_value",
+        "B-Prod_item_value",
+        "B-Prod_price_value",
+        "B-Prod_quantity_value",
+        "B-Store_addr_value",
+        "B-Store_name_value",
+        "B-Subtotal_value",
+        "B-Tax_value",
+        "B-Tel_value",
+        "B-Time_value",
+        "B-Tips_value",
+        "B-Total_value"
+      ]
+    }
+  },
+  "reference_sources": {
+    "roberta": {
+      "utils/metrics.py": "94ddfff44c744c17e76a021e5ec522fe00a814876b88a27073dfc64c1b30b5b5",
+      "utils/common.py": "d16cb7afba116b2f08a2e2ad3ccb45d12783044007a77ed9aacac821864422b7",
+      "prepare/prepare_cord_v2.py": "6616d483e20607e8ff04c9ebe83d60d87564235926a444e4a33261554cc30eb7",
+      "prepare/prepare_sroie.py": "ebea4f3687a24791838a15ca1e643ef4b9fb1bbeea0435bb269402cfb4608545",
+      "prepare/prepare_wildreceipt.py": "b63d8188b03b4c36e5863d8c2fa1f99aa93da4c2fcc96d9f2d3ec9c9575c58b2"
+    },
+    "bros": {
+      "utils/metrics.py": "94ddfff44c744c17e76a021e5ec522fe00a814876b88a27073dfc64c1b30b5b5",
+      "utils/common.py": "d16cb7afba116b2f08a2e2ad3ccb45d12783044007a77ed9aacac821864422b7",
+      "prepare/prepare_cord_v2.py": "6616d483e20607e8ff04c9ebe83d60d87564235926a444e4a33261554cc30eb7",
+      "prepare/prepare_sroie.py": "ebea4f3687a24791838a15ca1e643ef4b9fb1bbeea0435bb269402cfb4608545",
+      "prepare/prepare_wildreceipt.py": "b63d8188b03b4c36e5863d8c2fa1f99aa93da4c2fcc96d9f2d3ec9c9575c58b2"
+    },
+    "pick": {
+      "utils/metrics.py": "94ddfff44c744c17e76a021e5ec522fe00a814876b88a27073dfc64c1b30b5b5",
+      "utils/common.py": "d16cb7afba116b2f08a2e2ad3ccb45d12783044007a77ed9aacac821864422b7",
+      "prepare/prepare_cord_v2.py": "6616d483e20607e8ff04c9ebe83d60d87564235926a444e4a33261554cc30eb7",
+      "prepare/prepare_sroie.py": "ebea4f3687a24791838a15ca1e643ef4b9fb1bbeea0435bb269402cfb4608545",
+      "prepare/prepare_wildreceipt.py": "b63d8188b03b4c36e5863d8c2fa1f99aa93da4c2fcc96d9f2d3ec9c9575c58b2"
+    }
+  }
+}

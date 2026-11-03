@@ -1,9 +1,14 @@
 import torch
+from transformers import DataCollatorForTokenClassification
 
 from utils.token_data import TokenDataset, decode_predictions
 
 
 class RobertaDataset(TokenDataset):
+    pass
+
+
+class RobertaDataCollator(DataCollatorForTokenClassification):
     pass
 
 

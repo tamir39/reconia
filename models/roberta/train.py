@@ -12,13 +12,12 @@ from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import (
     AutoTokenizer,
-    DataCollatorForTokenClassification,
     PreTrainedTokenizerBase,
     RobertaForTokenClassification,
     get_linear_schedule_with_warmup,
 )
 
-from models.roberta.dataset import RobertaDataset, decode_predictions
+from models.roberta.dataset import RobertaDataCollator, RobertaDataset, decode_predictions
 from utils.common import (
     DATASETS,
     close_logger,
@@ -208,7 +207,7 @@ def train_model(
 
         weights_dir = repo_dir / "weights" / "roberta"
         tokenizer = AutoTokenizer.from_pretrained(weights_dir, add_prefix_space=True)
-        collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
+        collator = RobertaDataCollator(tokenizer=tokenizer)
 
         train_ds = RobertaDataset(cache_dir / "train.jsonl", tokenizer, label2id)
         val_ds = RobertaDataset(cache_dir / "val.jsonl", tokenizer, label2id)

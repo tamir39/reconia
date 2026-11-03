@@ -199,6 +199,11 @@ def collate_fn(batch: list[dict]) -> dict[str, torch.Tensor]:
     }
 
 
+class PickDataCollator:
+    def __call__(self, features: list[dict]) -> dict:
+        return collate_fn(features)
+
+
 def align_labels(
     pred_ids: list[list[int]],
     id2tag: dict[int, str],
