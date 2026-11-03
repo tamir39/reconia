@@ -214,10 +214,8 @@ def train_model(
         id2label = dict(enumerate(labels))
 
         weights_dir = repo_dir / "weights" / "layoutlmv3"
-        processor = AutoProcessor.from_pretrained(
-            weights_dir, 
-            tokenizer_class="LayoutLMv3TokenizerFast"
-        )
+        processor = AutoProcessor.from_pretrained(weights_dir, tokenizer_class="LayoutLMv3TokenizerFast")
+        processor.image_processor.apply_ocr = False
         collator = LayoutLMv3DataCollator(processor=processor)
 
         train_ds = LayoutLMv3Dataset(data_dir, cache_dir / "train.jsonl", processor, label2id)
