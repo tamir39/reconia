@@ -139,21 +139,15 @@ def evaluate_test(
     out_dir: Path,
     logger: logging.Logger,
 ) -> None:
-    best_weights = checkpoint_dir / "best_weights.pt"
-    if best_weights.exists():
-        state_dict = torch.load(best_weights, map_location=device, weights_only=True)
-        model.load_state_dict(state_dict)
-
+    model.load_state_dict(
+        torch.load(checkpoint_dir / "best_weights.pt", map_location=device, weights_only=True)
+    )
     loss, metrics = evaluate_epoch(
-        model,
-        loader,
-        samples,
-        processor,
-        device,
-        "[Test]",
+        model, loader, samples, processor, device , "[Test]"
     )
 
     results = {
+        "model": "qwen_vl",
         "dataset": dataset_name,
         "loss": loss,
         "precision": metrics["precision"],
@@ -218,9 +212,9 @@ def train_model(
         processor = AutoProcessor.from_pretrained(weights_dir)
         collator = QwenVLDataCollator(processor=processor)
 
-        train_ds = QwenVLDataset(cache_dir / "train.jsonl", processor, labels, data_dir)
-        val_ds = QwenVLDataset(cache_dir / "val.jsonl", processor, labels, data_dir)
-        test_ds = QwenVLDataset(cache_dir / "test.jsonl", processor, labels, data_dir)
+        train_ds = QwenVLDataset(data_dir, cache_dir / "train.jsonl", processor, labels)
+        val_ds = QwenVLDataset(data_dir, cache_dir / "val.jsonl", processor, labels)
+        test_ds = QwenVLDataset(data_dir, cache_dir / "test.jsonl", processor, labels)
 
         train_loader = DataLoader(
             train_ds, batch_size=batch_size, shuffle=True, collate_fn=collator

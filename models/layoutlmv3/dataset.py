@@ -1,28 +1,25 @@
 import json
 from pathlib import Path
 
-import numpy as np
 from PIL import Image
 import torch
 from torch.utils.data import Dataset
-from transformers import PreTrainedTokenizerBase
+from transformers import AutoProcessor
 
 
 class LayoutLMv3Dataset(Dataset):
     def __init__(
         self,
+        data_dir: Path,
         data_file: Path,
-        tokenizer: PreTrainedTokenizerBase,
+        processor: AutoProcessor,
         label2id: dict[str, int],
-        data_dir: Path | None = None,
         max_length: int = 512,
-        image_size: tuple[int, int] = (224, 224),
     ) -> None:
-        self.tokenizer = tokenizer
+        self.processor = processor
         self.label2id = label2id
         self.data_dir = data_dir
         self.max_length = max_length
-        self.image_size = image_size
 
         with open(data_file, "r", encoding="utf-8") as file:
             self.samples = [json.loads(line) for line in file]
@@ -30,69 +27,47 @@ class LayoutLMv3Dataset(Dataset):
     def __len__(self) -> int:
         return len(self.samples)
 
-    def _process_image(self, sample: dict) -> torch.Tensor:
-        if self.data_dir and "image_path" in sample:
-            image_path = self.data_dir / sample["image_path"]
-            if image_path.exists():
-                with Image.open(image_path) as img:
-                    img = img.convert("RGB").resize(self.image_size, Image.Resampling.BILINEAR)
-                    arr = np.array(img, dtype=np.float32) / 255.0
-                    arr = (arr - 0.5) / 0.5
-                    return torch.from_numpy(arr.transpose(2, 0, 1))
-
-        return torch.zeros((3, *self.image_size), dtype=torch.float32)
-
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor | list]:
         sample = self.samples[idx]
+        image_path = self.data_dir / sample["image_path"]
+        image = Image.open(image_path).convert("RGB") if image_path.exists() else Image.new("RGB", (224, 224))
+        
         ocr = sample["ocr"]
         words = [item["text"] for item in ocr]
         boxes = [item["box"] for item in ocr]
         word_labels = [item["label"] for item in ocr]
-
-        encoding = self.tokenizer(
+        
+        encoding = self.processor(
+            image,
             words,
             boxes=boxes,
             max_length=self.max_length,
             is_split_into_words=True,
             truncation=True,
+            return_tensors="pt",
         )
 
-        bbox: list[list[int]] = []
         labels: list[int] = []
         prev_word_idx = None
-
-        for word_idx in encoding.word_ids():
-            if word_idx is None:
-                bbox.append([0, 0, 1000, 1000])
+        for word_idx in encoding.word_ids():    
+            if word_idx is None or word_idx == prev_word_idx:
                 labels.append(-100)
             else:
-                box = boxes[word_idx]
-                clamped_box = [
-                    max(0, min(1000, int(box[0]))),
-                    max(0, min(1000, int(box[1]))),
-                    max(0, min(1000, int(box[2]))),
-                    max(0, min(1000, int(box[3]))),
-                ]
-                bbox.append(clamped_box)
-                if word_idx != prev_word_idx:
-                    labels.append(self.label2id[word_labels[word_idx]])
-                else:
-                    labels.append(-100)
-                prev_word_idx = word_idx
-
-        pixel_values = self._process_image(sample)
+                labels.append(self.label2id[word_labels[word_idx]])
+            prev_word_idx = word_idx
 
         return {
-            "input_ids": encoding["input_ids"],
-            "bbox": bbox,
-            "attention_mask": encoding["attention_mask"],
-            "pixel_values": pixel_values,
+            "input_ids": encoding["input_ids"][0].tolist(),
+            "bbox": encoding["bbox"][0].tolist(),
+            "attention_mask": encoding["attention_mask"][0].tolist(),
+            "pixel_values": encoding["pixel_values"][0],
             "labels": labels,
         }
 
 
 class LayoutLMv3DataCollator:
-    def __init__(self, tokenizer: PreTrainedTokenizerBase) -> None:
+    def __init__(self, processor: AutoProcessor) -> None:
+        tokenizer = processor.tokenizer
         self.pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 1
 
     def __call__(self, batch: list[dict]) -> dict[str, torch.Tensor]:
@@ -107,7 +82,7 @@ class LayoutLMv3DataCollator:
         for item in batch:
             pad_len = max_len - len(item["input_ids"])
             input_ids.append(item["input_ids"] + [self.pad_token_id] * pad_len)
-            bbox.append(item["bbox"] + [[0, 0, 1000, 1000]] * pad_len)
+            bbox.append(item["bbox"] + [[0, 0, 0, 0]] * pad_len)
             attention_mask.append(item["attention_mask"] + [0] * pad_len)
             labels.append(item["labels"] + [-100] * pad_len)
             pixel_values.append(item["pixel_values"])
@@ -173,7 +148,7 @@ def extract_entities(
 def decode_predictions(
     all_pred_ids: list[list[int]],
     samples: list[dict],
-    tokenizer: PreTrainedTokenizerBase,
+    processor: AutoProcessor,
     id2label: dict[int, str],
     max_length: int = 512,
 ) -> list[dict[str, list[str]]]:
@@ -182,10 +157,8 @@ def decode_predictions(
     for pred_ids, sample in zip(all_pred_ids, samples):
         ocr = sample["ocr"]
         words = [item["text"] for item in ocr]
-        boxes = [item["box"] for item in ocr]
-        encoding = tokenizer(
+        encoding = processor.tokenizer(
             words,
-            boxes=boxes,
             max_length=max_length,
             is_split_into_words=True,
             truncation=True,
@@ -199,17 +172,19 @@ def decode_predictions(
 def predict_sample(
     ocr: list[dict],
     model: torch.nn.Module,
-    tokenizer: PreTrainedTokenizerBase,
+    processor: AutoProcessor,
     id2label: dict[int, str],
     device: torch.device,
     image: Image.Image | None = None,
     max_length: int = 512,
-    image_size: tuple[int, int] = (224, 224),
 ) -> dict[str, list[str]]:
     words = [item["text"] for item in ocr]
     boxes = [item["box"] for item in ocr]
+    
+    image = image.convert("RGB") if image is not None else Image.new("RGB", (224, 224))
 
-    encoding = tokenizer(
+    encoding = processor(
+        image,
         words,
         boxes=boxes,
         max_length=max_length,
@@ -218,36 +193,13 @@ def predict_sample(
         return_tensors="pt",
     )
 
-    bbox: list[list[int]] = []
-    for word_idx in encoding.word_ids():
-        if word_idx is None:
-            bbox.append([0, 0, 1000, 1000])
-        else:
-            box = boxes[word_idx]
-            bbox.append([
-                max(0, min(1000, int(box[0]))),
-                max(0, min(1000, int(box[1]))),
-                max(0, min(1000, int(box[2]))),
-                max(0, min(1000, int(box[3]))),
-            ])
-
-    bbox_tensor = torch.tensor([bbox], dtype=torch.long, device=device)
-
-    if image is not None:
-        img_resized = image.convert("RGB").resize(image_size, Image.Resampling.BILINEAR)
-        arr = np.array(img_resized, dtype=np.float32) / 255.0
-        arr = (arr - 0.5) / 0.5
-        pixel_values = torch.from_numpy(arr.transpose(2, 0, 1)).unsqueeze(0).to(device)
-    else:
-        pixel_values = torch.zeros((1, 3, *image_size), dtype=torch.float32, device=device)
-
     model.eval()
     with torch.no_grad():
         outputs = model(
             input_ids=encoding["input_ids"].to(device),
-            bbox=bbox_tensor,
+            bbox=encoding["bbox"].to(device),
             attention_mask=encoding["attention_mask"].to(device),
-            pixel_values=pixel_values,
+            pixel_values=encoding["pixel_values"].to(device),
         )
 
     pred_ids = torch.argmax(outputs.logits, dim=-1)[0].cpu().tolist()

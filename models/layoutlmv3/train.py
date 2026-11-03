@@ -11,9 +11,8 @@ from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import (
-    AutoTokenizer,
+    AutoProcessor,
     LayoutLMv3ForTokenClassification,
-    PreTrainedTokenizerBase,
     get_linear_schedule_with_warmup,
 )
 
@@ -96,7 +95,7 @@ def evaluate_epoch(
     model: LayoutLMv3ForTokenClassification,
     loader: DataLoader,
     samples: list[dict],
-    tokenizer: PreTrainedTokenizerBase,
+    processor: AutoProcessor,
     id2label: dict[int, str],
     device: torch.device,
     desc: str,
@@ -106,8 +105,7 @@ def evaluate_epoch(
     all_pred_ids: list[list[int]] = []
 
     with torch.no_grad():
-        progress_loader = tqdm(loader, desc=desc, leave=False)
-        for batch in progress_loader:
+        for batch in tqdm(loader, desc=desc, leave=False):
             input_ids = batch["input_ids"].to(device)
             bbox = batch["bbox"].to(device)
             attention_mask = batch["attention_mask"].to(device)
@@ -122,25 +120,21 @@ def evaluate_epoch(
                 labels=labels,
             )
             total_loss += outputs.loss.item()
+            all_pred_ids.extend(torch.argmax(outputs.logits, dim=-1).cpu().tolist())
 
-            pred_ids = torch.argmax(outputs.logits, dim=-1).cpu().tolist()
-            attention_list = attention_mask.cpu().tolist()
-            for p_ids, mask in zip(pred_ids, attention_list):
-                valid_len = sum(mask)
-                all_pred_ids.append(p_ids[:valid_len])
-
-    preds = decode_predictions(all_pred_ids, samples, tokenizer, id2label)
+    avg_loss = total_loss / len(loader)
+    preds = decode_predictions(all_pred_ids, samples, processor, id2label)
     gts = [sample["gt"] for sample in samples]
     metrics = evaluate_dataset(gts, preds)
 
-    return total_loss / len(loader), metrics
+    return avg_loss, metrics
 
 
 def evaluate_test(
     model: LayoutLMv3ForTokenClassification,
     loader: DataLoader,
     samples: list[dict],
-    tokenizer: PreTrainedTokenizerBase,
+    processor: AutoProcessor,
     id2label: dict[int, str],
     device: torch.device,
     dataset_name: str,
@@ -148,22 +142,15 @@ def evaluate_test(
     out_dir: Path,
     logger: logging.Logger,
 ) -> None:
-    best_weights = checkpoint_dir / "best_weights.pt"
-    if best_weights.exists():
-        state_dict = torch.load(best_weights, map_location=device, weights_only=True)
-        model.load_state_dict(state_dict)
-
+    model.load_state_dict(
+        torch.load(checkpoint_dir / "best_weights.pt", map_location=device, weights_only=True)
+    )
     loss, metrics = evaluate_epoch(
-        model,
-        loader,
-        samples,
-        tokenizer,
-        id2label,
-        device,
-        "[Test]",
+        model, loader, samples, processor, id2label, device, "[Test]"
     )
 
     results = {
+        "model": "layoutlmv3",
         "dataset": dataset_name,
         "loss": loss,
         "precision": metrics["precision"],
@@ -227,12 +214,15 @@ def train_model(
         id2label = dict(enumerate(labels))
 
         weights_dir = repo_dir / "weights" / "layoutlmv3"
-        tokenizer = AutoTokenizer.from_pretrained(weights_dir, use_fast=True)
-        collator = LayoutLMv3DataCollator(tokenizer=tokenizer)
+        processor = AutoProcessor.from_pretrained(
+            weights_dir, 
+            tokenizer_class="LayoutLMv3TokenizerFast"
+        )
+        collator = LayoutLMv3DataCollator(processor=processor)
 
-        train_ds = LayoutLMv3Dataset(cache_dir / "train.jsonl", tokenizer, label2id, data_dir)
-        val_ds = LayoutLMv3Dataset(cache_dir / "val.jsonl", tokenizer, label2id, data_dir)
-        test_ds = LayoutLMv3Dataset(cache_dir / "test.jsonl", tokenizer, label2id, data_dir)
+        train_ds = LayoutLMv3Dataset(data_dir, cache_dir / "train.jsonl", processor, label2id)
+        val_ds = LayoutLMv3Dataset(data_dir, cache_dir / "val.jsonl", processor, label2id)
+        test_ds = LayoutLMv3Dataset(data_dir, cache_dir / "test.jsonl", processor, label2id)
 
         train_loader = DataLoader(
             train_ds, batch_size=batch_size, shuffle=True, collate_fn=collator
@@ -324,7 +314,7 @@ def train_model(
                 model,
                 val_loader,
                 val_ds.samples,
-                tokenizer,
+                processor,
                 id2label,
                 device,
                 f"Epoch {epoch:02d}/{epochs:02d} [Val]",
@@ -384,7 +374,7 @@ def train_model(
             model,
             test_loader,
             test_ds.samples,
-            tokenizer,
+            processor,
             id2label,
             device,
             dataset_name,
