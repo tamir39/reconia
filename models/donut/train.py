@@ -263,11 +263,15 @@ def train_model(
                 "weight_decay": 0.0,
             },
         ]
-
         optimizer = AdamW(param_groups, lr=lr)
-        total_steps = (len(train_loader) // accum_steps) * epochs
+
+        total_steps = (len(train_loader) + accum_steps - 1) // accum_steps * epochs
         warmup_steps = int(total_steps * warmup_ratio)
-        scheduler = get_linear_schedule_with_warmup(optimizer, warmup_steps, total_steps)
+        scheduler = get_linear_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=warmup_steps,
+            num_training_steps=total_steps,
+        )
 
         use_amp = device.type == "cuda"
         scaler = torch.amp.GradScaler(enabled=use_amp)
