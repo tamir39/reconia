@@ -156,10 +156,11 @@ def decode_predictions(
     for pred_ids, sample in zip(all_pred_ids, samples):
         ocr = sample["ocr"]
         words = [item["text"] for item in ocr]
+        boxes = [item["box"] for item in ocr]
         encoding = processor.tokenizer(
             words,
+            boxes=boxes,
             max_length=max_length,
-            is_split_into_words=True,
             truncation=True,
         )
         labels = align_labels(pred_ids, encoding.word_ids(), id2label)
