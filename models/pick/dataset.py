@@ -320,7 +320,7 @@ def predict_sample(
             attention_mask[0, box_idx, :text_len] = False
 
     relations = compute_relations(boxes, texts, width, height)
-    relations_tensor = torch.from_numpy(relations).unsqueeze(0).to(device)
+    relations_tensor = torch.tensor(relations, dtype=torch.float32, device=device).unsqueeze(0)
 
     model.eval()
     with torch.no_grad():

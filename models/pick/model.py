@@ -124,7 +124,7 @@ class GLCN(nn.Module):
         edge_logits = edge_logits.masked_fill(inv_mask, -1e4)
         soft_adj = F.softmax(edge_logits, dim=-1)
 
-        relation_features = self.linear_alpha(relations)
+        relation_features = self.linear_alpha(relations.float())
         node_i = self.linear_vih(node_features).unsqueeze(2)
         node_j = self.linear_vjh(node_features).unsqueeze(1)
         transformed_features = F.relu(node_i + node_j + relation_features)
