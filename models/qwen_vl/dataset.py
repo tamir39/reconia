@@ -41,12 +41,10 @@ class QwenVLDataset(Dataset):
         data_file: Path,
         processor: AutoProcessor,
         labels: list[str] | None = None,
-        max_length: int = 2048,
     ) -> None:
         self.data_dir = data_dir
         self.processor = processor
         self.labels = labels
-        self.max_length = max_length
 
         with open(data_file, "r", encoding="utf-8") as file:
             self.samples = [json.loads(line) for line in file]

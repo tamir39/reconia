@@ -97,7 +97,7 @@ def evaluate_epoch(
     device: torch.device,
     dataset_name: str,
     desc: str,
-    max_length: int = 512,
+    max_length: int = 1536,
 ) -> tuple[float, dict[str, float]]:
     model.eval()
     total_loss = 0.0
