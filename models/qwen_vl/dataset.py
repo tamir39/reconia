@@ -209,7 +209,7 @@ def predict_sample(
     processor: AutoProcessor,
     device: torch.device,
     labels: list[str] | None = None,
-    max_new_tokens: int = 512,
+    max_new_tokens: int = 128,
 ) -> dict[str, list[str]]:
     prompt_text = format_prompt(labels)
     
