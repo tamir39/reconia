@@ -34,12 +34,14 @@ class DonutDataset(Dataset):
         image = (
             Image.open(image_path).convert("RGB")
             if image_path.exists()
-            else Image.new("RGB", (1280, 960))
+            else Image.new("RGB", (1920, 2560), color=(255, 255, 255))
         )
 
         encoding = self.processor(
             image,
             return_tensors="pt",
+            do_resize=True,
+            size={"height": 1280, "width": 960}
         )
         pixel_values = encoding["pixel_values"][0]
 
@@ -141,8 +143,10 @@ def predict_sample(
     max_length: int = 512,
 ) -> dict[str, list[str]]:
     encoding = processor(
-        image.convert("RGB"),
+        image,
         return_tensors="pt",
+        do_resize=True,
+        size={"height": 1280, "width": 960}
     )
     pixel_values = encoding["pixel_values"].to(device)
 

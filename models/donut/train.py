@@ -4,6 +4,7 @@ import gc
 import json
 import logging
 from pathlib import Path
+from xml.parsers.expat import model
 
 import torch
 from torch.optim import AdamW
@@ -239,9 +240,13 @@ def train_model(
         model = VisionEncoderDecoderModel.from_pretrained(weights_dir)
         model.decoder.resize_token_embeddings(len(processor.tokenizer))
         model.config.decoder_start_token_id = (
-            processor.tokenizer.cls_token_id or processor.tokenizer.bos_token_id or 0
+            processor.tokenizer.cls_token_id
+            if processor.tokenizer.cls_token_id is not None
+            else processor.tokenizer.bos_token_id or 0
         )
         model.config.pad_token_id = processor.tokenizer.pad_token_id
+        model.config.use_cache = False
+        model.gradient_checkpointing_enable()
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model.to(device)
