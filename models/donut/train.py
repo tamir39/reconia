@@ -129,7 +129,7 @@ def evaluate_epoch(
                 use_cache=True,
                 num_beams=1,
             )
-            all_preds.extend(decode_predictions(generated_ids, processor.tokenizer))
+            all_preds.extend(decode_predictions(generated_ids, processor))
 
     avg_loss = total_loss / len(loader)
     gts = [sample.get("gt", {}) for sample in samples]
