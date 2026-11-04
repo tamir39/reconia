@@ -55,11 +55,17 @@ class DonutDataset(Dataset):
             max_length=self.max_length,
             truncation=True,
         )
-        prompt_ids = self.processor.tokenizer.encode(self.task_prompt, add_special_tokens=False)
-        labels = [-100] * len(prompt_ids) + target_ids[len(prompt_ids):]
+        prompt_ids = self.processor.tokenizer.encode(
+            self.task_prompt,
+            add_special_tokens=False
+        )
+
+        labels = target_ids.copy()
+        labels[:len(prompt_ids)] = [-100] * len(prompt_ids)
 
         return {
             "pixel_values": pixel_values,
+            "input_ids": target_ids,
             "labels": labels,
         }
 
@@ -70,17 +76,26 @@ class DonutDataCollator:
         self.pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 1
 
     def __call__(self, batch: list[dict]) -> dict[str, torch.Tensor]:
-        max_len = max(len(item["labels"]) for item in batch)
+        max_len = max(len(item["input_ids"]) for item in batch)
+
         pixel_values: list[torch.Tensor] = []
+        input_ids: list[list[int]] = []
         labels: list[list[int]] = []
 
         for item in batch:
-            pad_len = max_len - len(item["labels"])
+            pad_len = max_len - len(item["input_ids"])
+
             pixel_values.append(item["pixel_values"])
-            labels.append(item["labels"] + [-100] * pad_len)
+            input_ids.append(
+                item["input_ids"] + [self.pad_token_id] * pad_len
+            )
+            labels.append(
+                item["labels"] + [-100] * pad_len
+            )
 
         return {
             "pixel_values": torch.stack(pixel_values, dim=0),
+            "input_ids": torch.tensor(input_ids, dtype=torch.long),
             "labels": torch.tensor(labels, dtype=torch.long),
         }
 

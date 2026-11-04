@@ -4,7 +4,6 @@ import gc
 import json
 import logging
 from pathlib import Path
-from xml.parsers.expat import model
 
 import torch
 from torch.optim import AdamW
@@ -57,12 +56,17 @@ def train_epoch(
     )
     for step, batch in enumerate(progress_loader, start=1):
         pixel_values = batch["pixel_values"].to(device)
+        input_ids = batch["input_ids"].to(device)
         labels = batch["labels"].to(device)
+
+        decoder_input_ids = input_ids[:, :-1]
+        decoder_labels = labels[:, 1:]
 
         with torch.amp.autocast(device_type=device.type, enabled=use_amp):
             outputs = model(
                 pixel_values=pixel_values,
-                labels=labels,
+                decoder_input_ids=decoder_input_ids,
+                labels=decoder_labels,
             )
             loss = outputs.loss / accum_steps
 
@@ -109,11 +113,16 @@ def evaluate_epoch(
     with torch.no_grad():
         for batch in tqdm(loader, desc=desc, leave=False):
             pixel_values = batch["pixel_values"].to(device)
+            input_ids = batch["input_ids"].to(device)
             labels = batch["labels"].to(device)
+
+            decoder_input_ids = input_ids[:, :-1]
+            decoder_labels = labels[:, 1:]
 
             outputs = model(
                 pixel_values=pixel_values,
-                labels=labels,
+                decoder_input_ids=decoder_input_ids,
+                labels=decoder_labels,
             )
             total_loss += outputs.loss.item()
 
