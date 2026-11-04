@@ -43,7 +43,7 @@ def train_epoch(
     use_amp: bool,
     epoch: int,
     epochs: int = 30,
-    accum_steps: int = 4,
+    accum_steps: int = 8,
 ) -> float:
     model.train()
     total_loss = 0.0
@@ -185,8 +185,8 @@ def save_history(history: list[dict], out_dir: Path) -> None:
 def train_model(
     dataset_name: str,
     epochs: int = 30,
-    batch_size: int = 2,
-    accum_steps: int = 4,
+    batch_size: int = 1,
+    accum_steps: int = 8,
     lr: float = 3e-5,
     patience: int = 5,
     weight_decay: float = 0.01,
@@ -399,8 +399,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="all", choices=["all", *DATASETS])
     parser.add_argument("--epochs", type=int, default=30)
-    parser.add_argument("--batch_size", type=int, default=2)
-    parser.add_argument("--accum_steps", type=int, default=4)
+    parser.add_argument("--batch_size", type=int, default=1)
+    parser.add_argument("--accum_steps", type=int, default=8)
     parser.add_argument("--lr", type=float, default=3e-5)
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--resume", action="store_true")

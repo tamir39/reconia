@@ -124,7 +124,7 @@ python -m models.<model>.train --dataset <dataset>
 | `bros` | `lr = 3e-5` | `4` | `2` |
 | `pick` | `lr_backbone = 1e-4`, `lr_scratch = 1e-3` | `4` | `2` |
 | `layoutlmv3` | `lr = 3e-5` | `4` | `2` |
-| `donut` | `lr = 3e-5` | `2` | `4` |
+| `donut` | `lr = 3e-5` | `1` | `8` |
 | `qwen_vl` | `lr = 1e-4` | `1` | `8` |
 
 #### Bảng tham số dòng lệnh:
