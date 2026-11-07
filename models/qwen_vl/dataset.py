@@ -55,11 +55,7 @@ class QwenVLDataset(Dataset):
     def __getitem__(self, idx: int) -> dict:
         sample = self.samples[idx]
         image_path = self.data_dir / sample["image_path"]
-        image = (
-            Image.open(image_path).convert("RGB")
-            if image_path.exists()
-            else Image.new("RGB", (224, 224), color=(255, 255, 255))
-        )
+        image = Image.open(image_path).convert("RGB")
 
         prompt_text = format_prompt(self.labels)
 

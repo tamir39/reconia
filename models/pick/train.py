@@ -3,6 +3,7 @@ import csv
 import gc
 import json
 import logging
+import os
 from pathlib import Path
 
 import torch
@@ -55,23 +56,17 @@ def train_epoch(
         leave=False,
     )
     for step, batch in enumerate(progress_loader, start=1):
-        images = batch["images"].to(device)
-        boxes = batch["boxes"].to(device)
-        input_ids = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
-        box_mask = batch["box_mask"].to(device)
-        relations = batch["relations"].to(device)
-        labels = batch["labels"].to(device)
+        batch = {k: v.to(device) for k, v in batch.items()}
 
         with torch.amp.autocast(device_type=device.type, enabled=use_amp):
             loss, _ = model(
-                images=images,
-                boxes=boxes,
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                box_mask=box_mask,
-                relations=relations,
-                labels=labels,
+                images=batch["images"],
+                boxes=batch["boxes"],
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"],
+                box_mask=batch["box_mask"],
+                relations=batch["relations"],
+                labels=batch["labels"],
                 return_preds=False,
             )
             loss = loss / accum_steps
@@ -109,22 +104,16 @@ def evaluate_epoch(
 
     with torch.no_grad():
         for batch in tqdm(loader, desc=desc, leave=False):
-            images = batch["images"].to(device)
-            boxes = batch["boxes"].to(device)
-            input_ids = batch["input_ids"].to(device)
-            attention_mask = batch["attention_mask"].to(device)
-            box_mask = batch["box_mask"].to(device)
-            relations = batch["relations"].to(device)
-            labels = batch["labels"].to(device)
+            batch = {k: v.to(device) for k, v in batch.items()}
 
             loss, pred_ids = model(
-                images=images,
-                boxes=boxes,
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                box_mask=box_mask,
-                relations=relations,
-                labels=labels,
+                images=batch["images"],
+                boxes=batch["boxes"],
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"],
+                box_mask=batch["box_mask"],
+                relations=batch["relations"],
+                labels=batch["labels"],
                 return_preds=True,
             )
             total_loss += loss.item()
@@ -150,7 +139,7 @@ def evaluate_test(
     logger: logging.Logger,
 ) -> None:
     model.load_state_dict(
-        torch.load(checkpoint_dir / "best_weights.pt", map_location=device, weights_only=True)
+        torch.load(checkpoint_dir / "best_weights.pt", map_location="cpu", weights_only=True)
     )
     loss, metrics = evaluate_epoch(
         model, loader, samples, id2tag, device, "[Test]"
@@ -197,7 +186,6 @@ def train_model(
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
-    resume: bool = False,
 ) -> None:
     set_seed()
     repo_dir = get_repo_dir()
@@ -230,14 +218,30 @@ def train_model(
         val_ds = PickDataset(cache_dir / "val.jsonl", data_dir, char2id, tag2id)
         test_ds = PickDataset(cache_dir / "test.jsonl", data_dir, char2id, tag2id)
 
+        num_workers = os.cpu_count() or 0
         train_loader = DataLoader(
-            train_ds, batch_size=batch_size, shuffle=True, collate_fn=collate_fn
+            train_ds,
+            batch_size=batch_size,
+            shuffle=True,
+            collate_fn=collate_fn,
+            num_workers=num_workers,
+            pin_memory=True,
         )
         val_loader = DataLoader(
-            val_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn
+            val_ds,
+            batch_size=batch_size,
+            shuffle=False,
+            collate_fn=collate_fn,
+            num_workers=num_workers,
+            pin_memory=True,
         )
         test_loader = DataLoader(
-            test_ds, batch_size=batch_size, shuffle=False, collate_fn=collate_fn
+            test_ds,
+            batch_size=batch_size,
+            shuffle=False,
+            collate_fn=collate_fn,
+            num_workers=num_workers,
+            pin_memory=True,
         )
 
         model = PICKModel(
@@ -296,34 +300,11 @@ def train_model(
         scaler = torch.amp.GradScaler(device.type, enabled=use_amp)
 
         history: list[dict] = []
-        start_epoch = 1
         best_f1 = -1.0
         best_epoch = 0
         patience_counter = 0
 
-        checkpoint_file = checkpoint_dir / "last_checkpoint.pt"
-        if resume and checkpoint_file.exists():
-            checkpoint = torch.load(checkpoint_file, map_location=device, weights_only=True)
-            model.load_state_dict(checkpoint["model_state_dict"])
-            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-            scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
-            scaler.load_state_dict(checkpoint["scaler_state_dict"])
-            start_epoch = checkpoint["epoch"] + 1
-            best_f1 = checkpoint["best_f1"]
-            best_epoch = checkpoint["best_epoch"]
-            patience_counter = checkpoint["patience_counter"]
-            history = checkpoint["history"]
-            if start_epoch > epochs or patience_counter >= patience:
-                logger.info(
-                    f"Resume -> Completed at epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
-                )
-                return
-
-            logger.info(
-                f"Resume -> Epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
-            )
-
-        for epoch in range(start_epoch, epochs + 1):
+        for epoch in range(1, epochs + 1):
             train_loss = train_epoch(
                 model,
                 train_loader,
@@ -368,21 +349,6 @@ def train_model(
             else:
                 patience_counter += 1
 
-            torch.save(
-                {
-                    "epoch": epoch,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "scheduler_state_dict": scheduler.state_dict(),
-                    "scaler_state_dict": scaler.state_dict(),
-                    "best_f1": best_f1,
-                    "best_epoch": best_epoch,
-                    "patience_counter": patience_counter,
-                    "history": history,
-                },
-                checkpoint_file,
-            )
-
             if patience_counter >= patience:
                 logger.info(
                     f"Early Stop -> Epoch {epoch:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
@@ -422,7 +388,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lr_backbone", type=float, default=1e-4)
     parser.add_argument("--lr_scratch", type=float, default=1e-3)
     parser.add_argument("--patience", type=int, default=5)
-    parser.add_argument("--resume", action="store_true")
     return parser.parse_args()
 
 
@@ -438,5 +403,4 @@ if __name__ == "__main__":
             lr_backbone=args.lr_backbone,
             lr_scratch=args.lr_scratch,
             patience=args.patience,
-            resume=args.resume,
         )

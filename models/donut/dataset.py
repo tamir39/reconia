@@ -31,11 +31,7 @@ class DonutDataset(Dataset):
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor | list[int]]:
         sample = self.samples[idx]
         image_path = self.data_dir / sample["image_path"]
-        image = (
-            Image.open(image_path).convert("RGB")
-            if image_path.exists()
-            else Image.new("RGB", (1920, 2560), color=(255, 255, 255))
-        )
+        image = Image.open(image_path).convert("RGB")
 
         encoding = self.processor(
             image,

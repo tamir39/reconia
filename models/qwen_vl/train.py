@@ -3,11 +3,16 @@ import csv
 import gc
 import json
 import logging
+import os
 from pathlib import Path
 
-from matplotlib.pyplot import grid
-
-from peft import LoraConfig, TaskType, get_peft_model
+from peft import (
+    LoraConfig, 
+    TaskType, 
+    get_peft_model, 
+    get_peft_model_state_dict, 
+    set_peft_model_state_dict
+)
 import torch
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LRScheduler
@@ -162,8 +167,9 @@ def evaluate_test(
     out_dir: Path,
     logger: logging.Logger,
 ) -> None:
-    model.load_state_dict(
-        torch.load(checkpoint_dir / "best_weights.pt", map_location=device, weights_only=True)
+    set_peft_model_state_dict(
+        model, 
+        torch.load(checkpoint_dir / "best_weights.pt", map_location="cpu", weights_only=True)
     )
     loss, metrics = evaluate_epoch(
         model, loader, samples, processor, device , "[Test]"
@@ -187,6 +193,10 @@ def evaluate_test(
     )
 
 
+def get_adapter_state(model: torch.nn.Module) -> dict[str, torch.Tensor]:
+    return {k: v.detach().cpu().clone() for k, v in get_peft_model_state_dict(model).items()}
+
+
 def save_history(history: list[dict], out_dir: Path) -> None:
     fieldnames = ["epoch", "train_loss", "val_loss", "precision", "recall", "f1"]
     with open(out_dir / "history.csv", "w", newline="", encoding="utf-8") as file:
@@ -205,7 +215,6 @@ def train_model(
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
-    resume: bool = False,
 ) -> None:
     set_seed()
     repo_dir = get_repo_dir()
@@ -232,21 +241,37 @@ def train_model(
         labels = load_labels(dataset_name)
 
         weights_dir = repo_dir / "weights" / "qwen_vl"
-        processor = AutoProcessor.from_pretrained(weights_dir)
+        processor = AutoProcessor.from_pretrained(weights_dir, min_pixels=256*28*28, max_pixels=768*28*28)
         collator = QwenVLDataCollator(processor=processor)
 
         train_ds = QwenVLDataset(data_dir, cache_dir / "train.jsonl", processor, labels)
         val_ds = QwenVLDataset(data_dir, cache_dir / "val.jsonl", processor, labels)
         test_ds = QwenVLDataset(data_dir, cache_dir / "test.jsonl", processor, labels)
 
+        num_workers = os.cpu_count() or 0
         train_loader = DataLoader(
-            train_ds, batch_size=batch_size, shuffle=True, collate_fn=collator
+            train_ds,
+            batch_size=batch_size,
+            shuffle=True,
+            collate_fn=collator,
+            num_workers=num_workers,
+            pin_memory=True,
         )
         val_loader = DataLoader(
-            val_ds, batch_size=batch_size, shuffle=False, collate_fn=collator
+            val_ds,
+            batch_size=batch_size,
+            shuffle=False,
+            collate_fn=collator,
+            num_workers=num_workers,
+            pin_memory=True,
         )
         test_loader = DataLoader(
-            test_ds, batch_size=batch_size, shuffle=False, collate_fn=collator
+            test_ds,
+            batch_size=batch_size,
+            shuffle=False,
+            collate_fn=collator,
+            num_workers=num_workers,
+            pin_memory=True,
         )
 
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
@@ -262,6 +287,9 @@ def train_model(
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
         )
         model = get_peft_model(model, lora_config)
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+        model.config.use_cache = False
+        model.config.text_config.use_cache = False
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model.to(device)
@@ -296,35 +324,12 @@ def train_model(
         use_amp = device.type == "cuda"
         scaler = torch.amp.GradScaler(enabled=use_amp)
 
-        start_epoch = 1
         history: list[dict] = []
         best_f1 = -1.0
         best_epoch = 0
         patience_counter = 0
 
-        checkpoint_file = checkpoint_dir / "last_checkpoint.pt"
-        if resume and checkpoint_file.exists():
-            checkpoint = torch.load(checkpoint_file, map_location=device, weights_only=True)
-            model.load_state_dict(checkpoint["model_state_dict"])
-            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-            scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
-            scaler.load_state_dict(checkpoint["scaler_state_dict"])
-            start_epoch = checkpoint["epoch"] + 1
-            best_f1 = checkpoint["best_f1"]
-            best_epoch = checkpoint["best_epoch"]
-            patience_counter = checkpoint["patience_counter"]
-            history = checkpoint["history"]
-            if start_epoch > epochs or patience_counter >= patience:
-                logger.info(
-                    f"Resume -> Completed at epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
-                )
-                return
-
-            logger.info(
-                f"Resume -> Epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
-            )
-
-        for epoch in range(start_epoch, epochs + 1):
+        for epoch in range(1, epochs + 1):
             train_loss = train_epoch(
                 model,
                 train_loader,
@@ -365,24 +370,9 @@ def train_model(
                 best_f1 = val_metrics["f1"]
                 best_epoch = epoch
                 patience_counter = 0
-                torch.save(model.state_dict(), checkpoint_dir / "best_weights.pt")
+                torch.save(get_adapter_state(model), checkpoint_dir / "best_weights.pt")
             else:
                 patience_counter += 1
-
-            torch.save(
-                {
-                    "epoch": epoch,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "scheduler_state_dict": scheduler.state_dict(),
-                    "scaler_state_dict": scaler.state_dict(),
-                    "best_f1": best_f1,
-                    "best_epoch": best_epoch,
-                    "patience_counter": patience_counter,
-                    "history": history,
-                },
-                checkpoint_file,
-            )
 
             if patience_counter >= patience:
                 logger.info(
@@ -422,7 +412,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--accum_steps", type=int, default=8)
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--patience", type=int, default=5)
-    parser.add_argument("--resume", action="store_true")
     return parser.parse_args()
 
 
@@ -437,5 +426,4 @@ if __name__ == "__main__":
             accum_steps=args.accum_steps,
             lr=args.lr,
             patience=args.patience,
-            resume=args.resume,
         )

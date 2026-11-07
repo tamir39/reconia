@@ -31,7 +31,16 @@ def get_repo_dir() -> Path:
 
 
 def get_data_dir(dataset_name: str) -> Path:
-    return Path("/kaggle/input/datasets/vhngthnh/reconia-data") / dataset_name
+    candidates = [
+        Path("/kaggle/input/datasets/vhngthnh/reconia-data") / dataset_name,
+        Path("/kaggle/input/private-dataset") / dataset_name,
+    ]
+    
+    for path in candidates:
+        if path.exists():
+            return path
+            
+    raise FileNotFoundError(f"Dataset '{dataset_name}' not found")
 
 
 def normalize_text(text: str | None) -> str:

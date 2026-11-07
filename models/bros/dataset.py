@@ -39,24 +39,29 @@ class BrosDataset(Dataset):
 
         bbox: list[list[float]] = []
         labels: list[int] = []
+        bbox_first_token_mask: list[bool] = []
         prev_word_idx = None
 
         for word_idx in encoding.word_ids():
             if word_idx is None:
                 bbox.append([0.0, 0.0, 0.0, 0.0])
                 labels.append(-100)
+                bbox_first_token_mask.append(False)
             else:
                 bbox.append([max(0.0, min(1.0, coord / 1000.0)) for coord in boxes[word_idx]])
                 if word_idx != prev_word_idx:
                     labels.append(self.label2id[word_labels[word_idx]])
+                    bbox_first_token_mask.append(True)
                 else:
                     labels.append(-100)
+                    bbox_first_token_mask.append(False)
                 prev_word_idx = word_idx
 
         return {
             "input_ids": encoding["input_ids"],
             "bbox": bbox,
             "attention_mask": encoding["attention_mask"],
+            "bbox_first_token_mask": bbox_first_token_mask,
             "labels": labels,
         }
 
@@ -71,6 +76,7 @@ class BrosDataCollator:
         input_ids: list[list[int]] = []
         bbox: list[list[list[float]]] = []
         attention_mask: list[list[int]] = []
+        bbox_first_token_mask: list[list[bool]] = []
         labels: list[list[int]] = []
 
         for item in batch:
@@ -78,12 +84,14 @@ class BrosDataCollator:
             input_ids.append(item["input_ids"] + [self.pad_token_id] * pad_len)
             bbox.append(item["bbox"] + [[0.0, 0.0, 0.0, 0.0]] * pad_len)
             attention_mask.append(item["attention_mask"] + [0] * pad_len)
+            bbox_first_token_mask.append(item.get("bbox_first_token_mask", []) + [False] * pad_len)
             labels.append(item["labels"] + [-100] * pad_len)
 
         return {
             "input_ids": torch.tensor(input_ids, dtype=torch.long),
             "bbox": torch.tensor(bbox, dtype=torch.float32),
             "attention_mask": torch.tensor(attention_mask, dtype=torch.long),
+            "bbox_first_token_mask": torch.tensor(bbox_first_token_mask, dtype=torch.bool),
             "labels": torch.tensor(labels, dtype=torch.long),
         }
 
@@ -181,13 +189,23 @@ def predict_sample(
     )
 
     bbox: list[list[float]] = []
+    bbox_first_token_mask: list[bool] = []
+    prev_word_idx = None
+
     for word_idx in encoding.word_ids():
         if word_idx is None:
             bbox.append([0.0, 0.0, 0.0, 0.0])
+            bbox_first_token_mask.append(False)
         else:
             bbox.append([max(0.0, min(1.0, coord / 1000.0)) for coord in boxes[word_idx]])
+            if word_idx != prev_word_idx:
+                bbox_first_token_mask.append(True)
+            else:
+                bbox_first_token_mask.append(False)
+            prev_word_idx = word_idx
 
     bbox = torch.tensor([bbox], dtype=torch.float, device=device)
+    bbox_first_token_mask = torch.tensor([bbox_first_token_mask], dtype=torch.bool, device=device)
 
     model.eval()
     with torch.no_grad():
@@ -195,6 +213,7 @@ def predict_sample(
             input_ids=encoding["input_ids"].to(device),
             bbox=bbox,
             attention_mask=encoding["attention_mask"].to(device),
+            bbox_first_token_mask=bbox_first_token_mask,
         )
 
     pred_ids = torch.argmax(outputs.logits, dim=-1)[0].cpu().tolist()

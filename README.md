@@ -27,8 +27,7 @@ reconia/
 │   └── <dataset>/
 │       ├── labels.json
 │       └── <model>/
-│           ├── best_weights.pt
-│           └── last_checkpoint.pt
+│           └── best_weights.pt
 ├── models/
 │   └── <model>/
 │       ├── dataset.py
@@ -139,7 +138,6 @@ python -m models.<model>.train --dataset <dataset>
 | `--lr_backbone` | `1e-4` | `float` | Learning rate cho pretrained ResNet-50 backbone (chỉ dùng cho `pick`) |
 | `--lr_scratch` | `1e-3` | `float` | Learning rate cho các tầng huấn luyện từ đầu: BiLSTM, GCN, CRF (chỉ dùng cho `pick`) |
 | `--patience` | `5` | `int` | Số epoch chờ không cải thiện trước khi dừng sớm |
-| `--resume` | `False` | `flag` | Tiếp tục huấn luyện từ checkpoint gần nhất (`last_checkpoint.pt`) |
 
 Kết quả lưu tại `results/<dataset>/<model>/`.
 
