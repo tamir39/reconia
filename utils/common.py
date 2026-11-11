@@ -24,8 +24,8 @@ def set_seed(seed: int = 42) -> None:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
-        torch.backends.cudnn.benchmark = True
-        torch.backends.cudnn.deterministic = False
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
 
 
 def get_repo_dir() -> Path:
