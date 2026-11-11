@@ -190,7 +190,7 @@ def train_model(
 
         weights_dir = repo_dir / "weights" / "roberta"
         tokenizer = AutoTokenizer.from_pretrained(weights_dir, add_prefix_space=True)
-        collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
+        collator_fn = DataCollatorForTokenClassification(tokenizer=tokenizer)
 
         train_ds = RobertaDataset(cache_dir / "train.jsonl", tokenizer, label2id)
         val_ds = RobertaDataset(cache_dir / "val.jsonl", tokenizer, label2id)
@@ -203,25 +203,28 @@ def train_model(
             train_ds,
             batch_size=batch_size,
             shuffle=True,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
         val_loader = DataLoader(
             val_ds,
             batch_size=eval_batch_size,
             shuffle=False,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
         test_loader = DataLoader(
             test_ds,
             batch_size=eval_batch_size,
             shuffle=False,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
 
         model = RobertaForTokenClassification.from_pretrained(

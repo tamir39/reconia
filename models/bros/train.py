@@ -193,7 +193,7 @@ def train_model(
 
         weights_dir = repo_dir / "weights" / "bros"
         tokenizer = AutoTokenizer.from_pretrained(weights_dir)
-        collator = BrosDataCollator(tokenizer=tokenizer)
+        collator_fn = BrosDataCollator(tokenizer=tokenizer)
 
         train_ds = BrosDataset(cache_dir / "train.jsonl", tokenizer, label2id)
         val_ds = BrosDataset(cache_dir / "val.jsonl", tokenizer, label2id)
@@ -206,25 +206,28 @@ def train_model(
             train_ds,
             batch_size=batch_size,
             shuffle=True,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
         val_loader = DataLoader(
             val_ds,
             batch_size=eval_batch_size,
             shuffle=False,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
         test_loader = DataLoader(
             test_ds,
             batch_size=eval_batch_size,
             shuffle=False,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
 
         model = BrosForTokenClassification.from_pretrained(

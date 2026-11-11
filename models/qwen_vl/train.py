@@ -248,7 +248,7 @@ def train_model(
                 "max_pixels": 768 * 28 * 28,
             },
         )
-        collator = QwenVLDataCollator(processor=processor)
+        collator_fn = QwenVLDataCollator(processor=processor)
 
         train_ds = QwenVLDataset(data_dir, cache_dir / "train.jsonl", processor, labels)
         val_ds = QwenVLDataset(data_dir, cache_dir / "val.jsonl", processor, labels)
@@ -261,25 +261,28 @@ def train_model(
             train_ds,
             batch_size=batch_size,
             shuffle=True,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
         val_loader = DataLoader(
             val_ds,
             batch_size=eval_batch_size,
             shuffle=False,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
         test_loader = DataLoader(
             test_ds,
             batch_size=eval_batch_size,
             shuffle=False,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
 
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(

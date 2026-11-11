@@ -226,7 +226,7 @@ def train_model(
         processor = AutoProcessor.from_pretrained(weights_dir)
         task_prompt = f"<s_{dataset_name}>"
         processor.tokenizer.add_special_tokens({"additional_special_tokens": [task_prompt]})
-        collator = DonutDataCollator(processor=processor)
+        collator_fn = DonutDataCollator(processor=processor)
 
         train_ds = DonutDataset(data_dir, cache_dir / "train.jsonl", processor, task_prompt)
         val_ds = DonutDataset(data_dir, cache_dir / "val.jsonl", processor, task_prompt)
@@ -239,25 +239,28 @@ def train_model(
             train_ds,
             batch_size=batch_size,
             shuffle=True,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
         val_loader = DataLoader(
             val_ds,
             batch_size=eval_batch_size,
             shuffle=False,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
         test_loader = DataLoader(
             test_ds,
             batch_size=eval_batch_size,
             shuffle=False,
-            collate_fn=collator,
             num_workers=num_workers,
+            collate_fn=collator_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
 
         model = VisionEncoderDecoderModel.from_pretrained(weights_dir)

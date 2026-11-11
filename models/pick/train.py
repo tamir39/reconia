@@ -219,25 +219,28 @@ def train_model(
             train_ds,
             batch_size=batch_size,
             shuffle=True,
-            collate_fn=collate_fn,
             num_workers=num_workers,
+            collate_fn=collate_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
         val_loader = DataLoader(
             val_ds,
             batch_size=eval_batch_size,
             shuffle=False,
-            collate_fn=collate_fn,
             num_workers=num_workers,
+            collate_fn=collate_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
         test_loader = DataLoader(
             test_ds,
             batch_size=eval_batch_size,
             shuffle=False,
-            collate_fn=collate_fn,
             num_workers=num_workers,
+            collate_fn=collate_fn,
             pin_memory=True,
+            persistent_workers=True if num_workers > 0 else False,
         )
 
         model = PICKModel(
