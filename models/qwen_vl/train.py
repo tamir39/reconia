@@ -248,7 +248,7 @@ def train_model(
         val_ds = QwenVLDataset(data_dir, cache_dir / "val.jsonl", processor, labels)
         test_ds = QwenVLDataset(data_dir, cache_dir / "test.jsonl", processor, labels)
 
-        num_workers = os.cpu_count() or 0
+        num_workers = min(2, os.cpu_count() or 0)
         train_loader = DataLoader(
             train_ds,
             batch_size=batch_size,

@@ -232,7 +232,7 @@ def train_model(
         val_ds = DonutDataset(data_dir, cache_dir / "val.jsonl", processor, task_prompt)
         test_ds = DonutDataset(data_dir, cache_dir / "test.jsonl", processor, task_prompt)
 
-        num_workers = os.cpu_count() or 0
+        num_workers = min(2, os.cpu_count() or 0)
         train_loader = DataLoader(
             train_ds,
             batch_size=batch_size,

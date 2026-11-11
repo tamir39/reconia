@@ -218,7 +218,7 @@ def train_model(
         val_ds = PickDataset(cache_dir / "val.jsonl", data_dir, char2id, tag2id)
         test_ds = PickDataset(cache_dir / "test.jsonl", data_dir, char2id, tag2id)
 
-        num_workers = os.cpu_count() or 0
+        num_workers = min(2, os.cpu_count() or 0)
         train_loader = DataLoader(
             train_ds,
             batch_size=batch_size,

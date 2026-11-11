@@ -199,7 +199,7 @@ def train_model(
         val_ds = BrosDataset(cache_dir / "val.jsonl", tokenizer, label2id)
         test_ds = BrosDataset(cache_dir / "test.jsonl", tokenizer, label2id)
 
-        num_workers = os.cpu_count() or 0
+        num_workers = min(2, os.cpu_count() or 0)
         train_loader = DataLoader(
             train_ds,
             batch_size=batch_size,
