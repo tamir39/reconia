@@ -161,7 +161,7 @@ def train_model(
     epochs: int = 30,
     batch_size: int = 4,
     accum_steps: int = 2,
-    lr: float = 2e-5,
+    lr: float = 3e-5,
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
@@ -356,7 +356,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--accum_steps", type=int, default=2)
-    parser.add_argument("--lr", type=float, default=2e-5)
+    parser.add_argument("--lr", type=float, default=3e-5)
     parser.add_argument("--patience", type=int, default=5)
     return parser.parse_args()
 

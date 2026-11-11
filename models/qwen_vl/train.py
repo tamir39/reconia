@@ -241,7 +241,13 @@ def train_model(
         labels = load_labels(dataset_name)
 
         weights_dir = repo_dir / "weights" / "qwen_vl"
-        processor = AutoProcessor.from_pretrained(weights_dir, min_pixels=256*28*28, max_pixels=768*28*28)
+        processor = AutoProcessor.from_pretrained(
+            weights_dir,
+            size={
+                "min_pixels": 256 * 28 * 28,
+                "max_pixels": 768 * 28 * 28,
+            },
+        )
         collator = QwenVLDataCollator(processor=processor)
 
         train_ds = QwenVLDataset(data_dir, cache_dir / "train.jsonl", processor, labels)
@@ -289,9 +295,9 @@ def train_model(
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
         )
         model = get_peft_model(model, lora_config)
-        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
         model.config.use_cache = False
         model.config.text_config.use_cache = False
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model.to(device)
