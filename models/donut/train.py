@@ -192,8 +192,8 @@ def save_history(history: list[dict], out_dir: Path) -> None:
 def train_model(
     dataset_name: str,
     epochs: int = 30,
-    batch_size: int = 1,
-    accum_steps: int = 8,
+    batch_size: int = 4,
+    accum_steps: int = 2,
     lr: float = 3e-5,
     patience: int = 5,
     weight_decay: float = 0.01,
@@ -232,7 +232,9 @@ def train_model(
         val_ds = DonutDataset(data_dir, cache_dir / "val.jsonl", processor, task_prompt)
         test_ds = DonutDataset(data_dir, cache_dir / "test.jsonl", processor, task_prompt)
 
+        eval_batch_size = batch_size * 2
         num_workers = min(2, os.cpu_count() or 0)
+
         train_loader = DataLoader(
             train_ds,
             batch_size=batch_size,
@@ -243,7 +245,7 @@ def train_model(
         )
         val_loader = DataLoader(
             val_ds,
-            batch_size=batch_size,
+            batch_size=eval_batch_size,
             shuffle=False,
             collate_fn=collator,
             num_workers=num_workers,
@@ -251,7 +253,7 @@ def train_model(
         )
         test_loader = DataLoader(
             test_ds,
-            batch_size=batch_size,
+            batch_size=eval_batch_size,
             shuffle=False,
             collate_fn=collator,
             num_workers=num_workers,
@@ -387,8 +389,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="all", choices=["all", *DATASETS])
     parser.add_argument("--epochs", type=int, default=30)
-    parser.add_argument("--batch_size", type=int, default=1)
-    parser.add_argument("--accum_steps", type=int, default=8)
+    parser.add_argument("--batch_size", type=int, default=4)
+    parser.add_argument("--accum_steps", type=int, default=2)
     parser.add_argument("--lr", type=float, default=3e-5)
     parser.add_argument("--patience", type=int, default=5)
     return parser.parse_args()
