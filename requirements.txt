@@ -1,5 +1,6 @@
 # Deep learning
 torch
+torchao>=0.16.0
 torchvision
 
 # Hugging Face
