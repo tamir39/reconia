@@ -181,8 +181,6 @@ def predict_sample(
     words = [item["text"] for item in ocr]
     boxes = [item["box"] for item in ocr]
     
-    image = image.convert("RGB") if image is not None else Image.new("RGB", (224, 224))
-
     encoding = processor(
         image,
         words,
