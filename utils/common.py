@@ -36,6 +36,7 @@ def get_data_dir(dataset_name: str) -> Path:
     candidates = [
         Path("/kaggle/input/datasets/vhngthnh/reconia-data") / dataset_name,
         Path("/kaggle/input/private-dataset") / dataset_name,
+        Path("") / dataset_name,
     ]
     
     for path in candidates:

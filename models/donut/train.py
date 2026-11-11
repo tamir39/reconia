@@ -44,7 +44,7 @@ def train_epoch(
     use_amp: bool,
     epoch: int,
     epochs: int = 30,
-    accum_steps: int = 8,
+    accum_steps: int = 2,
 ) -> float:
     model.train()
     total_loss = 0.0
@@ -96,7 +96,7 @@ def evaluate_epoch(
     device: torch.device,
     dataset_name: str,
     desc: str,
-    max_length: int = 1536,
+    max_length: int = 1024,
 ) -> tuple[float, dict[str, float]]:
     model.eval()
     total_loss = 0.0

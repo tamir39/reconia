@@ -45,7 +45,7 @@ def train_epoch(
     use_amp: bool,
     epoch: int,
     epochs: int = 30,
-    accum_steps: int = 2,
+    accum_steps: int = 1,
 ) -> float:
     model.train()
     total_loss = 0.0

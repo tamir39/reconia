@@ -100,7 +100,7 @@ def evaluate_epoch(
     processor: AutoProcessor,
     device: torch.device,
     desc: str,
-    max_new_tokens: int = 128,
+    max_new_tokens: int = 1024,
 ) -> tuple[float, dict[str, float]]:
     model.eval()
     total_loss = 0.0
