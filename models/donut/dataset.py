@@ -15,7 +15,7 @@ class DonutDataset(Dataset):
         data_file: Path,
         processor: AutoProcessor,
         task_prompt: str,
-        max_length: int = 1536,
+        max_length: int = 1024,
     ) -> None:
         self.data_dir = data_dir
         self.processor = processor
@@ -151,7 +151,7 @@ def predict_sample(
     processor: AutoProcessor,
     device: torch.device,
     dataset_name: str,
-    max_length: int = 1536,
+    max_length: int = 1024,
 ) -> dict[str, list[str]]:
     encoding = processor(
         image,
