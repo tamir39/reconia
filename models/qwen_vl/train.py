@@ -382,7 +382,7 @@ def train_model(
                 best_epoch = epoch
                 patience_counter = 0
                 torch.save(get_adapter_state(model), checkpoint_dir / "best_weights.pt")
-            else:
+            elif best_f1 > 0:
                 patience_counter += 1
 
             if patience_counter >= patience:

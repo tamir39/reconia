@@ -121,7 +121,7 @@ python -m models.<model>.train --dataset <dataset>
 | :--- | :--- | :---: | :---: |
 | `roberta` | `lr = 3e-5` | `8` | `1` |
 | `bros` | `lr = 3e-5` | `8` | `1` |
-| `pick` | `lr = 1e-3` | `4` | `2` |
+| `pick` | `lr = 5e-4` | `4` | `2` |
 | `layoutlmv3` | `lr = 3e-5` | `4` | `2` |
 | `donut` | `lr = 1e-4` | `4` | `2` |
 | `qwen_vl` | `lr = 1e-4` | `1` | `8` |
@@ -134,9 +134,7 @@ python -m models.<model>.train --dataset <dataset>
 | `--epochs` | `30` | `int` | Số epoch tối đa |
 | `--batch_size` | Theo mô hình | `int` | Batch size mỗi step |
 | `--accum_steps` | Theo mô hình | `int` | Số bước tích lũy gradient |
-| `--lr` | Theo mô hình | `float` | Learning rate cho các mô hình đơn LR (`roberta`, `bros`, `layoutlmv3`, `donut`, `qwen_vl`) |
-| `--lr_backbone` | `1e-4` | `float` | Learning rate cho pretrained ResNet-50 backbone (chỉ dùng cho `pick`) |
-| `--lr_scratch` | `1e-3` | `float` | Learning rate cho các tầng huấn luyện từ đầu: BiLSTM, GCN, CRF (chỉ dùng cho `pick`) |
+| `--lr` | Theo mô hình | `float` | Learning rate cho các mô hình đơn LR |
 | `--patience` | `5` | `int` | Số epoch chờ không cải thiện trước khi dừng sớm |
 
 Kết quả lưu tại `results/<dataset>/<model>/`.

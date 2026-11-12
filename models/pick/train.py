@@ -177,7 +177,7 @@ def train_model(
     epochs: int = 30,
     batch_size: int = 4,
     accum_steps: int = 2,
-    lr: float = 1e-3,
+    lr: float = 5e-4,
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
@@ -327,7 +327,7 @@ def train_model(
                 best_epoch = epoch
                 patience_counter = 0
                 torch.save(model.state_dict(), checkpoint_dir / "best_weights.pt")
-            else:
+            elif best_f1 > 0:
                 patience_counter += 1
 
             if patience_counter >= patience:
@@ -366,7 +366,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--accum_steps", type=int, default=2)
-    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--lr", type=float, default=5e-4)
     parser.add_argument("--patience", type=int, default=5)
     return parser.parse_args()
 
