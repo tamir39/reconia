@@ -123,7 +123,7 @@ python -m models.<model>.train --dataset <dataset>
 | `bros` | `lr = 3e-5` | `8` | `1` |
 | `layoutlmv3` | `lr = 3e-5` | `4` | `2` |
 | `pick` | `lr = 5e-4` | `4` | `2` |
-| `donut` | `lr = 5e-5` | `4` | `2` |
+| `donut` | `lr = 3e-5` | `4` | `2` |
 | `qwen_vl` | `lr = 1e-4` | `1` | `8` |
 
 #### Bảng tham số dòng lệnh:
