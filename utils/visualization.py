@@ -44,6 +44,56 @@ def overlay_heatmap(
     return Image.blend(image, heatmap_pil, alpha=alpha)
 
 
+def visualize_layoutlmv3(
+    ocr: list[dict],
+    model: torch.nn.Module,
+    processor,
+    id2label: dict[int, str],
+    device: torch.device,
+    image: Image.Image,
+    max_length: int = 512,
+) -> tuple[dict[str, list[str]], Image.Image]:
+    words = [item["text"] for item in ocr]
+    boxes = [item["box"] for item in ocr]
+    image_rgb = image.convert("RGB")
+
+    encoding = processor(
+        image_rgb,
+        words,
+        boxes=boxes,
+        max_length=max_length,
+        truncation=True,
+        return_tensors="pt",
+    )
+
+    model.eval()
+    with torch.no_grad():
+        outputs = model(
+            input_ids=encoding["input_ids"].to(device),
+            bbox=encoding["bbox"].to(device),
+            attention_mask=encoding["attention_mask"].to(device),
+            pixel_values=encoding["pixel_values"].to(device),
+            output_attentions=True,
+        )
+
+    pred_ids = torch.argmax(outputs.logits, dim=-1)[0].cpu().tolist()
+    labels = align_layoutlmv3_labels(pred_ids, encoding.word_ids(), id2label)
+    entities = extract_layoutlmv3_entities(ocr, labels)
+
+    if outputs.attentions:
+        last_attn = outputs.attentions[-1][0]
+        mean_attn = last_attn.mean(dim=0)
+        seq_len = encoding["input_ids"].shape[1]
+        visual_attn = mean_attn[:seq_len, -196:]
+        token_visual_weights = visual_attn.mean(dim=0)
+        heatmap = token_visual_weights.view(14, 14).cpu().numpy()
+    else:
+        heatmap = np.zeros((14, 14), dtype=np.float32)
+
+    overlay = overlay_heatmap(image, heatmap)
+    return entities, overlay
+
+
 def visualize_pick(
     ocr: list[dict],
     model: torch.nn.Module,
@@ -131,56 +181,6 @@ def visualize_pick(
 
     fmap = feature_maps[0][0]
     heatmap = torch.mean(fmap, dim=0).cpu().numpy()
-
-    overlay = overlay_heatmap(image, heatmap)
-    return entities, overlay
-
-
-def visualize_layoutlmv3(
-    ocr: list[dict],
-    model: torch.nn.Module,
-    processor,
-    id2label: dict[int, str],
-    device: torch.device,
-    image: Image.Image,
-    max_length: int = 512,
-) -> tuple[dict[str, list[str]], Image.Image]:
-    words = [item["text"] for item in ocr]
-    boxes = [item["box"] for item in ocr]
-    image_rgb = image.convert("RGB")
-
-    encoding = processor(
-        image_rgb,
-        words,
-        boxes=boxes,
-        max_length=max_length,
-        truncation=True,
-        return_tensors="pt",
-    )
-
-    model.eval()
-    with torch.no_grad():
-        outputs = model(
-            input_ids=encoding["input_ids"].to(device),
-            bbox=encoding["bbox"].to(device),
-            attention_mask=encoding["attention_mask"].to(device),
-            pixel_values=encoding["pixel_values"].to(device),
-            output_attentions=True,
-        )
-
-    pred_ids = torch.argmax(outputs.logits, dim=-1)[0].cpu().tolist()
-    labels = align_layoutlmv3_labels(pred_ids, encoding.word_ids(), id2label)
-    entities = extract_layoutlmv3_entities(ocr, labels)
-
-    if outputs.attentions:
-        last_attn = outputs.attentions[-1][0]
-        mean_attn = last_attn.mean(dim=0)
-        seq_len = encoding["input_ids"].shape[1]
-        visual_attn = mean_attn[:seq_len, -196:]
-        token_visual_weights = visual_attn.mean(dim=0)
-        heatmap = token_visual_weights.view(14, 14).cpu().numpy()
-    else:
-        heatmap = np.zeros((14, 14), dtype=np.float32)
 
     overlay = overlay_heatmap(image, heatmap)
     return entities, overlay

@@ -9,8 +9,8 @@
 - **6 mô hình:**
   1. `roberta`: Mô hình thuần văn bản (Text-only).
   2. `bros`: Mô hình kết hợp văn bản và tọa độ 2D (Text + Layout).
-  3. `pick`: Mạng đồ thị kết hợp văn bản, tọa độ 2D và hình ảnh (Graph-based Multimodal).
-  4. `layoutlmv3`: Mô hình đa phương thức kết hợp văn bản, tọa độ 2D và hình ảnh (Multimodal Transformer).
+  3. `layoutlmv3`: Mô hình đa phương thức kết hợp văn bản, tọa độ 2D và hình ảnh (Multimodal Transformer).
+  4. `pick`: Mạng đồ thị kết hợp văn bản, tọa độ 2D và hình ảnh (Graph-based Multimodal).
   5. `donut`: Mô hình trực tiếp từ ảnh sang văn bản cấu trúc (OCR-free).
   6. `qwen_vl`: Mô hình thị giác - ngôn ngữ lớn (Vision-Language Model - VLM).
 
@@ -121,9 +121,9 @@ python -m models.<model>.train --dataset <dataset>
 | :--- | :--- | :---: | :---: |
 | `roberta` | `lr = 3e-5` | `8` | `1` |
 | `bros` | `lr = 3e-5` | `8` | `1` |
-| `pick` | `lr = 5e-4` | `4` | `2` |
 | `layoutlmv3` | `lr = 3e-5` | `4` | `2` |
-| `donut` | `lr = 1e-4` | `4` | `2` |
+| `pick` | `lr = 5e-4` | `4` | `2` |
+| `donut` | `lr = 5e-5` | `4` | `2` |
 | `qwen_vl` | `lr = 1e-4` | `1` | `8` |
 
 #### Bảng tham số dòng lệnh:
