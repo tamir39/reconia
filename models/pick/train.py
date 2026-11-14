@@ -222,7 +222,7 @@ def train_model(
             num_workers=num_workers,
             collate_fn=collate_fn,
             pin_memory=True,
-            persistent_workers=True if num_workers > 0 else False,
+            persistent_workers=num_workers > 0,
         )
         val_loader = DataLoader(
             val_ds,
@@ -231,7 +231,7 @@ def train_model(
             num_workers=num_workers,
             collate_fn=collate_fn,
             pin_memory=True,
-            persistent_workers=True if num_workers > 0 else False,
+            persistent_workers=num_workers > 0,
         )
         test_loader = DataLoader(
             test_ds,
@@ -240,7 +240,7 @@ def train_model(
             num_workers=num_workers,
             collate_fn=collate_fn,
             pin_memory=True,
-            persistent_workers=True if num_workers > 0 else False,
+            persistent_workers=False,
         )
 
         model = PICKModel(
