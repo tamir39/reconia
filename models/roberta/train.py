@@ -41,7 +41,7 @@ def train_epoch(
     device: torch.device,
     use_amp: bool,
     epoch: int,
-    epochs: int = 30,
+    epochs: int = 25,
     accum_steps: int = 1,
 ) -> float:
     model.train()
@@ -157,7 +157,7 @@ def save_history(history: list[dict], out_dir: Path) -> None:
 
 def train_model(
     dataset_name: str,
-    epochs: int = 30,
+    epochs: int = 25,
     batch_size: int = 8,
     accum_steps: int = 1,
     lr: float = 3e-5,
@@ -355,7 +355,7 @@ def train_model(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="all", choices=["all", *DATASETS])
-    parser.add_argument("--epochs", type=int, default=30)
+    parser.add_argument("--epochs", type=int, default=25)
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--accum_steps", type=int, default=1)
     parser.add_argument("--lr", type=float, default=3e-5)

@@ -106,7 +106,7 @@ Thiết lập chung:
 - Batch size hiệu dụng: 8 (`batch_size * accum_steps = 8`)
 - Optimizer: AdamW (`weight_decay=0.01`, không áp dụng cho `bias` và các lớp chuẩn hóa)
 - Random seed: 42 (`seed=42`)
-- Số epoch tối đa: 30 (`epochs=30`)
+- Số epoch tối đa: 25 (`epochs=25`)
 - Dừng sớm: 5 epoch không cải thiện (`patience=5`)
 
 Lệnh thực thi:
@@ -124,14 +124,14 @@ python -m models.<model>.train --dataset <dataset>
 | `layoutlmv3` | `lr = 3e-5` | `4` | `2` |
 | `pick` | `lr = 5e-4` | `4` | `2` |
 | `donut` | `lr = 3e-5` | `4` | `2` |
-| `qwen_vl` | `lr = 1e-4` | `1` | `8` |
+| `qwen_vl` | `lr = 1e-4` | `2` | `4` |
 
 #### Bảng tham số dòng lệnh:
 
 | Tham số | Mặc định | Kiểu / Lựa chọn | Mô tả |
 | :--- | :---: | :--- | :--- |
 | `--dataset` | `"all"` | `sroie`, `cord_v2`, `wildreceipt`, `all` | Tập dữ liệu huấn luyện |
-| `--epochs` | `30` | `int` | Số epoch tối đa |
+| `--epochs` | `25` | `int` | Số epoch tối đa |
 | `--batch_size` | Theo mô hình | `int` | Batch size mỗi step |
 | `--accum_steps` | Theo mô hình | `int` | Số bước tích lũy gradient |
 | `--lr` | Theo mô hình | `float` | Learning rate cho các mô hình đơn LR |

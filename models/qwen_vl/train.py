@@ -52,8 +52,8 @@ def train_epoch(
     device: torch.device,
     use_amp: bool,
     epoch: int,
-    epochs: int = 30,
-    accum_steps: int = 8,
+    epochs: int = 25,
+    accum_steps: int = 4,
 ) -> float:
     model.train()
     total_loss = 0.0
@@ -224,9 +224,9 @@ def save_history(history: list[dict], out_dir: Path) -> None:
 
 def train_model(
     dataset_name: str,
-    epochs: int = 30,
-    batch_size: int = 1,
-    accum_steps: int = 8,
+    epochs: int = 25,
+    batch_size: int = 2,
+    accum_steps: int = 4,
     lr: float = 1e-4,
     patience: int = 5,
     weight_decay: float = 0.01,
@@ -448,9 +448,9 @@ def train_model(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="all", choices=["all", *DATASETS])
-    parser.add_argument("--epochs", type=int, default=30)
-    parser.add_argument("--batch_size", type=int, default=1)
-    parser.add_argument("--accum_steps", type=int, default=8)
+    parser.add_argument("--epochs", type=int, default=25)
+    parser.add_argument("--batch_size", type=int, default=2)
+    parser.add_argument("--accum_steps", type=int, default=4)
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--patience", type=int, default=5)
     return parser.parse_args()
