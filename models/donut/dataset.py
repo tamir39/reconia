@@ -183,6 +183,7 @@ def predict_sample(
             pad_token_id=processor.tokenizer.pad_token_id,
             eos_token_id=processor.tokenizer.eos_token_id,
             num_beams=1,
+            use_cache=True,
         )
 
     decoded = processor.tokenizer.decode(outputs[0], skip_special_tokens=False)

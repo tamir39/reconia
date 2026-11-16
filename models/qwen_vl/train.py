@@ -160,6 +160,7 @@ def evaluate_epoch(
                 image_grid_thw=batch_gpu["image_grid_thw"],
                 max_new_tokens=batch_max_new_tokens,
                 do_sample=False,
+                use_cache=True,
             )
             new_tokens = generated_ids[:, max_prompt_len:]
             all_preds.extend(decode_predictions(new_tokens, processor))

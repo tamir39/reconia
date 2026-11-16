@@ -140,6 +140,7 @@ def evaluate_epoch(
                 pad_token_id=processor.tokenizer.pad_token_id,
                 eos_token_id=processor.tokenizer.eos_token_id,
                 num_beams=1,
+                use_cache=True,
             )
             all_preds.extend(decode_predictions(generated_ids, processor))
 

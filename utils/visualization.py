@@ -227,6 +227,7 @@ def visualize_donut(
             num_beams=1,
             output_attentions=True,
             return_dict_in_generate=True,
+            use_cache=True,
         )
 
     decoded = processor.tokenizer.decode(outputs.sequences[0], skip_special_tokens=False)
@@ -296,6 +297,7 @@ def visualize_qwen_vl(
             do_sample=False,
             output_attentions=True,
             return_dict_in_generate=True,
+            use_cache=True,
         )
 
     prompt_len = prompt_inputs["input_ids"].shape[1]

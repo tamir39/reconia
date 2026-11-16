@@ -237,6 +237,7 @@ def predict_sample(
             **prompt_inputs,
             max_new_tokens=max_new_tokens,
             do_sample=False,
+            use_cache=True,
         )
 
     prompt_len = prompt_inputs["input_ids"].shape[1]
