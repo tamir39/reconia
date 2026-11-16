@@ -38,7 +38,7 @@ def compute_relations(
     heights = np.maximum(boxes[:, 3] - boxes[:, 1], 1.0)
     centers_x = boxes[:, 0] + widths / 2.0
     centers_y = boxes[:, 1] + heights / 2.0
-    text_lengths = np.maximum([len(t) for t in texts], 1.0)
+    text_lengths = np.maximum(np.array([len(t) for t in texts], dtype=np.float32), 1.0)
 
     delta_x = np.abs(centers_x[:, None] - centers_x[None, :]) / max(width, 1.0)
     delta_y = np.abs(centers_y[:, None] - centers_y[None, :]) / max(height, 1.0)
@@ -320,10 +320,12 @@ def predict_sample(
             attention_mask[0, box_idx, :text_len] = False
 
     relations = compute_relations(boxes, texts, width, height)
-    relations_tensor = torch.tensor(relations, dtype=torch.float32, device=device).unsqueeze(0)
+    relations_tensor = torch.from_numpy(relations).unsqueeze(0).to(device)
 
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
         _, preds = model(
             images=images,
             boxes=boxes_tensor,

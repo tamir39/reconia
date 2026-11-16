@@ -232,7 +232,9 @@ def predict_sample(
     ).to(device)
 
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
         generated_ids = model.generate(
             **prompt_inputs,
             max_new_tokens=max_new_tokens,

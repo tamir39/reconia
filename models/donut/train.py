@@ -94,6 +94,7 @@ def evaluate_epoch(
     samples: list[dict],
     processor: AutoProcessor,
     device: torch.device,
+    use_amp: bool,
     dataset_name: str,
     desc: str,
     max_length: int = 1024,
@@ -109,7 +110,7 @@ def evaluate_epoch(
         return_tensors="pt",
     ).to(device)
 
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(device_type=device.type, enabled=use_amp):
         for batch in tqdm(loader, desc=desc, leave=False):
             batch = {k: v.to(device) for k, v in batch.items()}
 
@@ -132,7 +133,6 @@ def evaluate_epoch(
                 max_length=max_length,
                 pad_token_id=processor.tokenizer.pad_token_id,
                 eos_token_id=processor.tokenizer.eos_token_id,
-                use_cache=True,
                 num_beams=1,
             )
             all_preds.extend(decode_predictions(generated_ids, processor))
@@ -150,6 +150,7 @@ def evaluate_test(
     samples: list[dict],
     processor: AutoProcessor,
     device: torch.device,
+    use_amp: bool,
     dataset_name: str,
     checkpoint_dir: Path,
     out_dir: Path,
@@ -159,7 +160,7 @@ def evaluate_test(
         torch.load(checkpoint_dir / "best_weights.pt", map_location="cpu", weights_only=True)
     )
     loss, metrics = evaluate_epoch(
-        model, loader, samples, processor, device, dataset_name, "[Test]"
+        model, loader, samples, processor, device, use_amp, dataset_name, "[Test]"
     )
 
     results = {
@@ -271,7 +272,6 @@ def train_model(
             else processor.tokenizer.bos_token_id or 0
         )
         model.config.pad_token_id = processor.tokenizer.pad_token_id
-        model.config.use_cache = False
         model.gradient_checkpointing_enable()
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -331,6 +331,7 @@ def train_model(
                 val_ds.samples,
                 processor,
                 device,
+                use_amp,
                 dataset_name,
                 f"Epoch {epoch:02d}/{epochs:02d} [Val]",
             )
@@ -376,6 +377,7 @@ def train_model(
             test_ds.samples,
             processor,
             device,
+            use_amp,
             dataset_name,
             checkpoint_dir,
             out_dir,

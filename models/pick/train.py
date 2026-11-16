@@ -96,13 +96,14 @@ def evaluate_epoch(
     samples: list[dict],
     id2tag: dict[int, str],
     device: torch.device,
+    use_amp: bool,
     desc: str,
 ) -> tuple[float, dict[str, float]]:
     model.eval()
     total_loss = 0.0
     all_pred_ids: list[list[list[int]]] = []
 
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(device_type=device.type, enabled=use_amp):
         for batch in tqdm(loader, desc=desc, leave=False):
             batch = {k: v.to(device) for k, v in batch.items()}
 
@@ -133,6 +134,7 @@ def evaluate_test(
     samples: list[dict],
     id2tag: dict[int, str],
     device: torch.device,
+    use_amp: bool,
     dataset_name: str,
     checkpoint_dir: Path,
     out_dir: Path,
@@ -142,7 +144,7 @@ def evaluate_test(
         torch.load(checkpoint_dir / "best_weights.pt", map_location="cpu", weights_only=True)
     )
     loss, metrics = evaluate_epoch(
-        model, loader, samples, id2tag, device, "[Test]"
+        model, loader, samples, id2tag, device, use_amp, "[Test]"
     )
 
     results = {
@@ -304,6 +306,7 @@ def train_model(
                 val_ds.samples,
                 id2tag,
                 device,
+                use_amp,
                 f"Epoch {epoch:02d}/{epochs:02d} [Val]",
             )
 
@@ -348,6 +351,7 @@ def train_model(
             test_ds.samples,
             id2tag,
             device,
+            use_amp,
             dataset_name,
             checkpoint_dir,
             out_dir,

@@ -191,7 +191,9 @@ def predict_sample(
     )
 
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
         outputs = model(
             input_ids=encoding["input_ids"].to(device),
             bbox=encoding["bbox"].to(device),

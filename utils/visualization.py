@@ -67,7 +67,9 @@ def visualize_layoutlmv3(
     )
 
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
         outputs = model(
             input_ids=encoding["input_ids"].to(device),
             bbox=encoding["bbox"].to(device),
@@ -153,7 +155,7 @@ def visualize_pick(
             attention_mask[0, box_idx, :text_len] = False
 
     relations = compute_relations(boxes, texts, width, height)
-    relations_tensor = torch.tensor(relations, dtype=torch.float32, device=device).unsqueeze(0)
+    relations_tensor = torch.from_numpy(relations).unsqueeze(0).to(device)
 
     feature_maps: list[torch.Tensor] = []
 
@@ -163,7 +165,9 @@ def visualize_pick(
     hook_handle = model.encoder.layer3.register_forward_hook(hook_fn)
 
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
         _, preds = model(
             images=images,
             boxes=boxes_tensor,
@@ -211,14 +215,15 @@ def visualize_donut(
     ).to(device)
 
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
         outputs = model.generate(
             pixel_values,
             decoder_input_ids=prompt_ids,
             max_length=max_length,
             pad_token_id=processor.tokenizer.pad_token_id,
             eos_token_id=processor.tokenizer.eos_token_id,
-            use_cache=True,
             num_beams=1,
             output_attentions=True,
             return_dict_in_generate=True,
@@ -280,7 +285,9 @@ def visualize_qwen_vl(
     ).to(device)
 
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
         outputs = model.generate(
             **prompt_inputs,
             max_new_tokens=max_new_tokens,

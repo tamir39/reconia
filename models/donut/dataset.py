@@ -172,14 +172,15 @@ def predict_sample(
     decoder_input_ids = prompt_ids.repeat(batch_size, 1)
 
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
         outputs = model.generate(
             pixel_values,
             decoder_input_ids=decoder_input_ids,
             max_length=max_length,
             pad_token_id=processor.tokenizer.pad_token_id,
             eos_token_id=processor.tokenizer.eos_token_id,
-            use_cache=True,
             num_beams=1,
         )
 

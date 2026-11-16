@@ -208,7 +208,9 @@ def predict_sample(
     bbox_first_token_mask = torch.tensor([bbox_first_token_mask], dtype=torch.bool, device=device)
 
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
         outputs = model(
             input_ids=encoding["input_ids"].to(device),
             bbox=bbox,

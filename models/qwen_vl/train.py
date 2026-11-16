@@ -20,6 +20,7 @@ from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import (
     AutoProcessor,
+    BitsAndBytesConfig,
     Qwen2_5_VLForConditionalGeneration,
     get_linear_schedule_with_warmup,
 )
@@ -99,6 +100,7 @@ def evaluate_epoch(
     samples: list[dict],
     processor: AutoProcessor,
     device: torch.device,
+    use_amp: bool,
     desc: str,
     max_new_tokens: int = 1024,
 ) -> tuple[float, dict[str, float]]:
@@ -106,7 +108,7 @@ def evaluate_epoch(
     total_loss = 0.0
     all_preds: list[dict[str, list[str]]] = []
 
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(device_type=device.type, enabled=use_amp):
         for batch in tqdm(loader, desc=desc, leave=False):
             batch_gpu = {
                 key: value.to(device)
@@ -162,6 +164,7 @@ def evaluate_test(
     samples: list[dict],
     processor: AutoProcessor,
     device: torch.device,
+    use_amp: bool,
     dataset_name: str,
     checkpoint_dir: Path,
     out_dir: Path,
@@ -172,7 +175,7 @@ def evaluate_test(
         torch.load(checkpoint_dir / "best_weights.pt", map_location="cpu", weights_only=True)
     )
     loss, metrics = evaluate_epoch(
-        model, loader, samples, processor, device , "[Test]"
+        model, loader, samples, processor, device , use_amp, "[Test]"
     )
 
     results = {
@@ -241,13 +244,11 @@ def train_model(
         labels = load_labels(dataset_name)
 
         weights_dir = repo_dir / "weights" / "qwen_vl"
-        processor = AutoProcessor.from_pretrained(
-            weights_dir,
-            size={
-                "min_pixels": 256 * 28 * 28,
-                "max_pixels": 768 * 28 * 28,
-            },
-        )
+        processor = AutoProcessor.from_pretrained(weights_dir)
+        processor.image_processor.size = {
+            "shortest_edge": 256 * 28 * 28,
+            "longest_edge": 768 * 28 * 28,
+        }
         collate_fn = QwenVLDataCollator(processor=processor)
 
         train_ds = QwenVLDataset(data_dir, cache_dir / "train.jsonl", processor, labels)
@@ -285,25 +286,40 @@ def train_model(
             persistent_workers=False,
         )
 
-        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-            weights_dir,
-            torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
-        )
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        use_amp = device.type == "cuda"
+
+        if use_amp:
+            bnb_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.float16,
+                bnb_4bit_use_double_quant=True,
+            )
+
+            model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+                weights_dir,
+                quantization_config=bnb_config,
+                torch_dtype=torch.float16,
+                device_map={"": device},
+            )
+        else:
+            model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+                weights_dir,
+                torch_dtype=torch.float32,
+            )
+            model.to(device)
 
         lora_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
             r=16,
             lora_alpha=32,
             lora_dropout=0.05,
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+            target_modules=r".*layers\.\d+\.(self_attn|mlp)\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)",
         )
         model = get_peft_model(model, lora_config)
-        model.config.use_cache = False
-        model.config.text_config.use_cache = False
         model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
-
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model.to(device)
+        model.enable_input_require_grads()
 
         no_decay = {"bias", "layernorm", "norm"}
         param_groups = [
@@ -332,7 +348,6 @@ def train_model(
             num_training_steps=total_steps,
         )
 
-        use_amp = device.type == "cuda"
         scaler = torch.amp.GradScaler(enabled=use_amp)
 
         history: list[dict] = []
@@ -359,6 +374,7 @@ def train_model(
                 val_ds.samples,
                 processor,
                 device,
+                use_amp,
                 f"Epoch {epoch:02d}/{epochs:02d} [Val]",
             )
 
@@ -403,6 +419,7 @@ def train_model(
             test_ds.samples,
             processor,
             device,
+            use_amp,
             dataset_name,
             checkpoint_dir,
             out_dir,
