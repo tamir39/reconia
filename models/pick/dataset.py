@@ -80,7 +80,8 @@ class PickDataset(Dataset):
         return len(self.samples)
 
     def _process_image(self, image_file: Path) -> torch.Tensor:
-        image = Image.open(image_file).convert("RGB")
+        with Image.open(image_file) as img:
+            image = img.convert("RGB")
         width, height = self.image_size
         image = image.resize((width, height), Image.Resampling.BILINEAR)
 

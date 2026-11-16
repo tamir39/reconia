@@ -44,7 +44,10 @@ class QwenVLDataset(Dataset):
     ) -> None:
         self.data_dir = data_dir
         self.processor = processor
-        self.labels = labels
+        self.prompt_text = format_prompt(labels)
+        self.assistant_marker = processor.tokenizer.encode(
+            "<|im_start|>assistant\n", add_special_tokens=False
+        )
 
         with open(data_file, "r", encoding="utf-8") as file:
             self.samples = [json.loads(line) for line in file]
@@ -55,32 +58,29 @@ class QwenVLDataset(Dataset):
     def __getitem__(self, idx: int) -> dict:
         sample = self.samples[idx]
         image_path = self.data_dir / sample["image_path"]
-        image = Image.open(image_path).convert("RGB")
-
-        prompt_text = format_prompt(self.labels)
+        with Image.open(image_path) as img:
+            image = img.convert("RGB")
 
         messages = [
             {
                 "role": "user",
                 "content": [
                     {"type": "image", "image": image},
-                    {"type": "text", "text": prompt_text},
+                    {"type": "text", "text": self.prompt_text},
                 ],
             }
         ]
         if SYSTEM_PROMPT:
             messages.insert(0, {"role": "system", "content": SYSTEM_PROMPT})
 
-        prompt_chat = self.processor.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
-
         gt = sample.get("gt", {})
         target_json = json.dumps(gt, ensure_ascii=False)
         messages.append({"role": "assistant", "content": target_json})
 
         full_chat = self.processor.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=False
+            messages,
+            tokenize=False,
+            add_generation_prompt=False,
         )
 
         full_inputs = self.processor(
@@ -88,16 +88,16 @@ class QwenVLDataset(Dataset):
             [full_chat],
             return_tensors="pt",
         )
-
         input_ids = full_inputs["input_ids"][0]
         attention_mask = full_inputs["attention_mask"][0]
 
-        prompt_inputs = self.processor(
-            [image],
-            [prompt_chat],
-            return_tensors="pt",
+        ids_list = input_ids.tolist()
+        marker_len = len(self.assistant_marker)
+        prompt_len = next(
+            i + marker_len
+            for i in range(len(ids_list) - marker_len + 1)
+            if ids_list[i : i + marker_len] == self.assistant_marker
         )
-        prompt_len = prompt_inputs["input_ids"].shape[1]
 
         labels = input_ids.clone()
         labels[:prompt_len] = -100
@@ -108,10 +108,8 @@ class QwenVLDataset(Dataset):
             "labels": labels,
             "prompt_len": prompt_len,
         }
-
         if "pixel_values" in full_inputs:
             item["pixel_values"] = full_inputs["pixel_values"]
-
         if "image_grid_thw" in full_inputs:
             item["image_grid_thw"] = full_inputs["image_grid_thw"]
 

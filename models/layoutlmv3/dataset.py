@@ -29,8 +29,9 @@ class LayoutLMv3Dataset(Dataset):
 
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor | list]:
         sample = self.samples[idx]
-        image_path = self.data_dir / sample["image_path"]
-        image = Image.open(image_path).convert("RGB")
+        image_file = self.data_dir / sample["image_path"]
+        with Image.open(image_file) as img:
+            image = img.convert("RGB")
         
         ocr = sample["ocr"]
         words = [item["text"] for item in ocr]

@@ -30,8 +30,9 @@ class DonutDataset(Dataset):
 
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor | list[int]]:
         sample = self.samples[idx]
-        image_path = self.data_dir / sample["image_path"]
-        image = Image.open(image_path).convert("RGB")
+        image_file = self.data_dir / sample["image_path"]
+        with Image.open(image_file) as img:
+            image = img.convert("RGB")
 
         encoding = self.processor(
             image,

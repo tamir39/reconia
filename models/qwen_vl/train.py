@@ -107,49 +107,62 @@ def evaluate_epoch(
     model.eval()
     total_loss = 0.0
     all_preds: list[dict[str, list[str]]] = []
+    pad_token_id = (
+        processor.tokenizer.pad_token_id
+        if processor.tokenizer.pad_token_id is not None
+        else 0
+    )
 
     with torch.no_grad(), torch.amp.autocast(device_type=device.type, enabled=use_amp):
         for batch in tqdm(loader, desc=desc, leave=False):
-            batch_gpu = {
-                key: value.to(device)
-                for key, value in batch.items()
-            }
+            batch_gpu = {key: value.to(device) for key, value in batch.items()}
+            batch_loss = {key: value for key, value in batch_gpu.items() if key != "prompt_len"}
 
-            batch_loss = {
-                key: value
-                for key, value in batch_gpu.items()
-                if key != "prompt_len"
-            }
+            valid_lengths = (batch_gpu["labels"] != -100).sum(dim=1)
+            batch_max_new_tokens = min(
+                max_new_tokens,
+                int(valid_lengths.max().item()) + 32,
+            )
 
             outputs = model(**batch_loss)
             total_loss += outputs.loss.item()
+            del outputs, batch_loss
 
-            patch_offset = 0
-            for sample_index in range(batch_gpu["input_ids"].size(0)):
-                prompt_len = batch_gpu["prompt_len"][sample_index].item()
-                prompt_input_ids = batch_gpu["input_ids"][sample_index:sample_index + 1, :prompt_len]
-                prompt_attention_mask = batch_gpu["attention_mask"][sample_index:sample_index + 1, :prompt_len]
+            prompt_lengths = batch_gpu["prompt_len"].tolist()
+            max_prompt_len = max(prompt_lengths)
+            batch_size = len(prompt_lengths)
+            
+            prompt_input_ids = torch.full(
+                (batch_size, max_prompt_len),
+                pad_token_id,
+                dtype=torch.long,
+                device=device,
+            )
+            prompt_attention_mask = torch.zeros(
+                (batch_size, max_prompt_len),
+                dtype=torch.long,
+                device=device,
+            )
+            
+            for sample_index, prompt_len in enumerate(prompt_lengths):
+                offset = max_prompt_len - prompt_len
+                prompt_input_ids[sample_index, offset:] = (
+                    batch_gpu["input_ids"][sample_index, :prompt_len]
+                )
+                prompt_attention_mask[sample_index, offset:] = (
+                    batch_gpu["attention_mask"][sample_index, :prompt_len]
+                )
 
-                kwargs = {
-                    "input_ids": prompt_input_ids,
-                    "attention_mask": prompt_attention_mask,
-                    "max_new_tokens": max_new_tokens,
-                    "do_sample": False,
-                }
-
-                grid = batch_gpu["image_grid_thw"][sample_index:sample_index + 1]
-                patch_count = int(grid.prod(dim=1).sum().item())
-
-                kwargs["pixel_values"] = batch_gpu["pixel_values"][
-                    patch_offset:patch_offset + patch_count
-                ]
-                kwargs["image_grid_thw"] = grid
-
-                patch_offset += patch_count
-
-                generated_ids = model.generate(**kwargs)
-                new_tokens = generated_ids[:, prompt_len:]
-                all_preds.extend(decode_predictions(new_tokens, processor))
+            generated_ids = model.generate(
+                input_ids=prompt_input_ids,
+                attention_mask=prompt_attention_mask,
+                pixel_values=batch_gpu["pixel_values"],
+                image_grid_thw=batch_gpu["image_grid_thw"],
+                max_new_tokens=batch_max_new_tokens,
+                do_sample=False,
+            )
+            new_tokens = generated_ids[:, max_prompt_len:]
+            all_preds.extend(decode_predictions(new_tokens, processor))
 
     avg_loss = total_loss / len(loader)
     gts = [sample.get("gt", {}) for sample in samples]

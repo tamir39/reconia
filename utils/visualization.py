@@ -196,7 +196,7 @@ def visualize_donut(
     processor,
     device: torch.device,
     dataset_name: str,
-    max_length: int = 1536,
+    max_length: int = 1024,
 ) -> tuple[dict[str, list[str]], Image.Image]:
     image_rgb = image.convert("RGB")
     encoding = processor(
@@ -259,7 +259,7 @@ def visualize_qwen_vl(
     processor,
     device: torch.device,
     labels: list[str] | None = None,
-    max_new_tokens: int = 128,
+    max_new_tokens: int = 1024,
 ) -> tuple[dict[str, list[str]], Image.Image]:
     prompt_text = format_prompt(labels)
     messages = [
@@ -275,7 +275,9 @@ def visualize_qwen_vl(
         messages.insert(0, {"role": "system", "content": SYSTEM_PROMPT})
 
     prompt_chat = processor.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
+        messages, 
+        tokenize=False, 
+        add_generation_prompt=True
     )
 
     prompt_inputs = processor(
@@ -302,25 +304,28 @@ def visualize_qwen_vl(
     entities = extract_qwen_entities(decoded)
 
     grid = prompt_inputs["image_grid_thw"][0]
-    t, h_patch, w_patch = int(grid[0].item()), int(grid[1].item()), int(grid[2].item())
-    total_patches = t * h_patch * w_patch
+    spatial_merge = processor.image_processor.merge_size
+    h_grid = int(grid[1].item()) // spatial_merge
+    w_grid = int(grid[2].item()) // spatial_merge
 
-    if outputs.attentions:
+    vision_mask = prompt_inputs["input_ids"][0] == processor.image_token_id
+
+    if outputs.attentions and vision_mask.any():
         step_attns = []
         for step in outputs.attentions:
             last_layer_attn = step[-1][0].mean(dim=0)
             step_attns.append(last_layer_attn[-1, :prompt_len])
 
         attn_to_prompt = torch.stack(step_attns, dim=0).mean(dim=0)
-        visual_weights = attn_to_prompt[:total_patches] if len(attn_to_prompt) >= total_patches else attn_to_prompt
+        visual_weights = attn_to_prompt[vision_mask]
         
-        if visual_weights.numel() == h_patch * w_patch:
-            heatmap = visual_weights.view(h_patch, w_patch).cpu().numpy()
+        if visual_weights.numel() == h_grid * w_grid:
+            heatmap = visual_weights.view(h_grid, w_grid).float().cpu().numpy()
         else:
             side = int(visual_weights.numel() ** 0.5)
-            heatmap = visual_weights[:side * side].view(side, side).cpu().numpy()
+            heatmap = visual_weights[:side * side].view(side, side).float().cpu().numpy()
     else:
-        heatmap = np.zeros((h_patch, w_patch), dtype=np.float32)
+        heatmap = np.zeros((h_grid, w_grid), dtype=np.float32)
 
     overlay = overlay_heatmap(image, heatmap)
     return entities, overlay
