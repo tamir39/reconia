@@ -4,8 +4,10 @@ import gc
 import json
 import logging
 import os
+import random
 from pathlib import Path
 
+import numpy as np
 import torch
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LRScheduler
@@ -167,6 +169,7 @@ def train_model(
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
+    resume: bool = False,
 ) -> None:
     set_seed()
     repo_dir = get_repo_dir()
@@ -274,11 +277,37 @@ def train_model(
         scaler = torch.amp.GradScaler(enabled=use_amp)
 
         history: list[dict] = []
+        start_epoch = 1
         best_f1 = -1.0
         best_epoch = 0
         patience_counter = 0
 
-        for epoch in range(1, epochs + 1):
+        checkpoint_file = checkpoint_dir / "last_checkpoint.pt"
+        if resume and checkpoint_file.exists():
+            ckpt = torch.load(checkpoint_file, map_location="cpu", weights_only=False)
+            model.load_state_dict(ckpt["model_state_dict"])
+            optimizer.load_state_dict(ckpt["optimizer_state"])
+            scheduler.load_state_dict(ckpt["scheduler_state"])
+            scaler.load_state_dict(ckpt["scaler_state"])
+            start_epoch = ckpt["epoch"] + 1
+            best_f1 = ckpt["best_f1"]
+            best_epoch = ckpt["best_epoch"]
+            patience_counter = ckpt["patience_counter"]
+            history = ckpt["history"]
+
+            random.setstate(ckpt["python_rng_state"])
+            np.random.set_state(ckpt["numpy_rng_state"])
+            torch.set_rng_state(ckpt["torch_rng_state"])
+            if torch.cuda.is_available() and "cuda_rng_state" in ckpt:
+                torch.cuda.set_rng_state(ckpt["cuda_rng_state"])
+
+            if start_epoch > epochs or patience_counter >= patience:
+                logger.info(f"Resume -> Completed at epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
+                return
+
+            logger.info(f"Resume -> Epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
+
+        for epoch in range(start_epoch, epochs + 1):
             train_loss = train_epoch(
                 model,
                 train_loader,
@@ -325,6 +354,30 @@ def train_model(
             elif best_f1 > 0:
                 patience_counter += 1
 
+            if resume:
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": model.state_dict(),
+                        "optimizer_state": optimizer.state_dict(),
+                        "scheduler_state": scheduler.state_dict(),
+                        "scaler_state": scaler.state_dict(),
+                        "best_f1": best_f1,
+                        "best_epoch": best_epoch,
+                        "patience_counter": patience_counter,
+                        "history": history,
+                        "python_rng_state": random.getstate(),
+                        "numpy_rng_state": np.random.get_state(),
+                        "torch_rng_state": torch.get_rng_state(),
+                        **(
+                            {"cuda_rng_state": torch.cuda.get_rng_state()}
+                            if torch.cuda.is_available()
+                            else {}
+                        ),
+                    },
+                    checkpoint_file,
+                )
+
             if patience_counter >= patience:
                 logger.info(
                     f"Early Stop -> Epoch {epoch:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
@@ -365,6 +418,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--accum_steps", type=int, default=2)
     parser.add_argument("--lr", type=float, default=3e-5)
     parser.add_argument("--patience", type=int, default=5)
+    parser.add_argument("--resume", action="store_true")
     return parser.parse_args()
 
 
@@ -379,4 +433,5 @@ if __name__ == "__main__":
             accum_steps=args.accum_steps,
             lr=args.lr,
             patience=args.patience,
+            resume=args.resume,
         )

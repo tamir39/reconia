@@ -4,8 +4,15 @@ import gc
 import json
 import logging
 import os
+import random
 from pathlib import Path
 
+import numpy as np
+import torch
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import LRScheduler
+from torch.utils.data import DataLoader
+from tqdm.auto import tqdm
 from peft import (
     LoraConfig, 
     TaskType, 
@@ -13,11 +20,6 @@ from peft import (
     get_peft_model_state_dict, 
     set_peft_model_state_dict
 )
-import torch
-from torch.optim import AdamW
-from torch.optim.lr_scheduler import LRScheduler
-from torch.utils.data import DataLoader
-from tqdm.auto import tqdm
 from transformers import (
     AutoProcessor,
     BitsAndBytesConfig,
@@ -57,6 +59,7 @@ def train_epoch(
 ) -> float:
     model.train()
     total_loss = 0.0
+    valid_batches = 0
     optimizer.zero_grad()
 
     progress_loader = tqdm(
@@ -65,15 +68,16 @@ def train_epoch(
         leave=False,
     )
     for step, batch in enumerate(progress_loader, start=1):
-        batch = {
-            key: value.to(device)
-            for key, value in batch.items() 
-            if key != "prompt_len"
-        }
+        batch = {key: value.to(device)for key, value in batch.items() if key != "prompt_len"}
 
         with torch.amp.autocast(device_type=device.type, enabled=use_amp):
             outputs = model(**batch)
             loss = outputs.loss / accum_steps
+
+        if not torch.isfinite(loss):
+            print("NaN at step:", step, "valid_labels:", (batch["labels"] != -100).sum(dim=1).tolist())
+            optimizer.zero_grad()
+            continue
 
         scaler.scale(loss).backward()
 
@@ -89,9 +93,10 @@ def train_epoch(
                 scheduler.step()
 
         total_loss += loss.item() * accum_steps
+        valid_batches += 1
         progress_loader.set_postfix(loss=f"{loss.item() * accum_steps:.4f}")
 
-    return total_loss / len(loader)
+    return total_loss / max(valid_batches, 1)
 
 
 def evaluate_epoch(
@@ -106,6 +111,7 @@ def evaluate_epoch(
 ) -> tuple[float, dict[str, float]]:
     model.eval()
     total_loss = 0.0
+    valid_batches = 0
     all_preds: list[dict[str, list[str]]] = []
     pad_token_id = (
         processor.tokenizer.pad_token_id
@@ -125,7 +131,9 @@ def evaluate_epoch(
             )
 
             outputs = model(**batch_loss)
-            total_loss += outputs.loss.item()
+            if torch.isfinite(outputs.loss):
+                total_loss += outputs.loss.item()
+                valid_batches += 1
             del outputs, batch_loss
 
             prompt_lengths = batch_gpu["prompt_len"].tolist()
@@ -165,7 +173,7 @@ def evaluate_epoch(
             new_tokens = generated_ids[:, max_prompt_len:]
             all_preds.extend(decode_predictions(new_tokens, processor))
 
-    avg_loss = total_loss / len(loader)
+    avg_loss = total_loss / max(valid_batches, 1)
     gts = [sample.get("gt", {}) for sample in samples]
     metrics = evaluate_dataset(gts, all_preds)
 
@@ -232,6 +240,7 @@ def train_model(
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
+    resume: bool = False
 ) -> None:
     set_seed()
     repo_dir = get_repo_dir()
@@ -365,11 +374,37 @@ def train_model(
         scaler = torch.amp.GradScaler(enabled=use_amp)
 
         history: list[dict] = []
+        start_epoch = 1
         best_f1 = -1.0
         best_epoch = 0
         patience_counter = 0
 
-        for epoch in range(1, epochs + 1):
+        checkpoint_file = checkpoint_dir / "last_checkpoint.pt"
+        if resume and checkpoint_file.exists():
+            ckpt = torch.load(checkpoint_file, map_location="cpu", weights_only=False)
+            set_peft_model_state_dict(model, ckpt["model_state_dict"])
+            optimizer.load_state_dict(ckpt["optimizer_state"])
+            scheduler.load_state_dict(ckpt["scheduler_state"])
+            scaler.load_state_dict(ckpt["scaler_state"])
+            start_epoch = ckpt["epoch"] + 1
+            best_f1 = ckpt["best_f1"]
+            best_epoch = ckpt["best_epoch"]
+            patience_counter = ckpt["patience_counter"]
+            history = ckpt["history"]
+
+            random.setstate(ckpt["python_rng_state"])
+            np.random.set_state(ckpt["numpy_rng_state"])
+            torch.set_rng_state(ckpt["torch_rng_state"])
+            if torch.cuda.is_available() and "cuda_rng_state" in ckpt:
+                torch.cuda.set_rng_state(ckpt["cuda_rng_state"])
+
+            if start_epoch > epochs or patience_counter >= patience:
+                logger.info(f"Resume -> Completed at epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
+                return
+
+            logger.info(f"Resume -> Epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
+
+        for epoch in range(start_epoch, epochs + 1):
             train_loss = train_epoch(
                 model,
                 train_loader,
@@ -415,16 +450,36 @@ def train_model(
             elif best_f1 > 0:
                 patience_counter += 1
 
-            if patience_counter >= patience:
-                logger.info(
-                    f"Early Stop -> Epoch {epoch:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
+            if resume:
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": get_adapter_state(model),
+                        "optimizer_state": optimizer.state_dict(),
+                        "scheduler_state": scheduler.state_dict(),
+                        "scaler_state": scaler.state_dict(),
+                        "best_f1": best_f1,
+                        "best_epoch": best_epoch,
+                        "patience_counter": patience_counter,
+                        "history": history,
+                        "python_rng_state": random.getstate(),
+                        "numpy_rng_state": np.random.get_state(),
+                        "torch_rng_state": torch.get_rng_state(),
+                        **(
+                            {"cuda_rng_state": torch.cuda.get_rng_state()}
+                            if torch.cuda.is_available()
+                            else {}
+                        ),
+                    },
+                    checkpoint_file,
                 )
+   
+            if patience_counter >= patience:
+                logger.info(f"Early Stop -> Epoch {epoch:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
                 break
 
-        if epoch == epochs:
-            logger.info(
-                f"Completed -> Epoch {epochs:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
-            )
+            if epoch == epochs:
+                logger.info(f"Completed -> Epoch {epochs:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
 
         save_history(history, out_dir)
         evaluate_test(
@@ -454,6 +509,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--accum_steps", type=int, default=4)
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--patience", type=int, default=5)
+    parser.add_argument("--resume", action="store_true")
     return parser.parse_args()
 
 
@@ -468,4 +524,5 @@ if __name__ == "__main__":
             accum_steps=args.accum_steps,
             lr=args.lr,
             patience=args.patience,
+            resume=args.resume,
         )

@@ -27,7 +27,8 @@ reconia/
 │   └── <dataset>/
 │       ├── labels.json
 │       └── <model>/
-│           └── best_weights.pt
+│           ├── best_weights.pt
+│           └── last_checkpoint.pt
 ├── models/
 │   └── <model>/
 │       ├── dataset.py
@@ -136,6 +137,7 @@ python -m models.<model>.train --dataset <dataset>
 | `--accum_steps` | Theo mô hình | `int` | Số bước tích lũy gradient |
 | `--lr` | Theo mô hình | `float` | Learning rate cho các mô hình đơn LR |
 | `--patience` | `5` | `int` | Số epoch chờ không cải thiện trước khi dừng sớm |
+| `--resume` | `False` | `flag` | Bật lưu `last_checkpoint.pt` và tiếp tục huấn luyện từ checkpoint |
 
 Kết quả lưu tại `results/<dataset>/<model>/`.
 
