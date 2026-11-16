@@ -11,7 +11,7 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
-from transformers import get_linear_schedule_with_warmup
+from transformers import get_cosine_schedule_with_warmup
 
 from models.pick.dataset import (
     PickDataset,
@@ -273,7 +273,7 @@ def train_model(
 
         total_steps = (len(train_loader) + accum_steps - 1) // accum_steps * epochs
         warmup_steps = int(total_steps * warmup_ratio)
-        scheduler = get_linear_schedule_with_warmup(
+        scheduler = get_cosine_schedule_with_warmup(
             optimizer,
             num_warmup_steps=warmup_steps,
             num_training_steps=total_steps,

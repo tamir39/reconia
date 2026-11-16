@@ -16,7 +16,7 @@ from transformers import (
     DataCollatorForTokenClassification,
     PreTrainedTokenizerBase,
     RobertaForTokenClassification,
-    get_linear_schedule_with_warmup,
+    get_cosine_schedule_with_warmup,
 )
 
 from models.roberta.dataset import RobertaDataset, decode_predictions
@@ -259,7 +259,7 @@ def train_model(
 
         total_steps = (len(train_loader) + accum_steps - 1) // accum_steps * epochs
         warmup_steps = int(total_steps * warmup_ratio)
-        scheduler = get_linear_schedule_with_warmup(
+        scheduler = get_cosine_schedule_with_warmup(
             optimizer,
             num_warmup_steps=warmup_steps,
             num_training_steps=total_steps,
