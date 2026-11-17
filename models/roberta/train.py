@@ -41,7 +41,6 @@ def train_epoch(
     scheduler: LRScheduler,
     scaler: torch.amp.GradScaler,
     device: torch.device,
-    use_amp: bool,
     epoch: int,
     epochs: int = 25,
     accum_steps: int = 1,
@@ -58,7 +57,7 @@ def train_epoch(
     for step, batch in enumerate(progress_loader, start=1):
         batch = {k: v.to(device) for k, v in batch.items()}
 
-        with torch.amp.autocast(device_type=device.type, enabled=use_amp):
+        with torch.amp.autocast(device_type=device.type):
             outputs = model(**batch)
             loss = outputs.loss / accum_steps
 
@@ -88,14 +87,13 @@ def evaluate_epoch(
     tokenizer: PreTrainedTokenizerBase,
     id2label: dict[int, str],
     device: torch.device,
-    use_amp: bool,
     desc: str,
 ) -> tuple[float, dict[str, float]]:
     model.eval()
     total_loss = 0.0
     all_pred_ids: list[list[int]] = []
 
-    with torch.no_grad(), torch.amp.autocast(device_type=device.type, enabled=use_amp):
+    with torch.no_grad(), torch.amp.autocast(device_type=device.type):
         for batch in tqdm(loader, desc=desc, leave=False):
             batch = {k: v.to(device) for k, v in batch.items()}
             outputs = model(**batch)
@@ -117,7 +115,6 @@ def evaluate_test(
     tokenizer: PreTrainedTokenizerBase,
     id2label: dict[int, str],
     device: torch.device,
-    use_amp: bool,
     dataset_name: str,
     checkpoint_dir: Path,
     out_dir: Path,
@@ -127,7 +124,7 @@ def evaluate_test(
         torch.load(checkpoint_dir / "best_weights.pt", map_location="cpu", weights_only=True)
     )
     loss, metrics = evaluate_epoch(
-        model, loader, samples, tokenizer, id2label, device, use_amp, "[Test]"
+        model, loader, samples, tokenizer, id2label, device, "[Test]"
     )
 
     results = {
@@ -232,13 +229,13 @@ def train_model(
             persistent_workers=False,
         )
 
+        device = torch.device("cuda")
         model = RobertaForTokenClassification.from_pretrained(
             weights_dir,
             num_labels=len(labels),
             id2label=id2label,
             label2id=label2id,
         )
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model.to(device)
 
         no_decay = {"bias", "layernorm"}
@@ -267,9 +264,7 @@ def train_model(
             num_warmup_steps=warmup_steps,
             num_training_steps=total_steps,
         )
-
-        use_amp = device.type == "cuda"
-        scaler = torch.amp.GradScaler(device.type, enabled=use_amp)
+        scaler = torch.amp.GradScaler()
 
         history: list[dict] = []
         start_epoch = 1
@@ -289,12 +284,10 @@ def train_model(
             best_epoch = ckpt["best_epoch"]
             patience_counter = ckpt["patience_counter"]
             history = ckpt["history"]
-
             random.setstate(ckpt["python_rng_state"])
             np.random.set_state(ckpt["numpy_rng_state"])
             torch.set_rng_state(ckpt["torch_rng_state"])
-            if torch.cuda.is_available() and "cuda_rng_state" in ckpt:
-                torch.cuda.set_rng_state(ckpt["cuda_rng_state"])
+            torch.cuda.set_rng_state(ckpt["cuda_rng_state"])
 
             if start_epoch > epochs or patience_counter >= patience:
                 logger.info(f"Resume -> Completed at epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
@@ -310,7 +303,6 @@ def train_model(
                 scheduler,
                 scaler,
                 device,
-                use_amp,
                 epoch,
                 epochs,
                 accum_steps,
@@ -322,7 +314,6 @@ def train_model(
                 tokenizer,
                 id2label,
                 device,
-                use_amp,
                 f"Epoch {epoch:02d}/{epochs:02d} [Val]",
             )
 
@@ -364,11 +355,7 @@ def train_model(
                         "python_rng_state": random.getstate(),
                         "numpy_rng_state": np.random.get_state(),
                         "torch_rng_state": torch.get_rng_state(),
-                        **(
-                            {"cuda_rng_state": torch.cuda.get_rng_state()}
-                            if torch.cuda.is_available()
-                            else {}
-                        ),
+                        "cuda_rng_state": torch.cuda.get_rng_state(),
                     },
                     checkpoint_file,
                 )
@@ -392,7 +379,6 @@ def train_model(
             tokenizer,
             id2label,
             device,
-            use_amp,
             dataset_name,
             checkpoint_dir,
             out_dir,
@@ -401,8 +387,7 @@ def train_model(
     finally:
         close_logger(logger)
         gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        torch.cuda.empty_cache()
 
 
 def parse_args() -> argparse.Namespace:

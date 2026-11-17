@@ -8,19 +8,19 @@ import random
 from pathlib import Path
 
 import numpy as np
+from peft import (
+    LoraConfig,
+    TaskType,
+    get_peft_model,
+    get_peft_model_state_dict,
+    prepare_model_for_kbit_training,
+    set_peft_model_state_dict,
+)
 import torch
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
-from peft import (
-    LoraConfig, 
-    TaskType, 
-    get_peft_model, 
-    get_peft_model_state_dict, 
-    prepare_model_for_kbit_training,
-    set_peft_model_state_dict,
-)
 from transformers import (
     AutoProcessor,
     BitsAndBytesConfig,
@@ -53,14 +53,12 @@ def train_epoch(
     scheduler: LRScheduler,
     scaler: torch.amp.GradScaler,
     device: torch.device,
-    use_amp: bool,
     epoch: int,
     epochs: int = 25,
     accum_steps: int = 4,
 ) -> float:
     model.train()
     total_loss = 0.0
-    valid_batches = 0
     optimizer.zero_grad()
 
     progress_loader = tqdm(
@@ -68,17 +66,13 @@ def train_epoch(
         desc=f"Epoch {epoch:02d}/{epochs:02d} [Train]",
         leave=False,
     )
-    for step, batch in enumerate(progress_loader, start=1):
-        batch = {key: value.to(device)for key, value in batch.items() if key != "prompt_len"}
 
-        with torch.amp.autocast(device_type=device.type, enabled=use_amp):
+    for step, batch in enumerate(progress_loader, start=1):
+        batch = {key: value.to(device) for key, value in batch.items() if key != "prompt_len"}
+
+        with torch.amp.autocast(device_type=device.type):
             outputs = model(**batch)
             loss = outputs.loss / accum_steps
-
-        if not torch.isfinite(loss):
-            print("NaN at step:", step, "valid_labels:", (batch["labels"] != -100).sum(dim=1).tolist())
-            optimizer.zero_grad()
-            continue
 
         scaler.scale(loss).backward()
 
@@ -94,10 +88,9 @@ def train_epoch(
                 scheduler.step()
 
         total_loss += loss.item() * accum_steps
-        valid_batches += 1
         progress_loader.set_postfix(loss=f"{loss.item() * accum_steps:.4f}")
 
-    return total_loss / max(valid_batches, 1)
+    return total_loss / len(loader)
 
 
 def evaluate_epoch(
@@ -106,13 +99,11 @@ def evaluate_epoch(
     samples: list[dict],
     processor: AutoProcessor,
     device: torch.device,
-    use_amp: bool,
     desc: str,
     max_new_tokens: int = 1024,
 ) -> tuple[float, dict[str, float]]:
     model.eval()
     total_loss = 0.0
-    valid_batches = 0
     all_preds: list[dict[str, list[str]]] = []
     pad_token_id = (
         processor.tokenizer.pad_token_id
@@ -120,11 +111,10 @@ def evaluate_epoch(
         else 0
     )
 
-    with torch.no_grad(), torch.amp.autocast(device_type=device.type, enabled=use_amp):
+    with torch.no_grad(), torch.amp.autocast(device_type=device.type):
         for batch in tqdm(loader, desc=desc, leave=False):
             batch_gpu = {key: value.to(device) for key, value in batch.items()}
             batch_loss = {key: value for key, value in batch_gpu.items() if key != "prompt_len"}
-
             valid_lengths = (batch_gpu["labels"] != -100).sum(dim=1)
             batch_max_new_tokens = min(
                 max_new_tokens,
@@ -132,15 +122,13 @@ def evaluate_epoch(
             )
 
             outputs = model(**batch_loss)
-            if torch.isfinite(outputs.loss):
-                total_loss += outputs.loss.item()
-                valid_batches += 1
-            del outputs, batch_loss
+            total_loss += outputs.loss.item()
+            del outputs
 
             prompt_lengths = batch_gpu["prompt_len"].tolist()
             max_prompt_len = max(prompt_lengths)
             batch_size = len(prompt_lengths)
-            
+
             prompt_input_ids = torch.full(
                 (batch_size, max_prompt_len),
                 pad_token_id,
@@ -152,7 +140,7 @@ def evaluate_epoch(
                 dtype=torch.long,
                 device=device,
             )
-            
+
             for sample_index, prompt_len in enumerate(prompt_lengths):
                 offset = max_prompt_len - prompt_len
                 prompt_input_ids[sample_index, offset:] = (
@@ -171,13 +159,13 @@ def evaluate_epoch(
                 do_sample=False,
                 use_cache=True,
             )
+
             new_tokens = generated_ids[:, max_prompt_len:]
             all_preds.extend(decode_predictions(new_tokens, processor))
 
-    avg_loss = total_loss / max(valid_batches, 1)
+    avg_loss = total_loss / len(loader)
     gts = [sample.get("gt", {}) for sample in samples]
     metrics = evaluate_dataset(gts, all_preds)
-
     return avg_loss, metrics
 
 
@@ -187,18 +175,17 @@ def evaluate_test(
     samples: list[dict],
     processor: AutoProcessor,
     device: torch.device,
-    use_amp: bool,
     dataset_name: str,
     checkpoint_dir: Path,
     out_dir: Path,
     logger: logging.Logger,
 ) -> None:
     set_peft_model_state_dict(
-        model, 
-        torch.load(checkpoint_dir / "best_weights.pt", map_location="cpu", weights_only=True)
+        model,
+        torch.load(checkpoint_dir / "best_weights.pt", map_location="cpu", weights_only=True),
     )
     loss, metrics = evaluate_epoch(
-        model, loader, samples, processor, device , use_amp, "[Test]"
+        model, loader, samples, processor, device, "[Test]"
     )
 
     results = {
@@ -209,7 +196,6 @@ def evaluate_test(
         "recall": metrics["recall"],
         "f1": metrics["f1"],
     }
-
     with open(out_dir / "test_metrics.json", "w", encoding="utf-8") as file:
         json.dump(results, file, indent=2)
 
@@ -241,9 +227,10 @@ def train_model(
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
-    resume: bool = False
+    resume: bool = False,
 ) -> None:
     set_seed()
+
     repo_dir = get_repo_dir()
     checkpoint_dir = repo_dir / "checkpoints" / dataset_name / "qwen_vl"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -310,37 +297,30 @@ def train_model(
             persistent_workers=False,
         )
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        use_amp = device.type == "cuda"
+        device = torch.device("cuda")
 
-        if use_amp:
-            bnb_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.float16,
-                bnb_4bit_use_double_quant=True,
-            )
-
-            model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-                weights_dir,
-                quantization_config=bnb_config,
-                torch_dtype=torch.float16,
-                device_map={"": device},
-            )
-            
-            model = prepare_model_for_kbit_training(
-                model,
-                use_gradient_checkpointing=True,
-                gradient_checkpointing_kwargs={"use_reentrant": False},
-            )
-        else:
-            model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-                weights_dir,
-                torch_dtype=torch.float32,
-            )
-            model.to(device)
-            model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
-            model.enable_input_require_grads()
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_use_double_quant=True,
+            llm_int8_skip_modules=["visual"],
+        )
+        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            weights_dir,
+            quantization_config=bnb_config,
+            torch_dtype=torch.float16,
+            device_map=device,
+        )
+        model = prepare_model_for_kbit_training(
+            model,
+            use_gradient_checkpointing=True,
+            gradient_checkpointing_kwargs={"use_reentrant": False},
+        )
+        model.visual.to(torch.float32)
+        model.visual.forward = torch.amp.custom_fwd(
+            device_type=device.type, cast_inputs=torch.float32
+        )(model.visual.forward)
 
         lora_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
@@ -350,7 +330,7 @@ def train_model(
             target_modules=r".*layers\.\d+\.(self_attn|mlp)\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)",
         )
         model = get_peft_model(model, lora_config)
-        
+
         no_decay = {"bias", "layernorm", "norm"}
         param_groups = [
             {
@@ -377,8 +357,7 @@ def train_model(
             num_warmup_steps=warmup_steps,
             num_training_steps=total_steps,
         )
-
-        scaler = torch.amp.GradScaler(enabled=use_amp)
+        scaler = torch.amp.GradScaler()
 
         history: list[dict] = []
         start_epoch = 1
@@ -398,18 +377,27 @@ def train_model(
             best_epoch = ckpt["best_epoch"]
             patience_counter = ckpt["patience_counter"]
             history = ckpt["history"]
-
             random.setstate(ckpt["python_rng_state"])
             np.random.set_state(ckpt["numpy_rng_state"])
             torch.set_rng_state(ckpt["torch_rng_state"])
-            if torch.cuda.is_available() and "cuda_rng_state" in ckpt:
-                torch.cuda.set_rng_state(ckpt["cuda_rng_state"])
+            torch.cuda.set_rng_state(ckpt["cuda_rng_state"])
 
             if start_epoch > epochs or patience_counter >= patience:
                 logger.info(f"Resume -> Completed at epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
                 return
 
             logger.info(f"Resume -> Epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
+
+        def _nan_hook(name: str):
+            def hook(module, inp, out):
+                tensors = out if isinstance(out, tuple) else (out,)
+                for t in tensors:
+                    if torch.is_tensor(t) and not torch.isfinite(t).all():
+                        raise RuntimeError(f"NaN/Inf first appeared at: {name}")
+            return hook
+
+        for name, mod in model.named_modules():
+            mod.register_forward_hook(_nan_hook(name))
 
         for epoch in range(start_epoch, epochs + 1):
             train_loss = train_epoch(
@@ -419,7 +407,6 @@ def train_model(
                 scheduler,
                 scaler,
                 device,
-                use_amp,
                 epoch,
                 epochs,
                 accum_steps,
@@ -430,7 +417,6 @@ def train_model(
                 val_ds.samples,
                 processor,
                 device,
-                use_amp,
                 f"Epoch {epoch:02d}/{epochs:02d} [Val]",
             )
 
@@ -472,15 +458,11 @@ def train_model(
                         "python_rng_state": random.getstate(),
                         "numpy_rng_state": np.random.get_state(),
                         "torch_rng_state": torch.get_rng_state(),
-                        **(
-                            {"cuda_rng_state": torch.cuda.get_rng_state()}
-                            if torch.cuda.is_available()
-                            else {}
-                        ),
+                        "cuda_rng_state": torch.cuda.get_rng_state(),
                     },
                     checkpoint_file,
                 )
-   
+
             if patience_counter >= patience:
                 logger.info(f"Early Stop -> Epoch {epoch:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
                 break
@@ -495,7 +477,6 @@ def train_model(
             test_ds.samples,
             processor,
             device,
-            use_amp,
             dataset_name,
             checkpoint_dir,
             out_dir,
@@ -504,8 +485,7 @@ def train_model(
     finally:
         close_logger(logger)
         gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        torch.cuda.empty_cache()
 
 
 def parse_args() -> argparse.Namespace:
