@@ -102,6 +102,8 @@ def evaluate_epoch(
     desc: str,
     max_new_tokens: int = 1024,
 ) -> tuple[float, dict[str, float]]:
+    gc.collect()
+    torch.cuda.empty_cache()
     model.eval()
     total_loss = 0.0
     all_preds: list[dict[str, list[str]]] = []
@@ -258,7 +260,7 @@ def train_model(
         processor = AutoProcessor.from_pretrained(weights_dir)
         processor.image_processor.size = {
             "shortest_edge": 256 * 28 * 28,
-            "longest_edge": 768 * 28 * 28,
+            "longest_edge": 512 * 28 * 28,
         }
         collate_fn = QwenVLDataCollator(processor=processor)
 

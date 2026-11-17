@@ -99,6 +99,8 @@ def evaluate_epoch(
     desc: str,
     max_length: int = 1024,
 ) -> tuple[float, dict[str, float]]:
+    gc.collect()
+    torch.cuda.empty_cache()
     model.eval()
     total_loss = 0.0
     all_preds: list[dict[str, list[str]]] = []
