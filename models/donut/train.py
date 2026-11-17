@@ -425,10 +425,10 @@ def train_model(
                 )
                 break
 
-        if epoch == epochs:
-            logger.info(
-                f"Completed -> Epoch {epochs:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
-            )
+            if epoch == epochs:
+                logger.info(
+                    f"Completed -> Epoch {epochs:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
+                )
 
         save_history(history, out_dir)
         evaluate_test(
