@@ -18,7 +18,8 @@ from peft import (
     TaskType, 
     get_peft_model, 
     get_peft_model_state_dict, 
-    set_peft_model_state_dict
+    prepare_model_for_kbit_training,
+    set_peft_model_state_dict,
 )
 from transformers import (
     AutoProcessor,
@@ -326,12 +327,20 @@ def train_model(
                 torch_dtype=torch.float16,
                 device_map={"": device},
             )
+            
+            model = prepare_model_for_kbit_training(
+                model,
+                use_gradient_checkpointing=True,
+                gradient_checkpointing_kwargs={"use_reentrant": False},
+            )
         else:
             model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
                 weights_dir,
                 torch_dtype=torch.float32,
             )
             model.to(device)
+            model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+            model.enable_input_require_grads()
 
         lora_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
@@ -341,9 +350,7 @@ def train_model(
             target_modules=r".*layers\.\d+\.(self_attn|mlp)\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)",
         )
         model = get_peft_model(model, lora_config)
-        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
-        model.enable_input_require_grads()
-
+        
         no_decay = {"bias", "layernorm", "norm"}
         param_groups = [
             {
