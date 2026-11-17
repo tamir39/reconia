@@ -317,10 +317,10 @@ def train_model(
             use_gradient_checkpointing=True,
             gradient_checkpointing_kwargs={"use_reentrant": False},
         )
-        model.visual.to(torch.float32)
-        model.visual.forward = torch.amp.custom_fwd(
+        model.model.visual.to(torch.float32)
+        model.model.visual.forward = torch.amp.custom_fwd(
             device_type=device.type, cast_inputs=torch.float32
-        )(model.visual.forward)
+        )(model.model.visual.forward)
 
         lora_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
