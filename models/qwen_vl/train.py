@@ -304,7 +304,7 @@ def train_model(
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_use_double_quant=True,
-            llm_int8_skip_modules=["visual", "lm_head"]
+            llm_int8_skip_modules=["visual", "model.visual", "lm_head"],
         )
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
             weights_dir,
@@ -387,17 +387,6 @@ def train_model(
                 return
 
             logger.info(f"Resume -> Epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
-
-        def _nan_hook(name: str):
-            def hook(module, inp, out):
-                tensors = out if isinstance(out, tuple) else (out,)
-                for t in tensors:
-                    if torch.is_tensor(t) and not torch.isfinite(t).all():
-                        raise RuntimeError(f"NaN/Inf first appeared at: {name}")
-            return hook
-
-        for name, mod in model.named_modules():
-            mod.register_forward_hook(_nan_hook(name))
 
         for epoch in range(start_epoch, epochs + 1):
             train_loss = train_epoch(
