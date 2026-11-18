@@ -94,6 +94,7 @@ def evaluate_epoch(
 ) -> tuple[float, dict[str, float]]:
     gc.collect()
     torch.cuda.empty_cache()
+
     model.eval()
     total_loss = 0.0
     all_pred_ids: list[list[int]] = []
@@ -393,7 +394,6 @@ def train_model(
         )
     finally:
         close_logger(logger)
-        gc.collect()
 
 
 def parse_args() -> argparse.Namespace:
@@ -421,3 +421,5 @@ if __name__ == "__main__":
             patience=args.patience,
             resume=args.resume,
         )
+        gc.collect()
+        torch.cuda.empty_cache()

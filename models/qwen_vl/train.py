@@ -55,7 +55,7 @@ def train_epoch(
     device: torch.device,
     epoch: int,
     epochs: int = 25,
-    accum_steps: int = 8,
+    accum_steps: int = 4,
 ) -> float:
     model.train()
     total_loss = 0.0
@@ -104,6 +104,7 @@ def evaluate_epoch(
 ) -> tuple[float, dict[str, float]]:
     gc.collect()
     torch.cuda.empty_cache()
+
     model.eval()
     total_loss = 0.0
     all_preds: list[dict[str, list[str]]] = []
@@ -223,8 +224,8 @@ def save_history(history: list[dict], out_dir: Path) -> None:
 def train_model(
     dataset_name: str,
     epochs: int = 25,
-    batch_size: int = 1,
-    accum_steps: int = 8,
+    batch_size: int = 2,
+    accum_steps: int = 4,
     lr: float = 1e-4,
     patience: int = 5,
     weight_decay: float = 0.01,
@@ -475,16 +476,14 @@ def train_model(
         )
     finally:
         close_logger(logger)
-        gc.collect()
-        torch.cuda.empty_cache()
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="all", choices=["all", *DATASETS])
     parser.add_argument("--epochs", type=int, default=25)
-    parser.add_argument("--batch_size", type=int, default=1)
-    parser.add_argument("--accum_steps", type=int, default=8)
+    parser.add_argument("--batch_size", type=int, default=2)
+    parser.add_argument("--accum_steps", type=int, default=4)
     parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--resume", action="store_true")
@@ -504,3 +503,5 @@ if __name__ == "__main__":
             patience=args.patience,
             resume=args.resume,
         )
+        gc.collect()
+        torch.cuda.empty_cache()
