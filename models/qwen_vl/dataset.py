@@ -177,9 +177,9 @@ def extract_entities(text: str) -> dict[str, list[str]]:
         for key, value in parsed.items():
             values = value if isinstance(value, list) else [value]
             clean_values = [
-                item.strip()
-                for item in values
-                if isinstance(item, str) and item.strip()
+                str(item).strip() 
+                for item in values 
+                if item is not None and str(item).strip()
             ]
             if clean_values:
                 entities[key] = clean_values
