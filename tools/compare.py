@@ -40,7 +40,7 @@ def compare_results() -> None:
         results = collect_results(out_dir)
         if results:
             save_comparison_md(results, out_dir)
-            save_comparison_plot(results, out_dir)
+            save_comparison_plot(results, dataset_name, out_dir)
 
 
 if __name__ == "__main__":
