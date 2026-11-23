@@ -1,0 +1,61 @@
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{vietnam}
+  \usepackage{mathptmx}
+\else
+  \usepackage{fontspec}
+  \IfFontExistsTF{Consolas}{\setmonofont{Consolas}[Scale=MatchLowercase]}{}
+  \IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{\setmainfont{TeX Gyre Termes}}
+  \usepackage[vietnamese]{babel}
+\fi
+\usepackage[left=3.5cm,right=2cm,top=3.5cm,bottom=3cm,headheight=16pt]{geometry}
+\usepackage[fontsize=13pt]{scrextend}
+\usepackage{graphicx,float,amsmath,amssymb}
+\usepackage{titlesec,titletoc,indentfirst}
+\usepackage{array,tabularx,booktabs,makecell}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{xurl}
+\usepackage[unicode,hidelinks]{hyperref}
+\hypersetup{pdftitle={Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin từ hóa đơn},pdfauthor={Phí Vương Tường Tâm; Vũ Hưng Thịnh}}
+\renewcommand{\baselinestretch}{1.5}
+\setlength{\parindent}{1.27cm}
+\setlength{\parskip}{0pt}
+\setlength{\emergencystretch}{2em}
+\titleformat{\chapter}[hang]{\bfseries\fontsize{16}{20}\selectfont}{CHƯƠNG \thechapter.}{0.6em}{}
+\titleformat{name=\chapter,numberless}[block]{\bfseries\fontsize{16}{20}\selectfont\centering}{}{0pt}{}
+\titlespacing*{\chapter}{0pt}{0pt}{18pt}
+\titleformat{\section}[hang]{\fontsize{14}{18}\selectfont\bfseries}{\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{14pt}{7pt}
+\titleformat{\subsection}[hang]{\fontsize{14}{18}\selectfont\bfseries\itshape}{\thesubsection}{0.6em}{}
+\titlecontents{chapter}[0pt]{\bfseries}{CHƯƠNG \thecontentslabel.\ }{}{\normalfont\dotfill\bfseries\contentspage}
+\titlecontents{section}[0pt]{}{\thecontentslabel\quad}{}{\dotfill\contentspage}
+\titlecontents{figure}[0pt]{}{Hình \thecontentslabel:\quad}{}{\dotfill\contentspage}
+\titlecontents{table}[0pt]{}{Bảng \thecontentslabel:\quad}{}{\dotfill\contentspage}
+\setcounter{tocdepth}{1}
+\setcounter{secnumdepth}{2}
+\AtBeginDocument{%
+  \renewcommand{\contentsname}{MỤC LỤC}%
+  \renewcommand{\listfigurename}{DANH MỤC HÌNH VẼ}%
+  \renewcommand{\listtablename}{DANH MỤC BẢNG BIỂU}%
+  \renewcommand{\figurename}{Hình}%
+  \renewcommand{\tablename}{Bảng}%
+}
+\captionsetup{font=normalsize,labelfont=bf,labelsep=colon}
+\numberwithin{figure}{chapter}
+\numberwithin{table}{chapter}
+\numberwithin{equation}{chapter}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyhead[C]{\thepage}\renewcommand{\headrulewidth}{0pt}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\usepackage[autostyle=false,style=american]{csquotes}
+\usepackage[backend=biber,style=apa]{biblatex}
+\DeclareLanguageMapping{vietnamese}{english-apa}
+\addbibresource{tailieu.bib}
+\DefineBibliographyStrings{english}{and={and},andothers={et\addabbrvspace al\adddot}}
+\AtBeginDocument{\DeclareDelimFormat[cite]{finalnamedelim}{\space and\space}\DeclareDelimFormat[parencite]{finalnamedelim}{\space and\space}}
+\defbibenvironment{bibliography}{\list{}{\setlength{\leftmargin}{0pt}\setlength{\itemindent}{1.27cm}\setlength{\itemsep}{\bibitemsep}\setlength{\parsep}{\bibparsep}}}{\endlist}{\item}

@@ -1,0 +1,267 @@
+{
+  "checked_at": "2026-11-21T06:16:15.761589+00:00",
+  "models": {
+    "roberta": {
+      "source": "https://www.kaggle.com/code/vhngthnh/roberta-model",
+      "last_run": "2026-11-18T06:07:14.411Z",
+      "version": 1,
+      "metric": "Micro-F1",
+      "scorer_sha256": "0e5be60be5a83065faf77033f2a8cb44d5c376b68f8b80dd3a93d5302caeaf7a",
+      "datasets": {
+        "sroie": {
+          "metrics": {
+            "model": "roberta",
+            "dataset": "sroie",
+            "loss": 0.031625681306732906,
+            "precision": 0.8696596669080376,
+            "recall": 0.8652737752161384,
+            "f1": 0.8674611773203322
+          },
+          "test_count": 347,
+          "split_sha256": "a50f5e140f5adcf2717c13ae2480ce3b2653f01230f409566fbeee20cf042642",
+          "checkpoint_sha256": "6001ed6d1f3dd2edd923c454a684ac5e5097bfece5bf3a9daf074def67fe343d",
+          "checkpoint_bytes": 496331378
+        },
+        "cord_v2": {
+          "metrics": {
+            "model": "roberta",
+            "dataset": "cord_v2",
+            "loss": 0.263606285410268,
+            "precision": 0.9405487804878049,
+            "recall": 0.9485011529592621,
+            "f1": 0.9445082280903176
+          },
+          "test_count": 100,
+          "split_sha256": "57c4f60c708cb85daad8f1d7373a8bbc2cec0480deeeef1fb0276cd5cabfee6f",
+          "checkpoint_sha256": "7248462de896416900d1200c2fd0c1f5e7c7f58c88793b8b2cb53646160eb68c",
+          "checkpoint_bytes": 496454450
+        },
+        "wildreceipt": {
+          "metrics": {
+            "model": "roberta",
+            "dataset": "wildreceipt",
+            "loss": 0.4066958397626877,
+            "precision": 0.8831858407079646,
+            "recall": 0.9050785973397824,
+            "f1": 0.8939982084204241
+          },
+          "test_count": 472,
+          "split_sha256": "f87a92ff11b8163db1818887978d8be4e76b8b08e43362fda7ab05e403d874b2",
+          "checkpoint_sha256": "0ce62b5cdf125ed6c6ff1a8b111c5f8fea89d96602b917efe870be1a228e0732",
+          "checkpoint_bytes": 496343666
+        }
+      }
+    },
+    "bros": {
+      "source": "https://www.kaggle.com/code/vhngthnh/bros-model",
+      "last_run": "2026-11-18T06:07:15.146Z",
+      "version": 1,
+      "metric": "Micro-F1",
+      "scorer_sha256": "0e5be60be5a83065faf77033f2a8cb44d5c376b68f8b80dd3a93d5302caeaf7a",
+      "datasets": {
+        "sroie": {
+          "metrics": {
+            "model": "bros",
+            "dataset": "sroie",
+            "loss": 0.02368862231643024,
+            "precision": 0.8717948717948718,
+            "recall": 0.8818443804034583,
+            "f1": 0.8767908309455588
+          },
+          "test_count": 347,
+          "split_sha256": "a50f5e140f5adcf2717c13ae2480ce3b2653f01230f409566fbeee20cf042642",
+          "checkpoint_sha256": "7b1065a47a458d49eaca3d23f8a527ee543b35d26833e61dab2b963976fc5a14",
+          "checkpoint_bytes": 438094596
+        },
+        "cord_v2": {
+          "metrics": {
+            "model": "bros",
+            "dataset": "cord_v2",
+            "loss": 0.20701967179775238,
+            "precision": 0.9598765432098766,
+            "recall": 0.9561875480399693,
+            "f1": 0.9580284944166346
+          },
+          "test_count": 100,
+          "split_sha256": "57c4f60c708cb85daad8f1d7373a8bbc2cec0480deeeef1fb0276cd5cabfee6f",
+          "checkpoint_sha256": "e2b9981948ac8a4c2e9acf325e2e302dbd800578a2e16f18c9977b4a076dc041",
+          "checkpoint_bytes": 438217668
+        },
+        "wildreceipt": {
+          "metrics": {
+            "model": "bros",
+            "dataset": "wildreceipt",
+            "loss": 0.2534166671335697,
+            "precision": 0.9440016143678741,
+            "recall": 0.9427650141072148,
+            "f1": 0.9433829089992437
+          },
+          "test_count": 472,
+          "split_sha256": "f87a92ff11b8163db1818887978d8be4e76b8b08e43362fda7ab05e403d874b2",
+          "checkpoint_sha256": "f01fdbb44eaf3bb20982b3ccfaeb41c748b9f374d8ea45d615e822017530cc8e",
+          "checkpoint_bytes": 438106884
+        }
+      }
+    },
+    "pick": {
+      "source": "https://www.kaggle.com/code/vhngthnh/pick-model",
+      "last_run": "2026-11-18T06:07:14.407Z",
+      "version": 1,
+      "metric": "Micro-F1",
+      "scorer_sha256": "0e5be60be5a83065faf77033f2a8cb44d5c376b68f8b80dd3a93d5302caeaf7a",
+      "datasets": {
+        "sroie": {
+          "metrics": {
+            "model": "pick",
+            "dataset": "sroie",
+            "loss": 0.48635712934827263,
+            "precision": 0.5229411764705882,
+            "recall": 0.6404899135446686,
+            "f1": 0.5757772020725389
+          },
+          "test_count": 347,
+          "split_sha256": "a50f5e140f5adcf2717c13ae2480ce3b2653f01230f409566fbeee20cf042642",
+          "checkpoint_sha256": "e0dc4f3faa3afab372692b22c4d4a1e6bea98927ae6164ae0f7b29f095aec364",
+          "checkpoint_bytes": 211226645
+        },
+        "cord_v2": {
+          "metrics": {
+            "model": "pick",
+            "dataset": "cord_v2",
+            "loss": 2.5315716174932628,
+            "precision": 0.7241867043847242,
+            "recall": 0.787086856264412,
+            "f1": 0.754327808471455
+          },
+          "test_count": 100,
+          "split_sha256": "57c4f60c708cb85daad8f1d7373a8bbc2cec0480deeeef1fb0276cd5cabfee6f",
+          "checkpoint_sha256": "e06cd014177c3495ba405761693ba61b7227d63348bb774d90ca7f6878294795",
+          "checkpoint_bytes": 211400341
+        },
+        "wildreceipt": {
+          "metrics": {
+            "model": "pick",
+            "dataset": "wildreceipt",
+            "loss": 5.68666349831274,
+            "precision": 0.8288307758807002,
+            "recall": 0.7728738411930673,
+            "f1": 0.7998748566065284
+          },
+          "test_count": 472,
+          "split_sha256": "f87a92ff11b8163db1818887978d8be4e76b8b08e43362fda7ab05e403d874b2",
+          "checkpoint_sha256": "7a7893c5f898bfd3978ef0b369df6fb2a3072f11c318b13d7377a8c855f5e1e3",
+          "checkpoint_bytes": 211243349
+        }
+      }
+    },
+    "layoutlmv3": {
+      "source": "https://www.kaggle.com/code/vhngthnh/layoutlmv3-model",
+      "last_run": "2026-11-18T06:09:07.780Z",
+      "version": 1,
+      "metric": "Micro-F1",
+      "scorer_sha256": "0e5be60be5a83065faf77033f2a8cb44d5c376b68f8b80dd3a93d5302caeaf7a",
+      "datasets": {
+        "sroie": {
+          "metrics": {
+            "model": "layoutlmv3",
+            "dataset": "sroie",
+            "loss": 0.03020974211424552,
+            "precision": 0.8754448398576512,
+            "recall": 0.8861671469740634,
+            "f1": 0.8807733619763695
+          },
+          "test_count": 347,
+          "split_sha256": "a50f5e140f5adcf2717c13ae2480ce3b2653f01230f409566fbeee20cf042642",
+          "checkpoint_sha256": "8093a8f7641ca0290bbae61f55036c984482810d9b110c4feaee05c5b0e7af1a",
+          "checkpoint_bytes": 501426079
+        },
+        "cord_v2": {
+          "metrics": {
+            "model": "layoutlmv3",
+            "dataset": "cord_v2",
+            "loss": 0.1808134033702887,
+            "precision": 0.9511823035850496,
+            "recall": 0.9584934665641814,
+            "f1": 0.9548238897396631
+          },
+          "test_count": 100,
+          "split_sha256": "57c4f60c708cb85daad8f1d7373a8bbc2cec0480deeeef1fb0276cd5cabfee6f",
+          "checkpoint_sha256": "9039d9890871b72b4e87554d901fdd908328ad81c8b8e5484f335aef70065be1",
+          "checkpoint_bytes": 503912293
+        },
+        "wildreceipt": {
+          "metrics": {
+            "model": "layoutlmv3",
+            "dataset": "wildreceipt",
+            "loss": 0.2990620052284103,
+            "precision": 0.9316239316239316,
+            "recall": 0.9445787988714228,
+            "f1": 0.9380566396477533
+          },
+          "test_count": 472,
+          "split_sha256": "f87a92ff11b8163db1818887978d8be4e76b8b08e43362fda7ab05e403d874b2",
+          "checkpoint_sha256": "01a7cd90efa75a5dee88299f8b1dd68af8580fc50d7c59dddac2b0846ffff238",
+          "checkpoint_bytes": 503801509
+        }
+      }
+    },
+    "donut": {
+      "source": "https://www.kaggle.com/code/vhngthnh/donut-model",
+      "last_run": "2026-11-18T06:10:49.044Z",
+      "version": 1,
+      "metric": "Micro-F1",
+      "scorer_sha256": "0e5be60be5a83065faf77033f2a8cb44d5c376b68f8b80dd3a93d5302caeaf7a",
+      "datasets": {
+        "sroie": {
+          "metrics": {
+            "model": "donut",
+            "dataset": "sroie",
+            "loss": 0.11099836079864128,
+            "precision": 0.7806826434277415,
+            "recall": 0.7744956772334294,
+            "f1": 0.7775768535262205
+          },
+          "test_count": 347,
+          "split_sha256": "a50f5e140f5adcf2717c13ae2480ce3b2653f01230f409566fbeee20cf042642",
+          "checkpoint_sha256": "0b4b5216ddc30c3e7f0dbc55bd92580b6d7858a46d86370162db82086762b4d9",
+          "checkpoint_bytes": 809218118
+        },
+        "cord_v2": {
+          "metrics": {
+            "model": "donut",
+            "dataset": "cord_v2",
+            "loss": 0.13851455885630387,
+            "precision": 0.7840501792114696,
+            "recall": 0.6725595695618755,
+            "f1": 0.7240380637153496
+          },
+          "test_count": 100,
+          "split_sha256": "57c4f60c708cb85daad8f1d7373a8bbc2cec0480deeeef1fb0276cd5cabfee6f",
+          "checkpoint_sha256": "56959ca3e81320de22ab5e8bc38206fd05b67ddb23e0245994f95623bcd1a6d7",
+          "checkpoint_bytes": 809218118
+        },
+        "wildreceipt": {
+          "metrics": {
+            "model": "donut",
+            "dataset": "wildreceipt",
+            "loss": 0.39554540762456797,
+            "precision": 0.6595434032386515,
+            "recall": 0.5007053607416364,
+            "f1": 0.5692519188910528
+          },
+          "test_count": 472,
+          "split_sha256": "f87a92ff11b8163db1818887978d8be4e76b8b08e43362fda7ab05e403d874b2",
+          "checkpoint_sha256": "53c31b5d84998b610cc7ac40bc7004dade5fdec6d129ed01164bf43bc19e4b6a",
+          "checkpoint_bytes": 809218118
+        }
+      }
+    }
+  },
+  "inference_runtime": {
+    "device_default": "cpu",
+    "roberta_prefix_space": "set on tokenizer construction",
+    "pick_attention": "eager in both extraction and Grad-CAM",
+    "transformers": "4.57.6",
+    "torch": "2.6.0+cpu"
+  }
+}

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from utils.common import get_cache_dir, get_data_dir, normalize_box, export_labels
+from utils.common import get_repo_dir, get_cache_dir, get_data_dir, normalize_box, export_labels
 
 
 def load_class_map(class_list_file: Path) -> dict[int, str]:
@@ -98,7 +98,8 @@ def prepare_wildreceipt() -> None:
     with open(wildreceipt_dir / "test.txt", "r", encoding="utf-8") as file:
         test_raw_samples = [json.loads(line) for line in file if line.strip()]
 
-    random.Random(42).shuffle(train_raw_samples)
+    random.seed(42)
+    random.shuffle(train_raw_samples)
 
     val_count = int(len(train_raw_samples) * 0.2)
     val_raw_samples = train_raw_samples[:val_count]

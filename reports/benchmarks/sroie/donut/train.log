@@ -1,0 +1,29 @@
+
+--------------------------------------------------
+Config -> sroie
+  epochs       : 25
+  batch_size   : 4 (accum_steps=2)
+  lr           : 3e-05
+  patience     : 5
+--------------------------------------------------
+Epoch 01/25 | Train Loss: 3.0535 | Val Loss: 0.5926 | Precision: 0.2159 | Recall: 0.0380 | F1: 0.0646
+Epoch 02/25 | Train Loss: 0.4015 | Val Loss: 0.1626 | Precision: 0.6418 | Recall: 0.5840 | F1: 0.6115
+Epoch 03/25 | Train Loss: 0.1424 | Val Loss: 0.1187 | Precision: 0.7282 | Recall: 0.7020 | F1: 0.7149
+Epoch 04/25 | Train Loss: 0.0730 | Val Loss: 0.1054 | Precision: 0.7480 | Recall: 0.7420 | F1: 0.7450
+Epoch 05/25 | Train Loss: 0.0449 | Val Loss: 0.1151 | Precision: 0.7561 | Recall: 0.7380 | F1: 0.7470
+Epoch 06/25 | Train Loss: 0.0321 | Val Loss: 0.1005 | Precision: 0.7814 | Recall: 0.7580 | F1: 0.7695
+Epoch 07/25 | Train Loss: 0.0221 | Val Loss: 0.1056 | Precision: 0.7697 | Recall: 0.7620 | F1: 0.7658
+Epoch 08/25 | Train Loss: 0.0135 | Val Loss: 0.1082 | Precision: 0.8008 | Recall: 0.7640 | F1: 0.7820
+Epoch 09/25 | Train Loss: 0.0127 | Val Loss: 0.1153 | Precision: 0.7959 | Recall: 0.7720 | F1: 0.7838
+Epoch 10/25 | Train Loss: 0.0091 | Val Loss: 0.1097 | Precision: 0.7971 | Recall: 0.7780 | F1: 0.7874
+Epoch 11/25 | Train Loss: 0.0074 | Val Loss: 0.1005 | Precision: 0.8208 | Recall: 0.8060 | F1: 0.8133
+Epoch 12/25 | Train Loss: 0.0080 | Val Loss: 0.1105 | Precision: 0.8239 | Recall: 0.8140 | F1: 0.8189
+Epoch 13/25 | Train Loss: 0.0069 | Val Loss: 0.1111 | Precision: 0.8114 | Recall: 0.8000 | F1: 0.8056
+Epoch 14/25 | Train Loss: 0.0032 | Val Loss: 0.1158 | Precision: 0.8323 | Recall: 0.8240 | F1: 0.8281
+Epoch 15/25 | Train Loss: 0.0026 | Val Loss: 0.1183 | Precision: 0.8191 | Recall: 0.8060 | F1: 0.8125
+Epoch 16/25 | Train Loss: 0.0019 | Val Loss: 0.1153 | Precision: 0.8236 | Recall: 0.8220 | F1: 0.8228
+Epoch 17/25 | Train Loss: 0.0024 | Val Loss: 0.1132 | Precision: 0.8347 | Recall: 0.8180 | F1: 0.8263
+Epoch 18/25 | Train Loss: 0.0018 | Val Loss: 0.1148 | Precision: 0.8289 | Recall: 0.8140 | F1: 0.8214
+Epoch 19/25 | Train Loss: 0.0017 | Val Loss: 0.1150 | Precision: 0.8283 | Recall: 0.8200 | F1: 0.8241
+Early Stop -> Epoch 19/25 (Best F1: 0.8281 at epoch 14)
+Test -> Loss: 0.1110 | Precision: 0.7807 | Recall: 0.7745 | F1: 0.7776

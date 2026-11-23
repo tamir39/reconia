@@ -13,7 +13,6 @@ MODELS = {
     "bros": "jinho8345/bros-base-uncased",
     "layoutlmv3": "microsoft/layoutlmv3-base",
     "donut": "naver-clova-ix/donut-base",
-    "qwen_vl": "Qwen/Qwen2.5-VL-3B-Instruct",
 }
 
 IGNORED_PATTERNS = [

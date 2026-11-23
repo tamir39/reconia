@@ -63,11 +63,7 @@ class MultimodalEncoder(nn.Module):
 
         text_flat = text_embeddings.view(batch_size * num_boxes, text_len, self.d_model)
         mask_flat = attention_mask.view(batch_size * num_boxes, text_len)
-        empty_boxes = mask_flat.all(dim=1)
-        mask_flat = mask_flat.clone()
-        mask_flat[empty_boxes, 0] = False
         text_features = self.transformer_encoder(text_flat, src_key_padding_mask=mask_flat)
-        text_features = text_features.masked_fill(empty_boxes[:, None, None], 0.0)
         text_features = text_features.view(batch_size, num_boxes, text_len, self.d_model)
 
         x = self.conv1(images)
@@ -136,8 +132,8 @@ class GLCN(nn.Module):
         aggregated_features = torch.sum(soft_adj.unsqueeze(-1) * transformed_features, dim=2)
         graph_features = F.relu(self.linear_update(aggregated_features))
 
-        distance = torch.norm(node_diff.float(), dim=-1)
-        loss_exponent = torch.clamp(soft_adj.float() + self.eta * distance, max=10.0)
+        distance = torch.norm(node_diff, dim=-1)
+        loss_exponent = torch.clamp(soft_adj + self.eta * distance, max=10.0)
         valid_pairs = (box_mask.unsqueeze(2) & box_mask.unsqueeze(1)).float()
         valid_counts = box_mask.float().sum(dim=-1).clamp(min=1.0)
         gl_loss1 = (torch.exp(loss_exponent) * valid_pairs).sum(dim=(-2, -1)) / (valid_counts ** 2)
@@ -307,7 +303,7 @@ class PICKModel(nn.Module):
             box_indices = mask_flat[0].nonzero(as_tuple=True)[0]
             if box_indices.numel() > 0:
                 crf_loss = self.crf(
-                    emissions_flat[:, box_indices].float(),
+                    emissions_flat[:, box_indices],
                     tags_flat[:, box_indices],
                     mask_flat[:, box_indices],
                 )

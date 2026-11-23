@@ -1,74 +1,74 @@
 # Reconia
 
-So sánh sáu model trích xuất thông tin từ hóa đơn trên SROIE, CORD-v2 và WildReceipt.
+Trích xuất thông tin hóa đơn với **5 model**: RoBERTa, BROS, PICK, LayoutLMv3 và Donut trên SROIE, CORD-v2, WildReceipt. Nhánh chuẩn bị nộp: `final-submit`.
 
-## Repo gồm những gì?
+Source, nhãn, cấu hình và kết quả được đồng bộ từ output Kaggle của Thịnh đã kiểm chứng ngày **21/11/2026**. Đây là snapshot cố định, không tự nhận output mới khi hash khác. Qwen và baseline sáu model cũ nằm trong `archive/`, không thuộc bảng benchmark này.
+
+## Mở demo
+
+Windows, Python 3.12 hoặc uv:
+
+1. Chạy `setup.bat` lần đầu để cài môi trường `.venv`.
+2. Chạy `run.bat`, giữ cửa sổ lệnh mở. App tại <http://127.0.0.1:8766>.
+
+Source có sẵn bảng điểm, 30 ví dụ và ảnh. Để bấm **Chạy** trên mẫu test hoặc ảnh ngoài, cần checkpoint đúng model và dataset. Trọng số lớn không đưa vào Git/ZIP source. Tải bằng tài khoản Kaggle có quyền đọc output, dùng key đã cấu hình:
+
+```powershell
+.venv/Scripts/python.exe -m pip install -r requirements-assets.txt
+.venv/Scripts/python.exe -m tools.fetch_assets --checkpoints
+.venv/Scripts/python.exe -m tools.verify_final --weights
+```
+
+Có thể tải riêng bằng `--model layoutlmv3`. Tool chỉ đọc output, xác minh SHA-256, không gửi job train. Nếu output nguồn đổi, tool dừng. Hoặc đặt `RECONIA_CHECKPOINT_DIR` tới thư mục checkpoint đã có, cấu trúc `<dataset>/<model>/best_weights.pt`.
+
+Demo chạy inference thật, không train. Mẫu test dùng OCR chú thích; ảnh ngoài dùng RapidOCR với bốn model có OCR, Donut đọc ảnh trực tiếp. Heatmap là **Occlusion cho một trường**, hỗ trợ PICK, LayoutLMv3, Donut. Vùng đỏ hỗ trợ đáp án đang xem, không khẳng định đáp án đúng. Xem [demo/README.md](demo/README.md).
+
+## Kết quả đã chốt
+
+**Micro-F1 (%)**: cộng TP/FP/FN trên các trường và tài liệu; khớp giá trị sau chuẩn hóa chữ thường/khoảng trắng, giữ giá trị lặp.
+
+| Model | SROIE | CORD-v2 | WildReceipt |
+|---|---:|---:|---:|
+| RoBERTa | 86.75 | 94.45 | 89.40 |
+| BROS | 87.68 | 95.80 | 94.34 |
+| PICK | 57.58 | 75.43 | 79.99 |
+| LayoutLMv3 | 88.08 | 95.48 | 93.81 |
+| Donut | 77.76 | 72.40 | 56.93 |
+
+Giá trị đầy đủ, history/log: [reports/benchmarks/](reports/benchmarks/). Nguồn file và thay đổi chạy local: [provenance.json](reports/benchmarks/provenance.json). Không lấy điểm từ báo cáo Macro-F1 cũ. Ví dụ đúng/sai chỉ minh họa một trường, không thay thế đánh giá toàn bộ test.
+
+## Cấu trúc hiện tại
 
 ```text
-models/        Code của 6 model: dataset.py, train.py
-notebooks/     Mỗi model một notebook Kaggle
-prepare/       Chuyển dữ liệu gốc sang JSONL và mốc dữ liệu baseline
-utils/         Hàm dữ liệu, chấm điểm và tiện ích chung
-tools/         Tải trọng số, tổng hợp kết quả
-tests/         Kiểm tra code và tính tương thích với baseline
-reports/       Báo cáo, ghi chú và bằng chứng đối chiếu
+models/              Source 5 model từ các lượt Kaggle đã chốt
+notebooks/           5 notebook gọn; mọi cờ chạy mặc định tắt
+prepare/             Chuẩn bị raw data, manifest kiểm tra 9 split
+utils/               Hàm chung, Micro-F1, biểu đồ
+demo/               App, 30 ví dụ, 16 ảnh, nhãn/config/tokenizer
+reports/benchmarks/  15 bộ metrics/history/log và nguồn đối chiếu
+reports/archive/     Báo cáo, ghi chú, bản thảo lịch sử
+tests/              Kiểm tra scorer, dữ liệu, notebook, heatmap
+tools/              Tải tài nguyên, kiểm chứng, so sánh, đóng gói
+archive/             Source sáu model cũ để tham khảo
+run.bat              Mở demo
+setup.bat            Cài môi trường demo CPU
 ```
 
-Các thư mục local không đưa lên Git:
+Không đưa lên Git: `.env`, `.venv/`, `.cache/`, `data/`, `weights/`, `checkpoints/`, `results/`, `output/`, `dist/`. `.cache` chỉ chứa dữ liệu chuẩn bị/cache có thể tạo lại; code và tài nguyên demo nhỏ nằm trong repo.
 
-```text
-data/raw/      Dữ liệu gốc: sroie/, cord_v2/, wildreceipt/
-.cache/        Prepared JSONL, runtime kiểm tra và bằng chứng đã lưu
-weights/       Trọng số/tokenizer pretrained
-checkpoints/   Checkpoint theo <dataset>/<model>/
-results/       Kết quả theo <dataset>/<model>/
-```
+## Quy trình train tham khảo
 
-## Trạng thái
+**Không cần train để demo/nộp source.** Notebook không train khi mở. Khi chủ động làm thí nghiệm mới, dùng checkout riêng giữ checkpoint đã chốt, GPU đủ bộ nhớ và bản PyTorch phù hợp GPU, rồi bật cờ cần thiết trong notebook.
 
-- RoBERTa, BROS, PICK: đã hoàn thành 9 lượt trên ba dataset; giữ nguyên checkpoint/kết quả cũ.
-- LayoutLMv3, Donut, Qwen: code đã đối chiếu dữ liệu/cách chấm với các lượt cũ; cần thử cấu hình thật trên GPU rồi train.
-- Source và tokenizer của lượt cũ được lưu riêng để không nhầm với code local đã chỉnh.
+| Model | Đầu vào | Batch × tích lũy | LR |
+|---|---|---:|---:|
+| RoBERTa | Chữ OCR | 8 × 1 | 3e-5 |
+| BROS | Chữ + box OCR | 8 × 1 | 3e-5 |
+| PICK | Ảnh + chữ + box OCR | 4 × 2 | 5e-4 |
+| LayoutLMv3 | Ảnh + chữ + box OCR | 4 × 2 | 3e-5 |
+| Donut | Ảnh + task token theo dataset | 4 × 2 | 3e-5 |
 
-| Model | Đầu vào | Cách học | Batch × tích lũy | LR |
-|---|---|---|---:|---:|
-| RoBERTa | Text annotation | BIO | 8 × 1 | 3e-5 |
-| BROS | Text + box annotation | BIO | 4 × 2 | 3e-5 |
-| PICK | Ảnh + text + box | Đồ thị + BiLSTM/CRF | 4 × 2 | 1e-4 |
-| LayoutLMv3 | Ảnh + text + box | BIO, tắt OCR | 4 × 2 | 3e-5 |
-| Donut | Ảnh | Sinh JSON | 1 × 8 | 3e-5 |
-| Qwen2.5-VL-3B | Ảnh + prompt tên trường | LoRA sinh JSON | 1 × 8 | 1e-4 |
-
-## Chạy ba model mới
-
-Cài môi trường: `pip install -r requirements.txt`.
-
-**Kaggle:** mở notebook tương ứng trong `notebooks/`, gắn dataset
-[`vhngthnh/reconia-data`](https://www.kaggle.com/datasets/vhngthnh/reconia-data), chọn `DATASET`, chạy lần lượt sáu mục.
-Dùng source mới trên nhánh `dev`; notebook kiểm tra đúng nhánh,
-in commit đang dùng và không tự cập nhật checkout đã tồn tại.
-
-**Local:** đặt dữ liệu ở `data/raw/<dataset>/`, hoặc đặt `RECONIA_DATA_DIR`
-tới thư mục chứa ba dataset. Ví dụ LayoutLMv3/SROIE:
-
-```bash
-python -m prepare.prepare_sroie
-python -m tools.download_weights --model layoutlmv3
-python -m models.layoutlmv3.train --dataset sroie
-```
-
-Đổi `layoutlmv3` thành `donut` hoặc `qwen_vl`; dataset là `sroie`, `cord_v2`, `wildreceipt`.
-Sau khi chốt thí nghiệm mới chạy test:
-
-```bash
-python -m models.layoutlmv3.train --dataset sroie --test-only
-python -m tools.compare
-```
-
-`--resume` tiếp tục checkpoint tương thích. Run mới không ghi đè checkpoint đã có.
-Checkpoint Qwen chỉ lưu LoRA, cần cùng base weights để nạp lại.
-
-## Dữ liệu và cách chấm
+Default source đã xuất: tối đa 25 epoch, patience 5, seed 42; chọn best validation F1 rồi chấm test. Đây không phải cấu hình Qwen/Donut retrain cũ. Cleanup giữ cách tính loss của lượt xuất và không tạo benchmark mới.
 
 | Dataset | Train | Validation | Test |
 |---|---:|---:|---:|
@@ -76,21 +76,20 @@ Checkpoint Qwen chỉ lưu LoRA, cần cùng base weights để nạp lại.
 | CORD-v2 | 800 | 100 | 100 |
 | WildReceipt | 1014 | 253 | 472 |
 
-Không chạy OCR mới và không dùng dữ liệu OCR đã sửa/lọc của các thử nghiệm cũ.
-SROIE/WildReceipt tách 20% train làm validation với seed 42; CORD giữ split có sẵn.
-Ba trainer mới xác minh toàn bộ prepared data với mốc các lượt đã chạy trước khi train.
+Raw data tại `data/raw/<dataset>/`, hoặc đặt `RECONIA_DATA_DIR` tới thư mục chứa ba dataset. Có thể tải split đã chốt bằng `python -m tools.fetch_assets --prepared`, hoặc chạy `python -m prepare.prepare_<dataset>`. Trước train, chạy `python -m tools.verify_final --prepared` để kiểm tra số hàng, thứ tự, OCR, box, nhãn của 9 split. Notebook cũng có bước kiểm tra này khi bật train.
 
-Tất cả model trả về `{"field": ["value", ...]}`. Chấm khớp chính xác trong cùng trường,
-sau chuẩn hóa chữ thường và khoảng trắng; giữ giá trị lặp, lấy Macro Precision/Recall/F1 theo trường.
-Best checkpoint chọn bằng F1 validation. Không dùng GT làm input suy luận.
-LayoutLMv3 lấy tối đa 512 token đầu như RoBERTa/BROS đã chạy; Donut/Qwen đọc ảnh đầy đủ.
+Giữ split đã báo cáo. CORD-v2 có ghi nhận một số mẫu trùng nội dung giữa các split trong kiểm toán trước, nên không mô tả test hoàn toàn độc lập. Không lọc trùng rồi gắn lại điểm cũ.
 
-## Kiểm tra
+Trainer dừng nếu checkpoint đã tồn tại; `--resume` chỉ để tiếp tục lượt tương thích. `DATASET="all"` trong notebook lặp ba dataset và vẫn chịu giới hạn thời gian Kaggle.
 
-```bash
-python -m unittest discover -s tests -v
+## Kiểm tra và xuất source
+
+```powershell
+.venv/Scripts/python.exe -m unittest discover -s tests -v
+.venv/Scripts/python.exe -m tools.verify_final
+.venv/Scripts/python.exe -m tools.check_demo_predictions
+.venv/Scripts/python.exe -m tools.compare
+.venv/Scripts/python.exe -m tools.export_submission
 ```
 
-Chi tiết mô hình/bài báo: [ghi chú train](reports/training-notes.md).
-Dữ liệu và scorer đã đối chiếu: [kết quả baseline](reports/completed-baseline-alignment-20261027.json).
-Checkpoint cũ cần source cùng lượt, không giả định tương thích với mọi thay đổi ở code local.
+Kiểm tra prediction nạp 15 checkpoint để chạy lại 30 ví dụ. ZIP source tại `dist/reconia-final-source.zip`, không chứa dữ liệu riêng, môi trường hay trọng số. Bản thảo học thuật trong `reports/archive/` chưa được coi là báo cáo final đã duyệt.

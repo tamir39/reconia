@@ -1,0 +1,101 @@
+{
+  "review_date": "2026-10-25",
+  "paper_source_zip": "D:/Data/Downloads/papers.zip",
+  "papers": [
+    {
+      "model": "RoBERTa",
+      "pdf_in_user_zip": "papers/241/Liu et al. - 2019 - RoBERTa A Robustly Optimized BERT Pretraining Approach.pdf",
+      "sha256": "76a3872d244793563a5b000b818cbaf0ca8972ab1145d32be474c05b2a8f3070",
+      "key_method_and_experiment_pages": [
+        2,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "model": "BROS",
+      "pdf_in_user_zip": "papers/231/Hong et al. - 2022 - BROS A Pre-trained Language Model Focusing on Text and Layout for Better Key Information Extraction.pdf",
+      "sha256": "eb3f824e73a58db7af7ae4ca97b2a6f81a26b238c18ec947cf728123ecd172da",
+      "key_method_and_experiment_pages": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "model": "PICK",
+      "pdf_in_user_zip": "papers/235/Yu et al. - 2020 - PICK Processing Key Information Extraction from Documents using Improved Graph Learning-Convolution.pdf",
+      "sha256": "775791f56cf1f3fa775ba9c7064d9f972f641d39e9c30cfec5521590e3e08bea",
+      "key_method_and_experiment_pages": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    }
+  ],
+  "implementation_evidence": [
+    {
+      "run": "roberta",
+      "file": "models/roberta/train.py",
+      "sha256": "41d772e5510db2b8e19bc40a635ac44f2bd422a8e590a93c6a2b4bec5db6ce01"
+    },
+    {
+      "run": "roberta",
+      "file": "models/roberta/dataset.py",
+      "sha256": "aa5bd9ea36936b79f577b5bf79705e67ea768339280f102505240c156d55990a"
+    },
+    {
+      "run": "roberta",
+      "file": "weights/roberta/config.json",
+      "sha256": "ef0185e2aae6e06c5f105a285006952c340e20c7dbf43c86ec82601b13fc45e9"
+    },
+    {
+      "run": "bros",
+      "file": "models/bros/train.py",
+      "sha256": "36c49d93721647de147c12f0d7fc7c219b87eb2e51476caabbb3e85ccb199413"
+    },
+    {
+      "run": "bros",
+      "file": "models/bros/dataset.py",
+      "sha256": "b30b97d7b9c7425713187c750eb0365cd8124a58bb45c52ff7ab65f527a28586"
+    },
+    {
+      "run": "bros",
+      "file": "weights/bros/config.json",
+      "sha256": "64863a2f73fa6f6f7995a84df3490bafb8be7c5aad43a4f29fde6ec9150213f7"
+    },
+    {
+      "run": "pick",
+      "file": "models/pick/train.py",
+      "sha256": "0da706558f79700fed34fee32149f40565ffa808e2b5cbc6aecffdbd7fd249e1"
+    },
+    {
+      "run": "pick",
+      "file": "models/pick/dataset.py",
+      "sha256": "3a1848bb35a7ed0dd1d7ade20abd24160f7c8cdff56ef6a2964e7773224b861c"
+    },
+    {
+      "run": "pick",
+      "file": "models/pick/model.py",
+      "sha256": "731e1dd7848aa6a3a07a54319af90539cd66aa8c38fc0fd39526caea3fc2c7b9"
+    }
+  ],
+  "additional_primary_references": [
+    "https://aclanthology.org/N19-1423/",
+    "https://papers.neurips.cc/paper/7181-attention-is-all-you-need"
+  ],
+  "scope": "Report text only; training source, weights and experiment results were not changed.",
+  "key_distinctions": [
+    "RoBERTa pretraining versus downstream BIO fine-tuning",
+    "BROS relative spatial attention and AMLM/TMLM versus the token classifier used here",
+    "BROS SROIE* and SPADE conditions versus current dataset splits and head",
+    "PICK document Union/CRF versus per-box decoder",
+    "PICK graph loss squared distance versus norm and clamped exponent in saved code",
+    "SROIE lexicon in PICK paper versus current decoding"
+  ]
+}

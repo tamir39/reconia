@@ -2,61 +2,206 @@ import json
 from pathlib import Path
 
 from PIL import Image
+import torch
 from torch.utils.data import Dataset
-
-from utils.token_data import TokenCollator, extract_entities
-
-
-def encode_document(sample, tokenizer, max_length=512):
-    return tokenizer(
-        [item["text"] for item in sample["ocr"]],
-        boxes=[item["box"] for item in sample["ocr"]],
-        max_length=max_length, truncation=True,
-    )
+from transformers import AutoProcessor
 
 
 class LayoutLMv3Dataset(Dataset):
-    def __init__(self, data_file, processor, label2id, data_dir, max_length=512):
-        self.samples = [json.loads(line) for line in Path(data_file).read_text(encoding="utf-8").splitlines() if line.strip()]
-        self.processor, self.label2id = processor, label2id
-        self.data_dir, self.max_length = Path(data_dir), max_length
-        processor.image_processor.apply_ocr = False
+    def __init__(
+        self,
+        data_dir: Path,
+        data_file: Path,
+        processor: AutoProcessor,
+        label2id: dict[str, int],
+        max_length: int = 512,
+    ) -> None:
+        self.processor = processor
+        self.label2id = label2id
+        self.data_dir = data_dir
+        self.max_length = max_length
 
-    def __len__(self):
+        with open(data_file, "r", encoding="utf-8") as file:
+            self.samples = [json.loads(line) for line in file]
+
+    def __len__(self) -> int:
         return len(self.samples)
 
-    def __getitem__(self, index):
-        sample = self.samples[index]
-        encoding = encode_document(sample, self.processor.tokenizer, self.max_length)
-        labels, previous = [], None
-        for word in encoding.word_ids():
-            labels.append(self.label2id[sample["ocr"][word]["label"]]
-                          if word is not None and word != previous else -100)
-            previous = word
-        with Image.open(self.data_dir / sample["image_path"]) as image:
-            pixels = self.processor.image_processor(image.convert("RGB"), return_tensors="pt")["pixel_values"][0]
-        return {"input_ids": encoding["input_ids"], "attention_mask": encoding["attention_mask"],
-                "bbox": encoding["bbox"], "labels": labels, "pixel_values": pixels}
+    def __getitem__(self, idx: int) -> dict[str, torch.Tensor | list]:
+        sample = self.samples[idx]
+        image_file = self.data_dir / sample["image_path"]
+        with Image.open(image_file) as img:
+            image = img.convert("RGB")
+
+        ocr = sample["ocr"]
+        words = [item["text"] for item in ocr]
+        boxes = [item["box"] for item in ocr]
+        word_labels = [item["label"] for item in ocr]
+
+        encoding = self.processor(
+            image,
+            words,
+            boxes=boxes,
+            max_length=self.max_length,
+            truncation=True,
+            return_tensors="pt",
+        )
+
+        labels: list[int] = []
+        prev_word_idx = None
+        for word_idx in encoding.word_ids():
+            if word_idx is not None and word_idx != prev_word_idx:
+                labels.append(self.label2id[word_labels[word_idx]])
+            else:
+                labels.append(-100)
+            prev_word_idx = word_idx
+
+        return {
+            "input_ids": encoding["input_ids"][0].tolist(),
+            "bbox": encoding["bbox"][0].tolist(),
+            "attention_mask": encoding["attention_mask"][0].tolist(),
+            "pixel_values": encoding["pixel_values"][0],
+            "labels": labels,
+        }
 
 
-class LayoutLMv3DataCollator(TokenCollator):
-    def __init__(self, tokenizer):
-        super().__init__(tokenizer, layout="layoutlmv3")
+class LayoutLMv3DataCollator:
+    def __init__(self, processor: AutoProcessor) -> None:
+        tokenizer = processor.tokenizer
+        self.pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 1
+
+    def __call__(self, batch: list[dict]) -> dict[str, torch.Tensor]:
+        max_len = max(len(item["input_ids"]) for item in batch)
+
+        input_ids: list[list[int]] = []
+        bbox: list[list[list[int]]] = []
+        attention_mask: list[list[int]] = []
+        labels: list[list[int]] = []
+        pixel_values: list[torch.Tensor] = []
+
+        for item in batch:
+            pad_len = max_len - len(item["input_ids"])
+            input_ids.append(item["input_ids"] + [self.pad_token_id] * pad_len)
+            bbox.append(item["bbox"] + [[0, 0, 0, 0]] * pad_len)
+            attention_mask.append(item["attention_mask"] + [0] * pad_len)
+            labels.append(item["labels"] + [-100] * pad_len)
+            pixel_values.append(item["pixel_values"])
+
+        return {
+            "input_ids": torch.tensor(input_ids, dtype=torch.long),
+            "bbox": torch.tensor(bbox, dtype=torch.long),
+            "attention_mask": torch.tensor(attention_mask, dtype=torch.long),
+            "pixel_values": torch.stack(pixel_values, dim=0),
+            "labels": torch.tensor(labels, dtype=torch.long),
+        }
 
 
-def decode_predictions(all_pred_ids, samples, tokenizer, id2label, max_length=512):
-    if len(all_pred_ids) != len(samples):
-        raise ValueError("Expected one LayoutLMv3 prediction per document")
-    predictions = []
+def align_labels(
+    pred_ids: list[int],
+    word_ids: list[int | None],
+    id2label: dict[int, str],
+) -> dict[int, str]:
+    labels: dict[int, str] = {}
+    prev_word_idx = None
+
+    for token_idx, word_idx in enumerate(word_ids):
+        if word_idx is not None and word_idx != prev_word_idx:
+            labels[word_idx] = id2label[pred_ids[token_idx]]
+            prev_word_idx = word_idx
+
+    return labels
+
+
+def extract_entities(
+    ocr: list[dict],
+    labels: dict[int, str],
+) -> dict[str, list[str]]:
+    entities: dict[str, list[str]] = {}
+    current_entity = None
+    current_texts: list[str] = []
+
+    for word_idx, item in enumerate(ocr):
+        label = labels.get(word_idx, "O")
+        text = item["text"].strip()
+        if not text:
+            continue
+
+        if label.startswith("I-") and label[2:] == current_entity:
+            current_texts.append(text)
+        else:
+            if current_entity and current_texts:
+                entities.setdefault(current_entity, []).append(" ".join(current_texts))
+
+            if label.startswith(("B-", "I-")):
+                current_entity = label[2:]
+                current_texts = [text]
+            else:
+                current_entity = None
+                current_texts = []
+
+    if current_entity and current_texts:
+        entities.setdefault(current_entity, []).append(" ".join(current_texts))
+
+    return entities
+
+
+def decode_predictions(
+    all_pred_ids: list[list[int]],
+    samples: list[dict],
+    processor: AutoProcessor,
+    id2label: dict[int, str],
+    max_length: int = 512,
+) -> list[dict[str, list[str]]]:
+    preds: list[dict[str, list[str]]] = []
+
     for pred_ids, sample in zip(all_pred_ids, samples):
-        encoding = encode_document(sample, tokenizer, max_length)
-        if len(pred_ids) < len(encoding["input_ids"]):
-            raise ValueError("Missing LayoutLMv3 token predictions")
-        labels, previous = {}, None
-        for token, word in zip(pred_ids, encoding.word_ids()):
-            if word is not None and word != previous:
-                labels[word] = id2label[token]
-            previous = word
-        # Truncated words remain O; evaluation still uses the complete document GT.
-        predictions.append(extract_entities(sample["ocr"], labels))
-    return predictions
+        ocr = sample["ocr"]
+        words = [item["text"] for item in ocr]
+        boxes = [item["box"] for item in ocr]
+        encoding = processor.tokenizer(
+            words,
+            boxes=boxes,
+            max_length=max_length,
+            truncation=True,
+        )
+        labels = align_labels(pred_ids, encoding.word_ids(), id2label)
+        preds.append(extract_entities(ocr, labels))
+
+    return preds
+
+
+def predict_sample(
+    ocr: list[dict],
+    model: torch.nn.Module,
+    processor: AutoProcessor,
+    id2label: dict[int, str],
+    device: torch.device,
+    image: Image.Image | None = None,
+    max_length: int = 512,
+) -> dict[str, list[str]]:
+    words = [item["text"] for item in ocr]
+    boxes = [item["box"] for item in ocr]
+
+    encoding = processor(
+        image,
+        words,
+        boxes=boxes,
+        max_length=max_length,
+        truncation=True,
+        return_tensors="pt",
+    )
+
+    model.eval()
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
+        outputs = model(
+            input_ids=encoding["input_ids"].to(device),
+            bbox=encoding["bbox"].to(device),
+            attention_mask=encoding["attention_mask"].to(device),
+            pixel_values=encoding["pixel_values"].to(device),
+        )
+
+    pred_ids = torch.argmax(outputs.logits, dim=-1)[0].cpu().tolist()
+    labels = align_labels(pred_ids, encoding.word_ids(), id2label)
+    return extract_entities(ocr, labels)

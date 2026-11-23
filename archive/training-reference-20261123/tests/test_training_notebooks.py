@@ -43,8 +43,9 @@ class TrainingNotebookTests(unittest.TestCase):
                         self.assertIsNone(cell["execution_count"])
                         self.assertEqual(cell["outputs"], [])
                 self.assertIn(f'GIT_REF = "{BRANCH}"', "".join(cells[2]["source"]))
+                self.assertIn('DATASET = "all"', "".join(cells[2]["source"]))
                 if name in ("layoutlmv3", "donut", "qwen_vl"):
-                    self.assertIn("verify_baseline_data(DATASET, get_cache_dir(DATASET))", "".join(cells[4]["source"]))
+                    self.assertIn("verify_baseline_data(dataset, get_cache_dir(dataset))", "".join(cells[4]["source"]))
                 if name != "pick":
                     self.assertIn(f'download_weights("{name}")', "".join(cells[7]["source"]))
                 self.assertIn("RUN_TEST = False", "".join(cells[13]["source"]))
@@ -59,6 +60,22 @@ class TrainingNotebookTests(unittest.TestCase):
                             and node.func.id == "train_model")
                 for keyword in call.keywords:
                     self.assertEqual(ast.literal_eval(keyword.value), defaults[keyword.arg])
+
+    def test_default_training_dispatches_all_three_datasets_in_order(self):
+        expected = ("sroie", "cord_v2", "wildreceipt")
+        for name in MODELS:
+            with self.subTest(model=name):
+                trainer = importlib.import_module(f"models.{name}.train")
+                namespace = {"datasets": expected}
+                with patch.object(trainer, "train_model") as train:
+                    exec(compile("".join(notebook(name)["cells"][9]["source"]), name, "exec"), namespace)
+                    self.assertEqual([call.args[0] for call in train.call_args_list], list(expected))
+                    self.assertTrue(all(not call.kwargs["resume"] for call in train.call_args_list))
+                    train.reset_mock()
+                    enabled = "".join(notebook(name)["cells"][13]["source"]).replace("RUN_TEST = False", "RUN_TEST = True")
+                    exec(compile(enabled, name, "exec"), namespace)
+                    self.assertEqual([call.args[0] for call in train.call_args_list], list(expected))
+                    self.assertTrue(all(call.kwargs["test_only"] for call in train.call_args_list))
 
     def test_existing_wrong_branch_stops_before_pip_or_training(self):
         for name in MODELS:

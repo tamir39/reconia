@@ -1,0 +1,235 @@
+REPO CLEANUP REVIEW - 2026-11-03
+EXECUTED on codex/cleanup-six-models after user authorization. See repo-cleanup-result-20261103.json; paths below record the pre-cleanup inventory.
+Decimal GB/MB. .git excluded.
+KEEP 12.590 GB; PROPOSED DELETE 13.911 GB
+
+Keep .git and all history; .git excluded from storage scan.
+Keep .env private; contents were not read or printed.
+No file deletion or move has occurred.
+All report sources and completed-run evidence retained; only legacy September reports/logs proposed for deletion.
+Before deleting demo, relocate all KEEP subpaths; do not delete its parent first.
+Do not move the kept virtual environment until recreated/tested; pyvenv.cfg mentions legacy creation path.
+Keep both test-runtime and adapter-runtime at their current paths; virtualenv packages reference each other through a .pth file.
+DEPENDENCY: .cache/adapter-ocr-integration-20261017/test-runtime/Lib/site-packages/existing_cpu_packages.pth -> .cache/ocr-trainval-20261015/adapter-runtime/Lib/site-packages
+
+=== KEEP ===
+.cache/preprocessing-complete/raw | 5378.420 MB | 5705 files | Original SROIE/CORD-v2/WildReceipt data or reusable tokenizer
+demo/checkpoints | 3437.423 MB | 13 files | Preserve completed-run checkpoints, matching inference source/tokenizers, sample evidence and retrieval script before removing demo UI
+.cache/adapter-ocr-integration-20261017/test-runtime | 1601.691 MB | 31822 files | Python runtime used by all verified six-model tests; keep in place until dependency replacement is verified
+.cache/ocr-trainval-20261015/adapter-runtime | 1322.021 MB | 17715 files | Required by existing_cpu_packages.pth in the current six-model test runtime
+.cache/official-dataset-comparison-20261023 | 573.153 MB | 2980 files | Current baseline/data provenance, model checks or report evidence
+.cache/thinh-notebook-review-20261024 | 51.423 MB | 128 files | Current baseline/data provenance, model checks or report evidence
+.cache/report-paper-figures | 43.510 MB | 44 files | Current baseline/data provenance, model checks or report evidence
+.cache/kaggle-thinh-token-labels-20261024 | 37.703 MB | 46 files | Current baseline/data provenance, model checks or report evidence
+reports | 31.805 MB | 55 files | Current six-model source, documentation, tests or private local configuration
+.cache/report-draft-20261024 | 26.408 MB | 137 files | Current baseline/data provenance, model checks or report evidence
+.cache/report-revision-20261025 | 20.268 MB | 107 files | Current baseline/data provenance, model checks or report evidence
+.cache/kaggle-thinh-test-predictions-20261024 | 14.169 MB | 45 files | Current baseline/data provenance, model checks or report evidence
+.cache/report-format-audit-20261025 | 11.543 MB | 58 files | Current baseline/data provenance, model checks or report evidence
+demo/examples | 10.543 MB | 16 files | Preserve completed-run checkpoints, matching inference source/tokenizers, sample evidence and retrieval script before removing demo UI
+.cache/sroie | 7.761 MB | 4 files | Current baseline/data provenance, model checks or report evidence
+.cache/preprocessing-complete/tokenizers | 7.526 MB | 14 files | Original SROIE/CORD-v2/WildReceipt data or reusable tokenizer
+.cache/wildreceipt | 5.955 MB | 4 files | Current baseline/data provenance, model checks or report evidence
+demo/weights | 3.657 MB | 10 files | Preserve completed-run checkpoints, matching inference source/tokenizers, sample evidence and retrieval script before removing demo UI
+.cache/cord_v2 | 2.067 MB | 4 files | Current baseline/data provenance, model checks or report evidence
+.cache/report-model-research-20261025 | 1.474 MB | 4 files | Current baseline/data provenance, model checks or report evidence
+.cache/original-dataset-audit-20261023.json | 0.450 MB | 1 files | Current baseline/data provenance, model checks or report evidence
+models | 0.132 MB | 13 files | Current six-model source, documentation, tests or private local configuration
+.cache/dataset-handoff-docs | 0.118 MB | 5 files | Current baseline/data provenance, model checks or report evidence
+.cache/report-feedback-20261025 | 0.074 MB | 5 files | Current baseline/data provenance, model checks or report evidence
+tests | 0.044 MB | 7 files | Current six-model source, documentation, tests or private local configuration
+notebooks | 0.036 MB | 6 files | Current six-model source, documentation, tests or private local configuration
+demo/models | 0.035 MB | 8 files | Preserve completed-run checkpoints, matching inference source/tokenizers, sample evidence and retrieval script before removing demo UI
+.cache/baseline-alignment | 0.030 MB | 2 files | Current baseline/data provenance, model checks or report evidence
+utils | 0.026 MB | 7 files | Current six-model source, documentation, tests or private local configuration
+prepare | 0.018 MB | 4 files | Current six-model source, documentation, tests or private local configuration
+.cache/qwen-check | 0.018 MB | 3 files | Current baseline/data provenance, model checks or report evidence
+README.md | 0.016 MB | 1 files | Current six-model source, documentation, tests or private local configuration
+.cache/repo-cleanup-inventory-20261103.json | 0.013 MB | 1 files | Current baseline/data provenance, model checks or report evidence
+.cache/six-model-final-audit | 0.013 MB | 1 files | Current baseline/data provenance, model checks or report evidence
+.cache/original-data-preflight.json | 0.009 MB | 1 files | Current baseline/data provenance, model checks or report evidence
+.cache/donut-check | 0.008 MB | 1 files | Current baseline/data provenance, model checks or report evidence
+.cache/layoutlmv3-check | 0.005 MB | 1 files | Current baseline/data provenance, model checks or report evidence
+tools | 0.003 MB | 2 files | Current six-model source, documentation, tests or private local configuration
+demo/utils | 0.003 MB | 2 files | Preserve completed-run checkpoints, matching inference source/tokenizers, sample evidence and retrieval script before removing demo UI
+demo/download_checkpoints.py | 0.003 MB | 1 files | Preserve completed-run checkpoints, matching inference source/tokenizers, sample evidence and retrieval script before removing demo UI
+.cache/notebook-review-20261023.json | 0.002 MB | 1 files | Current baseline/data provenance, model checks or report evidence
+.cache/original-model-checks.json | 0.001 MB | 1 files | Current baseline/data provenance, model checks or report evidence
+.env | 0.001 MB | 1 files | Current six-model source, documentation, tests or private local configuration
+.cache/original-dataset-source-audit | 0.000 MB | 1 files | Current baseline/data provenance, model checks or report evidence
+.cache/original-model-checks | 0.000 MB | 2 files | Current baseline/data provenance, model checks or report evidence
+.gitignore | 0.000 MB | 1 files | Current six-model source, documentation, tests or private local configuration
+requirements.txt | 0.000 MB | 1 files | Current six-model source, documentation, tests or private local configuration
+
+=== DELETE ===
+.cache/ocr-trainval-20261015/ (EXCEPT adapter-runtime) | 5217.026 MB | 21630 files | Legacy OCR/Paddle runtime and experiments; adapter-runtime explicitly excluded because the current test runtime imports its packages
+.cache/kaggle-reconia-unified-20261020 | 3797.051 MB | 3848 files | Legacy project, experiment or local launch file outside the current six-model workflow
+backups | 992.776 MB | 41 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/common-gt-cord-20261017 | 637.217 MB | 114 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/ocr-ready-20261017 | 558.667 MB | 167 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/ocr-label-reviewed-20261017 | 516.553 MB | 57 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/.uv-cache | 392.085 MB | 10759 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/.venv | 358.000 MB | 10362 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/ocr-label-review-20261017 | 325.219 MB | 91 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/paddleocr-test-20261020 | 286.489 MB | 972 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/ocr-pilot-20261013 | 169.361 MB | 361 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/latex-runtime-20261024 | 129.957 MB | 4 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/prepared | 120.136 MB | 32 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+.cache/adapter-pilot-20261015-r2 | 73.444 MB | 78 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-pilot-20261015 | 66.214 MB | 77 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/label-review-round2 | 53.690 MB | 138 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+.cache/tectonic-cache | 46.083 MB | 381 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/cleanup-20261021 | 40.843 MB | 2177 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/storage-cleanup-20261021 | 34.215 MB | 77 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/donut-qwen-adapters-20261017 | 21.483 MB | 190 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/outputs | 15.916 MB | 82 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/kaggle-roberta-cord-wild-main-20261020 | 7.993 MB | 134 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/cleanup-20261010 | 7.320 MB | 9 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/bros-layoutlmv3-adapters-20261017 | 6.705 MB | 158 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/chandra-pilot-20261015 | 5.713 MB | 9 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/kaggle-roberta-amp-v2-20261020 | 5.047 MB | 178 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/kaggle-roberta-cord-wild-smoke-20261020 | 4.566 MB | 95 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/trainers-20261018 | 4.429 MB | 182 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/push-review-20261020 | 4.058 MB | 133 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/kaggle-roberta-sroie-main-20261020 | 3.812 MB | 34 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/cord-gt-review-20261017 | 1.494 MB | 112 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/slide-3-review-20261010 | 1.173 MB | 12 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/tdtu-latex-template-20261024 | 0.897 MB | 28 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/label-review-diff.json | 0.881 MB | 1 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+.cache/adapter-ocr-integration-20261017/source | 0.874 MB | 67 files | Legacy adapter source and checks superseded by current models/tests
+tests/__pycache__ (recursive) | 0.506 MB | 27 files | Regenerable Python bytecode
+.cache/adapter-ocr-integration-20261017/matplotlib | 0.449 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/kaggle-roberta-smoke-20261020 | 0.431 MB | 26 files | Legacy project, experiment or local launch file outside the current six-model workflow
+DACNTT.pdf | 0.286 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/label-review-round3 | 0.244 MB | 8 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+models/__pycache__ (recursive) | 0.175 MB | 13 files | Regenerable Python bytecode
+.cache/adapter-ocr-integration-20261017/source-before-update | 0.142 MB | 17 files | Legacy adapter source and checks superseded by current models/tests
+Slide_2.pdf | 0.136 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+KẾ HOẠCH KLTN_Dự án CNTT 2 _Dự án CNTT_ ĐỢT 1 2026 - 2027.xlsx | 0.136 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/demo-cases-sroie.jpg | 0.123 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/examples | 0.097 MB | 9 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+.cache/demo-cases-cord_v2.jpg | 0.085 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/demo-cases-wildreceipt.jpg | 0.080 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+52300155_52300159.PREGRAPH.xlsx | 0.078 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/label-review-round2-summary.json | 0.077 MB | 1 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+52300155_52300159.xlsx | 0.059 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+52300155_52300159.PRESTYLE.xlsx | 0.058 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+52300155_52300159.PRECOMPARE.xlsx | 0.058 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+PHAM_VI_CHOT.md | 0.057 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+52300155_52300159.BACKUP.xlsx | 0.054 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+utils/__pycache__ (recursive) | 0.043 MB | 7 files | Regenerable Python bytecode
+.cache/adapter-ocr-integration-20261017/test-results.xml | 0.039 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/publish-preprocessing-docs | 0.038 MB | 3 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/trainer-review-20261018 | 0.036 MB | 2 files | Legacy project, experiment or local launch file outside the current six-model workflow
+app | 0.035 MB | 12 files | Legacy project, experiment or local launch file outside the current six-model workflow
+alembic | 0.034 MB | 2 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/training-check-20261013 | 0.029 MB | 6 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/build_dataset_handoff.py | 0.026 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+KICH_BAN_NOI_SLIDE.md | 0.019 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+QUY_DINH_DU_AN.md | 0.017 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+reports/logs | 0.016 MB | 3 files | September GNN/DocILE training logs, not completed six-model receipt baselines
+.cache/revise_report_20261025.py | 0.015 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/app.py | 0.015 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/results_viewer.py | 0.013 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+KLTN_52300155_52300159.xlsx | 0.013 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/summary.json | 0.012 MB | 1 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+.cache/update_training_notebooks.py | 0.012 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+NOI_DUNG_BAO_CAO_MEET.md | 0.011 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/update_training_protocol_docs.py | 0.011 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/audit_cleanup_20261010.py | 0.009 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/audit-original-dataset-20261023.py | 0.009 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/simplify_report_final.py | 0.009 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/verify_lilt_full.py | 0.009 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/verify_layoutlmv3_receipts.py | 0.008 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/official_compare_20261023.py | 0.007 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/import_lilt_evidence.py | 0.007 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/dataset-finalization-summary.json | 0.007 MB | 1 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+.cache/verify_roberta_receipts.py | 0.007 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/import_layoutlmv3_receipts.py | 0.007 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/import_roberta_receipts.py | 0.007 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/verify_layoutlmv3_docile.py | 0.007 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/check-original-models.py | 0.007 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/import_layoutlmv3_docile.py | 0.006 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/README.md | 0.006 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/source-baseline.json | 0.006 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+BAO_CAO_TUAN_05.txt | 0.006 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/label_info.py | 0.006 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/cleanup-venv-20261011 | 0.006 MB | 6 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/verify_cleanup_20261010.py | 0.006 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/check-original-data.py | 0.006 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+BAO_CAO_TUAN_02.txt | 0.005 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/test-summary.json | 0.005 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+demo/check-demo.log | 0.005 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+run-local.ps1 | 0.005 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+BAO_CAO_TUAN_03.txt | 0.005 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/pick-real-model-check.py | 0.005 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/adapter-ocr-integration-20261017/check_actual_adapters.py | 0.005 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/adapter-ocr-integration-20261017/publish-list.json | 0.005 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/integrate-original.py | 0.005 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/stage-roberta-receipts.py | 0.005 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/receipt-final-cord.log | 0.005 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+BAO_CAO_TUAN_04.txt | 0.004 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/actual-adapter-checks.json | 0.004 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/execute_cleanup_20261010.ps1 | 0.004 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/receipt-final-sroie.log | 0.004 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/build_lilt_notebook.py | 0.004 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/label-review-summary.json | 0.004 MB | 1 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+.cache/download_lilt_full.py | 0.004 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/download_layoutlmv3_receipts.py | 0.004 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/REPORT.txt | 0.004 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/download_layoutlmv3_docile.py | 0.004 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/write-original-notebooks.py | 0.004 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/finalize_training_docs.py | 0.004 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/download_roberta_receipts.py | 0.003 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/adapter-audit.json | 0.003 MB | 1 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+.cache/verify_layoutlmv3_smoke.py | 0.003 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/server-error.log | 0.003 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/verify_lilt_smoke.py | 0.003 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/write-receipt-audit.py | 0.003 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/audit_docile_images.py | 0.003 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/publish_source.ps1 | 0.003 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/week5-pr-body.md | 0.003 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+BAO_CAO_TUAN_MAU.txt | 0.003 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+BAO_CAO_TUAN_01.txt | 0.003 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/roberta-pr-body.md | 0.002 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/download.log | 0.002 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/verify_layoutlmv3_docile_smoke.py | 0.002 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/adapter-verification.json | 0.002 MB | 1 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+BAO_CAO_TUAN_08.txt | 0.002 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/fetch_lilt_evidence.py | 0.002 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/receipt-preflight.py | 0.002 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/check_layoutlmv3_launch.py | 0.002 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/verify_preservation.py | 0.002 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/check_lilt_kaggle.py | 0.002 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+BAO_CAO_TUAN_07.txt | 0.002 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/finish_docile_smoke.py | 0.002 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/notebook-test-results.xml | 0.001 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+demo/ocr_worker.py | 0.001 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/check-roberta-launch.py | 0.001 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/pick-real-model-check.json | 0.001 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/check_docile_kaggle.py | 0.001 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/check-receipt-launch.py | 0.001 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/check_demo.py | 0.001 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/source-update-result.json | 0.001 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/preprocessing-complete/reproducibility.json | 0.001 MB | 1 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+run.bat | 0.001 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/adapter-ocr-integration-20261017/loader-validation.json | 0.001 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+.cache/receipt-final-check.py | 0.001 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/probe | 0.000 MB | 1 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+.cache/adapter-ocr-integration-20261017/preservation-check.json | 0.000 MB | 1 files | Legacy adapter source and checks superseded by current models/tests
+demo/run.bat | 0.000 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+.cache/preprocessing-complete/source-integrity.json | 0.000 MB | 1 files | Older OCR preprocessing outputs, label edits and scratch files; current prepared splits are .cache/<dataset>
+demo/requirements-ui.txt | 0.000 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/.gitignore | 0.000 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/run.cmd | 0.000 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+demo/server.log | 0.000 MB | 1 files | Legacy project, experiment or local launch file outside the current six-model workflow
+
+SIMPLE STRUCTURE PROPOSAL:
+Keep code: models/ notebooks/ prepare/ utils/ tools/ tests/ README.md requirements.txt
+data/raw/: move verified original datasets here, update references first
+.cache/<dataset>/: keep prepared JSONL
+artifacts/completed-baselines/: preserve old source + checkpoints + matching labels/weights + results/predictions + examples
+reports/: report sources and scientific/data evidence
+Keep both Python runtimes in place until recreated and verified.
+User authorized cleanup on a new branch. Checkpoints/raw were moved before deleting old parent folders.
+Root weekly reports/spreadsheets/proposals are DELETE candidates only; review exact paths below before approval.

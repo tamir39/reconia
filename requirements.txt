@@ -1,20 +1,15 @@
-# Deep learning
-torch
-torchvision
-
-# Hugging Face
+# Python 3.12; versions verified with the final demo.
+torch==2.6.0
+torchvision==0.21.0
 transformers==4.57.6
-peft==0.17.1
+tokenizers==0.22.2
+huggingface-hub==0.36.2
+sentencepiece==0.2.1
 datasets==3.6.0
-huggingface_hub
-accelerate>=1.2
-sentencepiece
-
-# Processing
-Pillow
-numpy
-
-# Utilities
-tqdm
-matplotlib
-pandas
+Pillow==13.0.0
+numpy==2.5.4
+tqdm==4.70.1
+matplotlib==3.11.2
+pandas==3.0.6
+rapidocr-onnxruntime==1.4.4
+onnxruntime==1.31.1

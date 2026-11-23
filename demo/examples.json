@@ -1,0 +1,1204 @@
+{
+  "sroie": {
+    "roberta": {
+      "correct": {
+        "id": "X51005442388",
+        "field": "total",
+        "label": "Tổng tiền",
+        "prediction": [
+          "21.60"
+        ],
+        "truth": [
+          "21.60"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "company": [
+            "CONTENTO"
+          ],
+          "address": [
+            "15, JALAN PERMAS 10/7, PERMAS 81750 MASAI JOHOR"
+          ],
+          "date": [
+            "20/03/18"
+          ],
+          "total": [
+            "21.60"
+          ]
+        },
+        "checkpoint_sha256": "6001ed6d1f3dd2edd923c454a684ac5e5097bfece5bf3a9daf074def67fe343d",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "X51005568855",
+        "field": "address",
+        "label": "Địa chỉ",
+        "prediction": [
+          "NO 8, JALAN 7/118B, DESA TUN RAZAK 56000 KUALA LUMPUR, MALAYSIA CHERAS LEISURE MALL"
+        ],
+        "truth": [
+          "NO 8, JALAN 7/118B, DESA TUN RAZAK 56000 KUALA LUMPUR, MALAYSIA"
+        ],
+        "explanation": "Model trả về NO 8, JALAN 7/118B, DESA TUN RAZAK 56000 KUALA LUMPUR, MALAYSIA CHERAS LEISURE MALL thay cho NO 8, JALAN 7/118B, DESA TUN RAZAK 56000 KUALA LUMPUR, MALAYSIA.",
+        "fields": {
+          "company": [
+            "POPULAR BOOK CO. (M) SDN BHD"
+          ],
+          "address": [
+            "NO 8, JALAN 7/118B, DESA TUN RAZAK 56000 KUALA LUMPUR, MALAYSIA CHERAS LEISURE MALL"
+          ],
+          "date": [
+            "23/12/17"
+          ],
+          "total": [
+            "140.65"
+          ]
+        },
+        "checkpoint_sha256": "6001ed6d1f3dd2edd923c454a684ac5e5097bfece5bf3a9daf074def67fe343d",
+        "verified_with_checkpoint": true
+      }
+    },
+    "bros": {
+      "correct": {
+        "id": "X51005442388",
+        "field": "total",
+        "label": "Tổng tiền",
+        "prediction": [
+          "21.60"
+        ],
+        "truth": [
+          "21.60"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "address": [
+            "15, JALAN PERMAS 10/7, PERMAS 81750 MASAI JOHOR"
+          ],
+          "date": [
+            "20/03/18"
+          ],
+          "total": [
+            "21.60"
+          ]
+        },
+        "checkpoint_sha256": "7b1065a47a458d49eaca3d23f8a527ee543b35d26833e61dab2b963976fc5a14",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "X51005230605",
+        "field": "company",
+        "label": "Tên cửa hàng",
+        "prediction": [
+          "PETRON BKT LANJAN SB",
+          "ALSERKAM ENTERPRISE"
+        ],
+        "truth": [
+          "PETRON BKT LANJAN SB"
+        ],
+        "explanation": "Model trả về PETRON BKT LANJAN SB · ALSERKAM ENTERPRISE thay cho PETRON BKT LANJAN SB.",
+        "fields": {
+          "company": [
+            "PETRON BKT LANJAN SB",
+            "ALSERKAM ENTERPRISE"
+          ],
+          "address": [
+            "KM 458.4 BKT LANJAN UTARA, L/RAYA UTARA SELATAN, SG BULOH 47000 SUNGAI BUL"
+          ],
+          "date": [
+            "01/02/2018"
+          ],
+          "total": [
+            "4.90"
+          ]
+        },
+        "checkpoint_sha256": "7b1065a47a458d49eaca3d23f8a527ee543b35d26833e61dab2b963976fc5a14",
+        "verified_with_checkpoint": true
+      }
+    },
+    "pick": {
+      "correct": {
+        "id": "X51005676534",
+        "field": "total",
+        "label": "Tổng tiền",
+        "prediction": [
+          "72.08"
+        ],
+        "truth": [
+          "72.08"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "company": [
+            "SYARIKAT PERNIAGAAN GIN KEE"
+          ],
+          "address": [
+            "NO 290, JALAN AIR PANAS, SETAPAK, 53200, KUALA LUMPUR."
+          ],
+          "date": [
+            "03/01/2018"
+          ],
+          "total": [
+            "72.08"
+          ]
+        },
+        "checkpoint_sha256": "e0dc4f3faa3afab372692b22c4d4a1e6bea98927ae6164ae0f7b29f095aec364",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "X51005568855",
+        "field": "total",
+        "label": "Tổng tiền",
+        "prediction": [],
+        "truth": [
+          "140.65"
+        ],
+        "explanation": "Model bỏ sót trường tổng tiền có giá trị 140.65.",
+        "fields": {
+          "company": [
+            "POPULAR",
+            "BOOK CO. (M) SDN BHD"
+          ],
+          "address": [
+            "(CO.",
+            "NO.",
+            "NO.",
+            "NO 8, JALAN 7/118B, DESA TUN RAZAK 56000 KUALA LUMPUR, MALAYSIA CHERAS",
+            "MALL"
+          ],
+          "date": [
+            "31/08/20"
+          ]
+        },
+        "checkpoint_sha256": "e0dc4f3faa3afab372692b22c4d4a1e6bea98927ae6164ae0f7b29f095aec364",
+        "verified_with_checkpoint": true
+      }
+    },
+    "layoutlmv3": {
+      "correct": {
+        "id": "X51005442388",
+        "field": "total",
+        "label": "Tổng tiền",
+        "prediction": [
+          "21.60"
+        ],
+        "truth": [
+          "21.60"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "company": [
+            "CONTENTO"
+          ],
+          "address": [
+            "15, JALAN PERMAS 10/7, PERMAS 81750 MASAI JOHOR"
+          ],
+          "date": [
+            "20/03/18"
+          ],
+          "total": [
+            "21.60"
+          ]
+        },
+        "checkpoint_sha256": "8093a8f7641ca0290bbae61f55036c984482810d9b110c4feaee05c5b0e7af1a",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "X51006647933",
+        "field": "total",
+        "label": "Tổng tiền",
+        "prediction": [
+          "RM78.30"
+        ],
+        "truth": [
+          "RM83.00"
+        ],
+        "explanation": "Model lấy tạm tính RM78.30 thay vì tổng thanh toán RM83.00 sau thuế.",
+        "fields": {
+          "company": [
+            "RESTORAN HOETIM"
+          ],
+          "address": [
+            "1-G,JALAN OS 1/3,ONE SELAYANG OFF JALAN RAWANG 68100 B.CAVES"
+          ],
+          "total": [
+            "RM78.30"
+          ],
+          "date": [
+            "28/05/2018"
+          ]
+        },
+        "checkpoint_sha256": "8093a8f7641ca0290bbae61f55036c984482810d9b110c4feaee05c5b0e7af1a",
+        "verified_with_checkpoint": true
+      }
+    },
+    "donut": {
+      "correct": {
+        "id": "X51005442388",
+        "field": "company",
+        "label": "Tên cửa hàng",
+        "prediction": [
+          "CONTENTO"
+        ],
+        "truth": [
+          "CONTENTO"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tên cửa hàng khớp với nhãn chuẩn.",
+        "fields": {
+          "company": [
+            "CONTENTO"
+          ],
+          "date": [
+            "20/03/18"
+          ],
+          "address": [
+            "15,JALAN PERMAS 10/7,PERMAS 81750 MASAI JOHOR"
+          ],
+          "total": [
+            "31.60"
+          ]
+        },
+        "checkpoint_sha256": "0b4b5216ddc30c3e7f0dbc55bd92580b6d7858a46d86370162db82086762b4d9",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "X51005301666",
+        "field": "total",
+        "label": "Tổng tiền",
+        "prediction": [
+          "263.02"
+        ],
+        "truth": [
+          "278.80"
+        ],
+        "explanation": "Model trả về 263.02 thay cho 278.80.",
+        "fields": {
+          "company": [
+            "LIGHTROOM GALLERY SDN BHD"
+          ],
+          "date": [
+            "20/11/2017"
+          ],
+          "address": [
+            "NO: 28, JALAN ASTAMA 1G, BANDAR BUKIT RAJA, 41050 KLANG SELANGOR D.E MALAYSIA"
+          ],
+          "total": [
+            "263.02"
+          ]
+        },
+        "checkpoint_sha256": "0b4b5216ddc30c3e7f0dbc55bd92580b6d7858a46d86370162db82086762b4d9",
+        "verified_with_checkpoint": true
+      }
+    }
+  },
+  "cord_v2": {
+    "roberta": {
+      "correct": {
+        "id": "44",
+        "field": "total.total_price",
+        "label": "Tổng tiền",
+        "prediction": [
+          "30.000"
+        ],
+        "truth": [
+          "30.000"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "menu.cnt": [
+            "1"
+          ],
+          "menu.nm": [
+            "Combo 1"
+          ],
+          "menu.price": [
+            "30.000"
+          ],
+          "total.total_price": [
+            "30.000"
+          ],
+          "total.cashprice": [
+            "50.000"
+          ],
+          "total.changeprice": [
+            "20.000"
+          ]
+        },
+        "checkpoint_sha256": "7248462de896416900d1200c2fd0c1f5e7c7f58c88793b8b2cb53646160eb68c",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "18",
+        "field": "total.total_price",
+        "label": "Tổng tiền",
+        "prediction": [],
+        "truth": [
+          "156000"
+        ],
+        "explanation": "Model bỏ sót trường tổng tiền có giá trị 156000.",
+        "fields": {
+          "menu.nm": [
+            "Propolis Cair",
+            "Sub Tofal"
+          ],
+          "menu.cnt": [
+            "1"
+          ],
+          "menu.unitprice": [
+            "156000"
+          ],
+          "menu.price": [
+            "156000"
+          ],
+          "sub_total.subtotal_price": [
+            "156000"
+          ],
+          "total.cashprice": [
+            "156000"
+          ],
+          "total.changeprice": [
+            "Rp. 0"
+          ]
+        },
+        "checkpoint_sha256": "7248462de896416900d1200c2fd0c1f5e7c7f58c88793b8b2cb53646160eb68c",
+        "verified_with_checkpoint": true
+      }
+    },
+    "bros": {
+      "correct": {
+        "id": "44",
+        "field": "total.total_price",
+        "label": "Tổng tiền",
+        "prediction": [
+          "30.000"
+        ],
+        "truth": [
+          "30.000"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "menu.cnt": [
+            "1"
+          ],
+          "menu.nm": [
+            "Combo 1"
+          ],
+          "menu.price": [
+            "30.000"
+          ],
+          "total.total_price": [
+            "30.000"
+          ],
+          "total.cashprice": [
+            "50.000"
+          ],
+          "total.changeprice": [
+            "20.000"
+          ]
+        },
+        "checkpoint_sha256": "e2b9981948ac8a4c2e9acf325e2e302dbd800578a2e16f18c9977b4a076dc041",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "7",
+        "field": "menu.nm",
+        "label": "Tên món",
+        "prediction": [
+          "Kupon 15",
+          "ADD CHICKEN BOX"
+        ],
+        "truth": [
+          "Kupon 15"
+        ],
+        "explanation": "Model trả về Kupon 15 · ADD CHICKEN BOX thay cho Kupon 15.",
+        "fields": {
+          "menu.nm": [
+            "Kupon 15",
+            "ADD CHICKEN BOX"
+          ],
+          "menu.price": [
+            "100,000",
+            "909"
+          ],
+          "sub_total.subtotal_price": [
+            "100,909"
+          ],
+          "sub_total.tax_price": [
+            "10,091"
+          ],
+          "total.total_price": [
+            "111,000"
+          ],
+          "total.cashprice": [
+            "Rp. 111,000"
+          ]
+        },
+        "checkpoint_sha256": "e2b9981948ac8a4c2e9acf325e2e302dbd800578a2e16f18c9977b4a076dc041",
+        "verified_with_checkpoint": true
+      }
+    },
+    "pick": {
+      "correct": {
+        "id": "44",
+        "field": "total.total_price",
+        "label": "Tổng tiền",
+        "prediction": [
+          "30.000"
+        ],
+        "truth": [
+          "30.000"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "menu.cnt": [
+            "1"
+          ],
+          "menu.nm": [
+            "Combo 1"
+          ],
+          "menu.price": [
+            "30.000"
+          ],
+          "total.total_price": [
+            "30.000"
+          ],
+          "total.cashprice": [
+            "50.000"
+          ],
+          "total.changeprice": [
+            "20.000"
+          ]
+        },
+        "checkpoint_sha256": "e06cd014177c3495ba405761693ba61b7227d63348bb774d90ca7f6878294795",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "4",
+        "field": "sub_total.discount_price",
+        "label": "sub_total.discount_price",
+        "prediction": [],
+        "truth": [
+          "19,400"
+        ],
+        "explanation": "Model bỏ sót trường sub_total.discount_price có giá trị 19,400.",
+        "fields": {
+          "menu.nm": [
+            "ICE BLACKCOFFE",
+            "AVOCADO COFFEE",
+            "CHIKEN KATSU FF"
+          ],
+          "menu.cnt": [
+            "2",
+            "1",
+            "1"
+          ],
+          "menu.price": [
+            "82,000",
+            "61,000",
+            "51,000"
+          ],
+          "sub_total.subtotal_price": [
+            "194,000"
+          ],
+          "sub_total.tax_price": [
+            "19,400"
+          ],
+          "total.total_price": [
+            "174,600"
+          ],
+          "total.cashprice": [
+            "200,000"
+          ],
+          "total.changeprice": [
+            "25,400"
+          ]
+        },
+        "checkpoint_sha256": "e06cd014177c3495ba405761693ba61b7227d63348bb774d90ca7f6878294795",
+        "verified_with_checkpoint": true
+      }
+    },
+    "layoutlmv3": {
+      "correct": {
+        "id": "44",
+        "field": "total.total_price",
+        "label": "Tổng tiền",
+        "prediction": [
+          "30.000"
+        ],
+        "truth": [
+          "30.000"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "menu.cnt": [
+            "1"
+          ],
+          "menu.nm": [
+            "Combo 1"
+          ],
+          "menu.price": [
+            "30.000"
+          ],
+          "total.total_price": [
+            "30.000"
+          ],
+          "total.cashprice": [
+            "50.000"
+          ],
+          "total.changeprice": [
+            "20.000"
+          ]
+        },
+        "checkpoint_sha256": "9039d9890871b72b4e87554d901fdd908328ad81c8b8e5484f335aef70065be1",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "0",
+        "field": "menu.itemsubtotal",
+        "label": "menu.itemsubtotal",
+        "prediction": [],
+        "truth": [
+          "60.000"
+        ],
+        "explanation": "Model bỏ sót trường menu.itemsubtotal có giá trị 60.000.",
+        "fields": {
+          "menu.num": [
+            "901016"
+          ],
+          "menu.nm": [
+            "-TICKET CP"
+          ],
+          "menu.cnt": [
+            "2"
+          ],
+          "menu.unitprice": [
+            "60.000"
+          ],
+          "menu.price": [
+            "60.000"
+          ],
+          "sub_total.discount_price": [
+            "-60.000"
+          ],
+          "sub_total.tax_price": [
+            "5.455"
+          ],
+          "sub_total.subtotal_price": [
+            "60.000"
+          ],
+          "total.total_price": [
+            "60.000"
+          ],
+          "total.menuqty_cnt": [
+            "2.00"
+          ],
+          "total.creditcardprice": [
+            "xx7730",
+            "60.000"
+          ]
+        },
+        "checkpoint_sha256": "9039d9890871b72b4e87554d901fdd908328ad81c8b8e5484f335aef70065be1",
+        "verified_with_checkpoint": true
+      }
+    },
+    "donut": {
+      "correct": {
+        "id": "44",
+        "field": "total.total_price",
+        "label": "Tổng tiền",
+        "prediction": [
+          "30.000"
+        ],
+        "truth": [
+          "30.000"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "menu.nm": [
+            "Combo 1"
+          ],
+          "menu.price": [
+            "30,000"
+          ],
+          "total.total_price": [
+            "30.000"
+          ],
+          "total.cashprice": [
+            "50.000"
+          ],
+          "total.changeprice": [
+            "20.000"
+          ]
+        },
+        "checkpoint_sha256": "56959ca3e81320de22ab5e8bc38206fd05b67ddb23e0245994f95623bcd1a6d7",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "70",
+        "field": "menu.nm",
+        "label": "Tên món",
+        "prediction": [
+          "UDANG RE",
+          "AYM GR JUN NJAN",
+          "SAPO TH SEAFOOD",
+          "POCAI 3",
+          "GURAME FILLET M ASAM MANIS",
+          "BIHUN GORENG JJ",
+          "ICED TEA",
+          "NASI PUTIH"
+        ],
+        "truth": [
+          "UDANG RE",
+          "=*LARGE*==",
+          "AYM GR JUN NJAN",
+          "SAPO TH SEAFOOD",
+          "POCAI 3",
+          "=*MEDIUM*=",
+          "GURAME FILLET M",
+          "BIHUN GORENG JJ",
+          "ICED TEA",
+          "NASI PUTIH"
+        ],
+        "explanation": "Model trả về UDANG RE · AYM GR JUN NJAN · SAPO TH SEAFOOD · POCAI 3 · GURAME FILLET M ASAM MANIS · BIHUN GORENG JJ · ICED TEA · NASI PUTIH thay cho UDANG RE · =*LARGE*== · AYM GR JUN NJAN · SAPO TH SEAFOOD · POCAI 3 · =*MEDIUM*= · GURAME FILLET M · BIHUN GORENG JJ · ICED TEA · NASI PUTIH.",
+        "fields": {
+          "menu.nm": [
+            "UDANG RE",
+            "AYM GR JUN NJAN",
+            "SAPO TH SEAFOOD",
+            "POCAI 3",
+            "GURAME FILLET M ASAM MANIS",
+            "BIHUN GORENG JJ",
+            "ICED TEA",
+            "NASI PUTIH"
+          ],
+          "menu.unitprice": [
+            "216,000",
+            "111,000",
+            "12,000",
+            "10,000"
+          ],
+          "menu.cnt": [
+            "2",
+            "2",
+            "5",
+            "7"
+          ],
+          "menu.price": [
+            "432,000",
+            "108,000",
+            "172,000",
+            "222,000",
+            "163,000",
+            "116,000",
+            "60,000",
+            "70,000"
+          ],
+          "menu.sub.nm": [
+            "=*LARGE*==",
+            "=*MEDIUM*=",
+            "=*MEDIUM*=",
+            "=*LARGE*=="
+          ],
+          "menu.sub.cnt": [
+            "2",
+            "2"
+          ],
+          "sub_total.subtotal_price": [
+            ",343,000"
+          ],
+          "sub_total.service_price": [
+            "80,580"
+          ],
+          "sub_total.tax_price": [
+            "142,358"
+          ],
+          "sub_total.etc": [
+            ",213,000",
+            "60,000",
+            "70,000"
+          ],
+          "total.total_price": [
+            "1,565,938"
+          ]
+        },
+        "checkpoint_sha256": "56959ca3e81320de22ab5e8bc38206fd05b67ddb23e0245994f95623bcd1a6d7",
+        "verified_with_checkpoint": true
+      }
+    }
+  },
+  "wildreceipt": {
+    "roberta": {
+      "correct": {
+        "id": "f08140cf5dda5ad160d72328eacebc172dbb7fc5",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "prediction": [
+          "42,00"
+        ],
+        "truth": [
+          "42,00"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "Store_name_value": [
+            "MIOPRONTO"
+          ],
+          "Store_addr_value": [
+            "RuemarcheauxPoulets57",
+            "1000Bruxelles"
+          ],
+          "Tel_value": [
+            "02/511.06.66"
+          ],
+          "Prod_quantity_value": [
+            "2",
+            "1",
+            "2",
+            "1"
+          ],
+          "Prod_item_value": [
+            "KRIK",
+            "LEFFEBLONDE",
+            "QUATRESTAGIONI",
+            "CAPRICCIOSA"
+          ],
+          "Prod_price_value": [
+            "5,00",
+            "3,50",
+            "23,00",
+            "10,50"
+          ],
+          "Total_value": [
+            "42,00"
+          ]
+        },
+        "checkpoint_sha256": "0ce62b5cdf125ed6c6ff1a8b111c5f8fea89d96602b917efe870be1a228e0732",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "2300",
+        "field": "Store_name_value",
+        "label": "Store_name_value",
+        "prediction": [
+          "LANE6"
+        ],
+        "truth": [
+          "PLAZA:Benicia-MartinezBridge"
+        ],
+        "explanation": "Model trả về LANE6 thay cho PLAZA:Benicia-MartinezBridge.",
+        "fields": {
+          "Store_addr_value": [
+            "PLAZA:Benicia-MartinezBridge"
+          ],
+          "Store_name_value": [
+            "LANE6"
+          ],
+          "Date_value": [
+            "ThuAug09,2012"
+          ],
+          "Time_value": [
+            "10:09:10"
+          ],
+          "Total_value": [
+            "$5.00"
+          ]
+        },
+        "checkpoint_sha256": "0ce62b5cdf125ed6c6ff1a8b111c5f8fea89d96602b917efe870be1a228e0732",
+        "verified_with_checkpoint": true
+      }
+    },
+    "bros": {
+      "correct": {
+        "id": "f08140cf5dda5ad160d72328eacebc172dbb7fc5",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "prediction": [
+          "42,00"
+        ],
+        "truth": [
+          "42,00"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "Store_name_value": [
+            "MIOPRONTO"
+          ],
+          "Store_addr_value": [
+            "RuemarcheauxPoulets57",
+            "1000Bruxelles"
+          ],
+          "Tel_value": [
+            "02/511.06.66"
+          ],
+          "Prod_quantity_value": [
+            "2",
+            "1",
+            "2",
+            "1"
+          ],
+          "Prod_item_value": [
+            "KRIK",
+            "LEFFEBLONDE",
+            "QUATRESTAGIONI",
+            "CAPRICCIOSA"
+          ],
+          "Prod_price_value": [
+            "5,00",
+            "3,50",
+            "23,00",
+            "10,50"
+          ],
+          "Total_value": [
+            "42,00"
+          ]
+        },
+        "checkpoint_sha256": "f01fdbb44eaf3bb20982b3ccfaeb41c748b9f374d8ea45d615e822017530cc8e",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "2300",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "prediction": [],
+        "truth": [
+          "$5.00"
+        ],
+        "explanation": "Model bỏ sót trường tổng tiền có giá trị $5.00.",
+        "fields": {
+          "Store_addr_value": [
+            "PLAZA:Benicia-MartinezBridge"
+          ],
+          "Date_value": [
+            "ThuAug09,2012"
+          ],
+          "Time_value": [
+            "10:09:10"
+          ]
+        },
+        "checkpoint_sha256": "f01fdbb44eaf3bb20982b3ccfaeb41c748b9f374d8ea45d615e822017530cc8e",
+        "verified_with_checkpoint": true
+      }
+    },
+    "pick": {
+      "correct": {
+        "id": "f08140cf5dda5ad160d72328eacebc172dbb7fc5",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "prediction": [
+          "42,00"
+        ],
+        "truth": [
+          "42,00"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "Store_name_value": [
+            "MIOPRONTO",
+            "RuemarcheauxPoulets57"
+          ],
+          "Store_addr_value": [
+            "1000Bruxelles"
+          ],
+          "Tel_value": [
+            "02/511.06.66"
+          ],
+          "Prod_quantity_value": [
+            "2",
+            "1",
+            "2",
+            "1"
+          ],
+          "Prod_item_value": [
+            "KRIK",
+            "LEFFEBLONDE",
+            "QUATRESTAGIONI",
+            "CAPRICCIOSA"
+          ],
+          "Prod_price_value": [
+            "5,00",
+            "3,50",
+            "23,00",
+            "10,50"
+          ],
+          "Total_value": [
+            "42,00"
+          ]
+        },
+        "checkpoint_sha256": "7a7893c5f898bfd3978ef0b369df6fb2a3072f11c318b13d7377a8c855f5e1e3",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "845be0dd6f5b04866a2042abd28d558032ef2576",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "prediction": [
+          "￥17.99",
+          "$60.44"
+        ],
+        "truth": [
+          "$60.44"
+        ],
+        "explanation": "Model trả về ￥17.99 · $60.44 thay cho $60.44.",
+        "fields": {
+          "Store_addr_value": [
+            "2621ORANGETHORPEAVE,FULLERTON."
+          ],
+          "Tel_value": [
+            "(714)879-3574"
+          ],
+          "Date_value": [
+            "12/30/2016FRI"
+          ],
+          "Time_value": [
+            "19:19"
+          ],
+          "Prod_item_value": [
+            "LABEEFRIBT1"
+          ],
+          "Prod_price_value": [
+            "$13.99",
+            "$14.99",
+            "$55.96"
+          ],
+          "Tax_value": [
+            "$8.99",
+            "$4.48"
+          ],
+          "Total_value": [
+            "￥17.99",
+            "$60.44"
+          ]
+        },
+        "checkpoint_sha256": "7a7893c5f898bfd3978ef0b369df6fb2a3072f11c318b13d7377a8c855f5e1e3",
+        "verified_with_checkpoint": true
+      }
+    },
+    "layoutlmv3": {
+      "correct": {
+        "id": "f08140cf5dda5ad160d72328eacebc172dbb7fc5",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "prediction": [
+          "42,00"
+        ],
+        "truth": [
+          "42,00"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "Store_name_value": [
+            "MIOPRONTO"
+          ],
+          "Store_addr_value": [
+            "RuemarcheauxPoulets57",
+            "1000Bruxelles"
+          ],
+          "Tel_value": [
+            "02/511.06.66"
+          ],
+          "Prod_quantity_value": [
+            "2",
+            "1",
+            "2",
+            "1"
+          ],
+          "Prod_item_value": [
+            "KRIK",
+            "LEFFEBLONDE",
+            "QUATRESTAGIONI",
+            "CAPRICCIOSA"
+          ],
+          "Prod_price_value": [
+            "5,00",
+            "3,50",
+            "23,00",
+            "10,50"
+          ],
+          "Total_value": [
+            "42,00"
+          ]
+        },
+        "checkpoint_sha256": "01a7cd90efa75a5dee88299f8b1dd68af8580fc50d7c59dddac2b0846ffff238",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "e368026983ab8c87212fcd1c8d4ad15420140d76",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "prediction": [],
+        "truth": [
+          "£70.32"
+        ],
+        "explanation": "Model bỏ sót trường tổng tiền có giá trị £70.32.",
+        "fields": {
+          "Store_name_value": [
+            "M",
+            "MORRISONS",
+            "WmMORRISON"
+          ],
+          "Store_addr_value": [
+            "Camden"
+          ],
+          "Tel_value": [
+            "02074280405"
+          ],
+          "Date_value": [
+            "09/06/2009"
+          ],
+          "Time_value": [
+            "17:53"
+          ],
+          "Prod_item_value": [
+            "ALLINSONFLOUR",
+            "KRAFTPHILADELPHIA",
+            "'M'HADDOCKPORTIONS",
+            "ORGANICCHOCOLATE",
+            "WHITEKIDNEYBEANS",
+            "PICKLEDEGGS",
+            "NIVEASHOWER",
+            "CAULDRONTOFU",
+            "PURAVEGETABLEOIL",
+            "CAREX",
+            "BOILINTHEBAGRICE",
+            "DENTEKFLOSSERS",
+            "KORBONDWHITETHREAD",
+            "NIVEAHANDCREAM",
+            "'M'F/HCUTLERYSET",
+            "'M'ORGANICMILK",
+            "ALKASELTZER",
+            "'M'TISSUES",
+            "JOHNSONSBABYPOWDER",
+            "NIVEAFORMEN",
+            "SIMPLESOAP",
+            "LONGLEYFARMYOGURT",
+            "LILLETSCOMPACT",
+            "GALBANIMOZZARELLA",
+            "'M'VALUECLOTHS",
+            "'M'CREMEFRAICHE",
+            "'M'30PAPERDOYLEYS",
+            "'M'SWINGBINLINERS",
+            "SENSODYNEPASTE",
+            "SEASALT",
+            "'M'POCKETTISSUES",
+            "'M'MOZZARELLABLOCK",
+            "AUSSIESHAMOO",
+            "'M'GRANULATEDSUGAR",
+            "GLOWHITE",
+            "'M'VALUET/BRUSHES",
+            "WRIGLEYSGUM",
+            "COMFORTNATURALS",
+            "'M'COTTONWOOLPADS",
+            "'M'PLASTICPLATES",
+            "MINTIMPERIALS",
+            "POLYESTERELASTIC",
+            "'M'SILVERSKINONIONS",
+            "NIVEASHOWER",
+            "'M'FACECLOTHS",
+            "KORBONDHOOK&LOOP",
+            "'M'COTTONWOOLBUDS",
+            "SAVLONCREAM",
+            "ANDREX",
+            "2ROLL"
+          ],
+          "Prod_price_value": [
+            "1.25",
+            "1.61",
+            "0.38",
+            "1.75",
+            "0.97",
+            "1.89",
+            "0.89",
+            "0.97",
+            "0.83",
+            "0.87",
+            "0.54",
+            "1.45",
+            "2.09",
+            "0.20",
+            "1.82",
+            "0.51",
+            "3.40",
+            "2.38",
+            "0.93",
+            "2.09",
+            "2.40"
+          ]
+        },
+        "checkpoint_sha256": "01a7cd90efa75a5dee88299f8b1dd68af8580fc50d7c59dddac2b0846ffff238",
+        "verified_with_checkpoint": true
+      }
+    },
+    "donut": {
+      "correct": {
+        "id": "f08140cf5dda5ad160d72328eacebc172dbb7fc5",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "prediction": [
+          "42,00"
+        ],
+        "truth": [
+          "42,00"
+        ],
+        "explanation": "Giá trị dự đoán cho trường tổng tiền khớp với nhãn chuẩn.",
+        "fields": {
+          "Store_name_value": [
+            "MIOPRONTO",
+            "RuemarcheauxPoulets57"
+          ],
+          "Store_addr_value": [
+            "1000Bruxelles"
+          ],
+          "Tel_value": [
+            "02/511.06.66"
+          ],
+          "Prod_quantity_value": [
+            "2",
+            "2"
+          ],
+          "Prod_item_value": [
+            "KRIK",
+            "LEFFEBLONDE",
+            "QUATRESTAGIONI",
+            "CAPRICCIOSA"
+          ],
+          "Prod_price_value": [
+            "5,00",
+            "3,50",
+            "23,00",
+            "10,50"
+          ],
+          "Total_value": [
+            "42,00"
+          ]
+        },
+        "checkpoint_sha256": "53c31b5d84998b610cc7ac40bc7004dade5fdec6d129ed01164bf43bc19e4b6a",
+        "verified_with_checkpoint": true
+      },
+      "error": {
+        "id": "2300",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "prediction": [],
+        "truth": [
+          "$5.00"
+        ],
+        "explanation": "Model bỏ sót trường tổng tiền có giá trị $5.00.",
+        "fields": {
+          "Store_name_value": [
+            "PLAZA:Benicia-MartinezBridge"
+          ],
+          "Store_addr_value": [
+            "LANE6"
+          ],
+          "Date_value": [
+            "09,2012"
+          ],
+          "Time_value": [
+            "10:09:10"
+          ]
+        },
+        "checkpoint_sha256": "53c31b5d84998b610cc7ac40bc7004dade5fdec6d129ed01164bf43bc19e4b6a",
+        "verified_with_checkpoint": true
+      }
+    }
+  }
+}

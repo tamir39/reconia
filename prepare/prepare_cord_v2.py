@@ -5,7 +5,7 @@ from pathlib import Path
 from datasets import Dataset, Image as ImageFeature, load_from_disk
 from PIL import Image
 
-from utils.common import get_cache_dir, get_data_dir, normalize_box, export_labels
+from utils.common import get_repo_dir, get_cache_dir, get_data_dir, normalize_box, export_labels
 
 
 def build_gt(
@@ -75,21 +75,24 @@ def process_sample(raw_sample: dict, split_name: str) -> dict:
     }
 
 
-def export_split(split_dataset: Dataset, split_name: str, out_file: Path) -> set[str]:
+def export_split(split_dataset: Dataset, split_name: str, out_file: Path, image_root: Path | None = None) -> set[str]:
     out_file.parent.mkdir(parents=True, exist_ok=True)
     labels: set[str] = set()
 
     with open(out_file, "w", encoding="utf-8") as file:
         for raw_sample in split_dataset:
             sample = process_sample(raw_sample, split_name)
-            image_file = get_data_dir("cord_v2") / sample["image_path"]
-            if not image_file.exists():
-                image_file = out_file.parent / "images" / split_name / f"{sample['id']}.png"
-                image_file.parent.mkdir(parents=True, exist_ok=True)
-                source = raw_sample["image"]
-                with Image.open(BytesIO(source["bytes"]) if source.get("bytes") else source["path"]) as image:
-                    image.save(image_file)
-                sample["image_path"] = str(image_file.resolve())
+            if image_root is not None:
+                destination = image_root / sample["image_path"]
+                if not destination.exists():
+                    raw_image = raw_sample["image"]
+                    payload = raw_image.get("bytes")
+                    source = BytesIO(payload) if payload else raw_image.get("path")
+                    if not source:
+                        raise ValueError("CORD image bytes/path are missing")
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    with Image.open(source) as image:
+                        image.convert("RGB").save(destination)
             labels.update(item["label"] for item in sample["ocr"])
             file.write(json.dumps(sample, ensure_ascii=False) + "\n")
 
@@ -103,9 +106,9 @@ def prepare_cord_v2() -> None:
     dataset = load_from_disk(cord_v2_dir)
     dataset = dataset.cast_column("image", ImageFeature(decode=False))
 
-    train_labels = export_split(dataset["train"], "train", cache_dir / "train.jsonl")
-    val_labels = export_split(dataset["validation"], "val", cache_dir / "val.jsonl")
-    test_labels = export_split(dataset["test"], "test", cache_dir / "test.jsonl")
+    train_labels = export_split(dataset["train"], "train", cache_dir / "train.jsonl", cord_v2_dir)
+    val_labels = export_split(dataset["validation"], "val", cache_dir / "val.jsonl", cord_v2_dir)
+    test_labels = export_split(dataset["test"], "test", cache_dir / "test.jsonl", cord_v2_dir)
 
     export_labels(train_labels | val_labels | test_labels, "cord_v2")
 

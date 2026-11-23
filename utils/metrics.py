@@ -41,31 +41,20 @@ def evaluate_dataset(
     gts: list[dict[str, list[str]]],
     preds: list[dict[str, list[str]]],
 ) -> dict[str, float]:
-    if len(gts) != len(preds) or not gts:
+    if not gts or len(gts) != len(preds):
         raise ValueError("Expected one prediction per document in a nonempty split")
-    field_counts: dict[str, list[int]] = {}
+    total_tp = total_fp = total_fn = 0
 
     for gt, pred in zip(gts, preds):
-        for field, (tp, fp, fn) in evaluate_sample(gt, pred).items():
-            if counts := field_counts.get(field):
-                counts[0] += tp
-                counts[1] += fp
-                counts[2] += fn
-            else:
-                field_counts[field] = [tp, fp, fn]
+        for tp, fp, fn in evaluate_sample(gt, pred).values():
+            total_tp += tp
+            total_fp += fp
+            total_fn += fn
 
-    total_p = total_r = total_f1 = 0.0
+    precision, recall, f1 = compute_metrics(total_tp, total_fp, total_fn)
 
-    for tp, fp, fn in field_counts.values():
-        p, r, f1 = compute_metrics(tp, fp, fn)
-        total_p += p
-        total_r += r
-        total_f1 += f1
-
-    num_fields = max(len(field_counts), 1)
-    
     return {
-        "precision": total_p / num_fields,
-        "recall": total_r / num_fields,
-        "f1": total_f1 / num_fields,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
     }

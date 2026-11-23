@@ -1,3 +1,4 @@
+import argparse
 import json
 from pathlib import Path
 
@@ -34,14 +35,20 @@ def save_comparison_md(results: list[dict], out_dir: Path) -> None:
             )
 
 
-def compare_results() -> None:
+def compare_results(source: Path | None = None, destination: Path | None = None) -> None:
+    source = source or get_repo_dir() / "reports/benchmarks"
+    destination = destination or get_repo_dir() / "output/comparison"
     for dataset_name in DATASETS:
-        out_dir = get_repo_dir() / "results" / dataset_name
-        results = collect_results(out_dir)
+        out_dir = destination / dataset_name
+        results = collect_results(source / dataset_name)
         if results:
             save_comparison_md(results, out_dir)
             save_comparison_plot(results, out_dir)
 
 
 if __name__ == "__main__":
-    compare_results()
+    parser = argparse.ArgumentParser(description="Compare pinned Micro-F1 benchmarks; never replace the originals")
+    parser.add_argument("--source", type=Path)
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+    compare_results(args.source, args.output)

@@ -1,0 +1,131 @@
+{
+  "date": "2026-11-03",
+  "branch": "codex/cleanup-six-models",
+  "completed": true,
+  "before_bytes_visible": 26501042033,
+  "after_bytes_visible": 12604661008,
+  "reclaimed_bytes_approx": 13896381025,
+  "units": "decimal GB; .git excluded; inaccessible historical fixture files were additionally removed",
+  "moved": {
+    "raw": {
+      "from": ".cache/preprocessing-complete/raw",
+      "to": "data/raw"
+    },
+    "checkpoints": {
+      "from": "demo/checkpoints",
+      "to": "checkpoints"
+    },
+    "tokenizers": {
+      "from": "demo/weights",
+      "to": "weights"
+    },
+    "baseline_inference_source": {
+      "from": "demo/{models,utils,examples}",
+      "to": ".cache/completed-baseline-inference"
+    }
+  },
+  "verification": {
+    "checkpoint_sha256_matches": 9,
+    "raw_files_preserved_same_size": 5705,
+    "prepared_splits_verified": 9,
+    "unit_tests_passed": 19,
+    "unit_test_log": ".cache/baseline-alignment/post-cleanup-tests.log"
+  },
+  "runtime_dependencies_preserved": [
+    ".cache/adapter-ocr-integration-20261017/test-runtime",
+    ".cache/ocr-trainval-20261015/adapter-runtime"
+  ],
+  "current_top_level": [
+    {
+      "path": ".cache",
+      "bytes": 3752652363,
+      "files": 53168
+    },
+    {
+      "path": ".env",
+      "bytes": 587,
+      "files": 1
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 273,
+      "files": 1
+    },
+    {
+      "path": ".pytest_cache",
+      "bytes": 0,
+      "files": 0
+    },
+    {
+      "path": "checkpoints",
+      "bytes": 3437422956,
+      "files": 14
+    },
+    {
+      "path": "data",
+      "bytes": 5378419826,
+      "files": 5705
+    },
+    {
+      "path": "models",
+      "bytes": 306513,
+      "files": 26
+    },
+    {
+      "path": "notebooks",
+      "bytes": 36116,
+      "files": 6
+    },
+    {
+      "path": "prepare",
+      "bytes": 18375,
+      "files": 4
+    },
+    {
+      "path": "README.md",
+      "bytes": 4379,
+      "files": 1
+    },
+    {
+      "path": "reports",
+      "bytes": 31911512,
+      "files": 59
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 229,
+      "files": 1
+    },
+    {
+      "path": "results",
+      "bytes": 41700,
+      "files": 27
+    },
+    {
+      "path": "tests",
+      "bytes": 117470,
+      "files": 13
+    },
+    {
+      "path": "tools",
+      "bytes": 2992,
+      "files": 2
+    },
+    {
+      "path": "utils",
+      "bytes": 69070,
+      "files": 14
+    },
+    {
+      "path": "weights",
+      "bytes": 3656647,
+      "files": 10
+    }
+  ],
+  "notes": [
+    "Completed model checkpoints/results have not been retrained or modified.",
+    "Code, datasets and report sources for the six-model project retained.",
+    "README shortened; detailed research/training notes moved to reports/training-notes.md.",
+    "Cleanup branch is local; no push of the cleanup branch performed."
+  ]
+}

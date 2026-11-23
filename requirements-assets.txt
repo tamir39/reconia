@@ -1,0 +1,3 @@
+# Optional: fetching pinned checkpoint/prepared assets from Kaggle.
+kaggle==2.1.1
+requests==2.34.2

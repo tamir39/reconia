@@ -15,15 +15,16 @@ from transformers import logging as hf_logging
 hf_logging.set_verbosity_error()
 
 DATASETS = ("sroie", "cord_v2", "wildreceipt")
-MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen_vl")
+MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut")
 
 
 def set_seed(seed: int = 42) -> None:
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
 
 
 def get_repo_dir() -> Path:
@@ -31,21 +32,30 @@ def get_repo_dir() -> Path:
 
 
 def get_data_dir(dataset_name: str) -> Path:
-    root = os.environ.get("RECONIA_DATA_DIR")
-    candidates = [Path(root)] if root else [
+    configured = os.environ.get("RECONIA_DATA_DIR")
+    roots = [Path(configured)] if configured else [
+        get_repo_dir() / "data" / "raw",
         Path("/kaggle/input/datasets/vhngthnh/reconia-data"),
         Path("/kaggle/input/reconia-data"),
-        get_repo_dir() / "data" / "raw",
+        Path("/kaggle/input/private-dataset"),
+        get_repo_dir(),
     ]
-    for candidate in candidates:
-        if (candidate / dataset_name).is_dir():
-            return candidate / dataset_name
-    raise FileNotFoundError("Set RECONIA_DATA_DIR to the raw dataset root")
+    for root in roots:
+        if (root / dataset_name).is_dir():
+            return root / dataset_name
+    raise FileNotFoundError("Set RECONIA_DATA_DIR to the directory containing the three raw datasets")
 
 
 def get_cache_dir(dataset_name: str) -> Path:
-    root = Path(os.environ.get("RECONIA_PREPARED_DIR", get_repo_dir() / ".cache"))
-    return root / dataset_name
+    return Path(os.environ.get("RECONIA_PREPARED_DIR", get_repo_dir() / ".cache")) / dataset_name
+
+
+def ensure_training_destination(repo_dir: Path, dataset: str, model: str, resume: bool) -> None:
+    """Keep a new experiment from overwriting the submitted checkpoints/results."""
+    existing = [repo_dir / "checkpoints" / dataset / model / name
+                for name in ("best_weights.pt", "last_checkpoint.pt")]
+    if not resume and any(path.exists() for path in existing):
+        raise FileExistsError("Checkpoint already exists. Use a separate checkout for a new run, or --resume to continue it.")
 
 
 def normalize_text(text: str | None) -> str:
@@ -75,16 +85,15 @@ def normalize_box(quad: list[int], width: int, height: int) -> list[int]:
 
 
 def export_labels(labels: set[str], dataset_name: str) -> None:
-    checkpoint_dir = get_cache_dir(dataset_name)
+    checkpoint_dir = get_repo_dir() / "checkpoints" / dataset_name
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    fields = {label[2:] for label in labels if label.startswith(("B-", "I-"))}
-    ordered_labels = ["O"] + sorted(f"{prefix}-{field}" for field in fields for prefix in ("B", "I"))
+    ordered_labels = ["O"] + sorted(lbl for lbl in labels if lbl != "O")
     with open(checkpoint_dir / "labels.json", "w", encoding="utf-8") as file:
         json.dump(ordered_labels, file, indent=2, ensure_ascii=False)
 
 
 def load_labels(dataset_name: str) -> list[str]:
-    labels_file = get_cache_dir(dataset_name) / "labels.json"
+    labels_file = get_repo_dir() / "checkpoints" / dataset_name / "labels.json"
     with open(labels_file, "r", encoding="utf-8") as file:
         return json.load(file)
 

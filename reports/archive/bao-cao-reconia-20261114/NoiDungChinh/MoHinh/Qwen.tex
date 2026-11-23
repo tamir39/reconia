@@ -1,0 +1,5 @@
+\section{Qwen2.5-VL và tinh chỉnh LoRA}
+\textcite{bai2025} mô tả một mô hình thị giác--ngôn ngữ dùng Vision Transformer cho ảnh có độ phân giải linh hoạt. Cơ chế attention theo cửa sổ trong phần lớn các lớp thị giác giúp giảm chi phí xử lý ảnh. Các biểu diễn ảnh sau khi gộp được đưa vào mô hình ngôn ngữ cùng token của câu lệnh. Nhờ đó, kiến trúc hỗ trợ các tác vụ đọc tài liệu và sinh đầu ra có cấu trúc.
+
+Nhóm dùng phiên bản Qwen2.5-VL-3B-Instruct và tinh chỉnh LoRA \parencite{hu2022}. LoRA giữ trọng số gốc cố định và biểu diễn phần cập nhật của một ma trận trọng số bằng tích hai ma trận hạng thấp. Khi đưa ảnh vào mô hình, câu lệnh yêu cầu trả về các trường phù hợp dưới dạng JSON. Quy trình đó là cấu hình của đề tài. Báo cáo kỹ thuật của Qwen mô tả quá trình phát triển họ mô hình và đánh giá trên các benchmark riêng.
+

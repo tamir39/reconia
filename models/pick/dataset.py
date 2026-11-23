@@ -38,7 +38,7 @@ def compute_relations(
     heights = np.maximum(boxes[:, 3] - boxes[:, 1], 1.0)
     centers_x = boxes[:, 0] + widths / 2.0
     centers_y = boxes[:, 1] + heights / 2.0
-    text_lengths = np.maximum([len(t) for t in texts], 1.0)
+    text_lengths = np.maximum(np.array([len(t) for t in texts], dtype=np.float32), 1.0)
 
     delta_x = np.abs(centers_x[:, None] - centers_x[None, :]) / max(width, 1.0)
     delta_y = np.abs(centers_y[:, None] - centers_y[None, :]) / max(height, 1.0)
@@ -75,15 +75,13 @@ class PickDataset(Dataset):
 
         with open(data_file, "r", encoding="utf-8") as file:
             self.samples = [json.loads(line) for line in file]
-        for sample in self.samples:
-            if len(sample["ocr"]) > max_boxes or any(len(item["text"]) > max_text_len for item in sample["ocr"]):
-                raise ValueError(f"PICK input exceeds capacity: {sample['id']}")
 
     def __len__(self) -> int:
         return len(self.samples)
 
     def _process_image(self, image_file: Path) -> torch.Tensor:
-        image = Image.open(image_file).convert("RGB")
+        with Image.open(image_file) as img:
+            image = img.convert("RGB")
         width, height = self.image_size
         image = image.resize((width, height), Image.Resampling.BILINEAR)
 
@@ -197,11 +195,6 @@ def collate_fn(batch: list[dict]) -> dict[str, torch.Tensor]:
         "relations": relations,
         "labels": labels,
     }
-
-
-class PickDataCollator:
-    def __call__(self, features: list[dict]) -> dict:
-        return collate_fn(features)
 
 
 def align_labels(
@@ -331,7 +324,9 @@ def predict_sample(
     relations_tensor = torch.from_numpy(relations).unsqueeze(0).to(device)
 
     model.eval()
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(
+        device_type=device.type, enabled=device.type == "cuda"
+    ):
         _, preds = model(
             images=images,
             boxes=boxes_tensor,

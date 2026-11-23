@@ -1,0 +1,125 @@
+{
+  "date": "2026-11-23",
+  "base_commit": "c2f76ddb7b3906796c48ed92f7ffbf0d5077f46b",
+  "snapshot_checked_at": "2026-11-21T06:16:15.761589+00:00",
+  "models": {
+    "roberta": {
+      "source": "https://www.kaggle.com/code/vhngthnh/roberta-model",
+      "files": {
+        "models/roberta/dataset.py": {
+          "export_sha256": "e924642f65c6c6f13af17f055fd1801dd3dd32700f68c40f549391e2634b5e34",
+          "final_sha256": "9fc851d76c33046bb3d666bb3f29a4c904edf93011c5ddb7fe93187641d77be8"
+        },
+        "models/roberta/train.py": {
+          "export_sha256": "1f0aa18d93c63e4728af628e3c0a358f2d61b6771f15e50f852c131628600ad9",
+          "final_sha256": "997f3c8e0374180f5066ff800ebd78667ae588e05e8e8cc91c8ce88fa845c325"
+        }
+      }
+    },
+    "bros": {
+      "source": "https://www.kaggle.com/code/vhngthnh/bros-model",
+      "files": {
+        "models/bros/dataset.py": {
+          "export_sha256": "11bb4601d651924679eca616e47152226a5c94e08c31dc9c79773d6d2bd5fb11",
+          "final_sha256": "10c041a7ccdeb24cc6a85fd5f1b58a18a8d4f9dee90f172fdd5352c8d60456ad"
+        },
+        "models/bros/train.py": {
+          "export_sha256": "be11fbc0afca8386e811a23f1aa1e63b536064d7f845c996e54778dfb5108737",
+          "final_sha256": "50b0268d2f8ef7d3d106cbbfc55304a910e3fbed1151c315c5a298191180c8e7"
+        }
+      }
+    },
+    "pick": {
+      "source": "https://www.kaggle.com/code/vhngthnh/pick-model",
+      "files": {
+        "models/pick/dataset.py": {
+          "export_sha256": "e6d52a617a6e0b44e98aa95afed77268c40c31026ee5f66eb8ab3bc7816ef5bd",
+          "final_sha256": "3f49ddbcf11ac1f9a63325f09625ff37a901572345faa7fc5d190d2f0dcce6fe"
+        },
+        "models/pick/model.py": {
+          "export_sha256": "731e1dd7848aa6a3a07a54319af90539cd66aa8c38fc0fd39526caea3fc2c7b9",
+          "final_sha256": "3f86b39ad8f9c28b43305bf6dfd710b64686a15301cf2179e52aa19631411623"
+        },
+        "models/pick/train.py": {
+          "export_sha256": "b7ea55fd97ecbd8be873d68e3bab6cb8d9fabd19af861fd53b90bd5264088886",
+          "final_sha256": "39599fb8834793b5fbfe5935f9b66e94da8fefd0548b40a383ca47b070d9fe35"
+        }
+      }
+    },
+    "layoutlmv3": {
+      "source": "https://www.kaggle.com/code/vhngthnh/layoutlmv3-model",
+      "files": {
+        "models/layoutlmv3/dataset.py": {
+          "export_sha256": "0e4b6fb409dfb9a5211b09e01ec203deccd41953c1af2d1f967c276dd288cb1d",
+          "final_sha256": "038cee346a7ce989154c2fd86dae8eb31471832a09a2641a3403f61fda9ed5bf"
+        },
+        "models/layoutlmv3/train.py": {
+          "export_sha256": "79aa90bbbde2c5fd10c3e4e88284ddaebb4fc8ef766a4ff5592e57dbd20d21e3",
+          "final_sha256": "c47486925c49e7ed8a8416a6062ded719b4d3e5cc0a49b29a6f53f42a2b9489a"
+        }
+      }
+    },
+    "donut": {
+      "source": "https://www.kaggle.com/code/vhngthnh/donut-model",
+      "files": {
+        "models/donut/dataset.py": {
+          "export_sha256": "9a349955db71dac6e763c1d96d6a634930df1ca601ed8b92684e90cbb37f7f43",
+          "final_sha256": "40649febb3cd21e8c81a9623f81fe44f9a3aa2cfa539d7d6fc931a1b6a0b2894"
+        },
+        "models/donut/train.py": {
+          "export_sha256": "287ff4e93509996fca6feeae3bd2d90f37ea25f061f3d05a6f0e7b989bf26e22",
+          "final_sha256": "9da2acd4f15f4d85b765b64848c63fc07d86044baec773db2d051e62281be6fa"
+        }
+      }
+    }
+  },
+  "shared": {
+    "common.py": {
+      "export_sha256": "49348012fd83172d7f67f333b6950e828269a611568aff89d65a84b62591cb8e",
+      "local": "utils/common.py",
+      "final_sha256": "c4b39951ffa7fa6b5f98197a8ce879dbe7d8a47141343bb71ceaae403ba6b8d4"
+    },
+    "metrics.py": {
+      "export_sha256": "0e5be60be5a83065faf77033f2a8cb44d5c376b68f8b80dd3a93d5302caeaf7a",
+      "local": "utils/metrics.py",
+      "final_sha256": "5b196cba630648884a42c1d02aa48c57bbe1741c488ed5543f97cba182039e52"
+    },
+    "plots.py": {
+      "export_sha256": "b3416c429d1b766c6e927a55283622d019b7d6ce3a4abf320e52b325e77d87ea",
+      "local": "utils/plots.py",
+      "final_sha256": "d5d531674aedaee624a6a683a10416ad790c180f9eb0a0bfcad5362d9ad60f58"
+    },
+    "visualization.py": {
+      "export_sha256": "a42e9dc0f86492c9dfbf9d158da8118d4db62fa68a21e3eccc966eb07381a07e",
+      "local": "archive/published-visualization-20261121.py",
+      "final_sha256": "a42e9dc0f86492c9dfbf9d158da8118d4db62fa68a21e3eccc966eb07381a07e"
+    }
+  },
+  "preparation": {
+    "prepare/prepare_sroie.py": {
+      "source": "https://www.kaggle.com/code/vhngthnh/layoutlmv3-model",
+      "export_sha256": "ebea4f3687a24791838a15ca1e643ef4b9fb1bbeea0435bb269402cfb4608545",
+      "final_sha256": "34be75b5364ff4332b02ab6f808491cac117d459fe48566101d1e68fa1e28528"
+    },
+    "prepare/prepare_cord_v2.py": {
+      "source": "https://www.kaggle.com/code/vhngthnh/layoutlmv3-model",
+      "export_sha256": "6616d483e20607e8ff04c9ebe83d60d87564235926a444e4a33261554cc30eb7",
+      "final_sha256": "c1d969bc7a44b827a62e1b723d42ae00cf26b0bcf661c6e0b78c6730da7184be"
+    },
+    "prepare/prepare_wildreceipt.py": {
+      "source": "https://www.kaggle.com/code/vhngthnh/layoutlmv3-model",
+      "export_sha256": "b63d8188b03b4c36e5863d8c2fa1f99aa93da4c2fcc96d9f2d3ec9c9575c58b2",
+      "final_sha256": "003e6f2ff56282dadff861e9df7d6a066beebac9128112e0a9898030a6b0e8c8"
+    }
+  },
+  "final_hash_format": "UTF-8 text with LF newlines; export_sha256 records original bytes",
+  "portability_changes": [
+    "Final five-model registry; explicit data/prepared directories; checkpoint overwrite guard before training.",
+    "RoBERTa add_prefix_space remains on tokenizer construction, removed from per-call kwargs for Transformers 4.57.6.",
+    "CORD materializes embedded image bytes only when the expected image is absent; OCR/GT conversion unchanged.",
+    "Micro scorer rejects empty/mismatched document lists; scoring arithmetic unchanged.",
+    "Old visualization module archived; demo uses fixed-target input occlusion.",
+    "Five notebooks: final-submit source, no embedded source payload; run flags off; published split verification before training.",
+    "Trailing whitespace and line endings normalized in active Python source; no model math changed."
+  ]
+}

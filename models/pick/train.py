@@ -3,20 +3,23 @@ import csv
 import gc
 import json
 import logging
+import os
+import random
 from pathlib import Path
 
+import numpy as np
 import torch
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
-from transformers import get_linear_schedule_with_warmup
+from transformers import get_cosine_schedule_with_warmup
 
 from models.pick.dataset import (
     PickDataset,
-    PickDataCollator,
     build_char_vocab,
     build_tag_vocab,
+    collate_fn,
     decode_predictions,
 )
 from models.pick.model import PICKModel
@@ -26,6 +29,7 @@ from utils.common import (
     get_data_dir,
     get_repo_dir,
     get_cache_dir,
+    ensure_training_destination,
     load_labels,
     set_seed,
     setup_logger,
@@ -41,9 +45,8 @@ def train_epoch(
     scheduler: LRScheduler,
     scaler: torch.amp.GradScaler,
     device: torch.device,
-    use_amp: bool,
     epoch: int,
-    epochs: int = 30,
+    epochs: int = 25,
     accum_steps: int = 2,
 ) -> float:
     model.train()
@@ -56,31 +59,21 @@ def train_epoch(
         leave=False,
     )
     for step, batch in enumerate(progress_loader, start=1):
-        images = batch["images"].to(device)
-        boxes = batch["boxes"].to(device)
-        input_ids = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
-        box_mask = batch["box_mask"].to(device)
-        relations = batch["relations"].to(device)
-        labels = batch["labels"].to(device)
+        batch = {k: v.to(device) for k, v in batch.items()}
 
-        with torch.amp.autocast(device_type=device.type, enabled=use_amp):
+        with torch.amp.autocast(device_type=device.type):
             loss, _ = model(
-                images=images,
-                boxes=boxes,
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                box_mask=box_mask,
-                relations=relations,
-                labels=labels,
+                images=batch["images"],
+                boxes=batch["boxes"],
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"],
+                box_mask=batch["box_mask"],
+                relations=batch["relations"],
+                labels=batch["labels"],
                 return_preds=False,
             )
-            raw_loss = loss
-            group_size = min(accum_steps, len(loader) - ((step - 1) // accum_steps) * accum_steps)
-            loss = raw_loss / group_size
+            loss = loss / accum_steps
 
-        if not torch.isfinite(loss):
-            raise FloatingPointError(f"Non-finite loss at epoch {epoch}, batch {step}")
         scaler.scale(loss).backward()
 
         if step % accum_steps == 0 or step == len(loader):
@@ -93,12 +86,9 @@ def train_epoch(
             optimizer.zero_grad()
             if scale_before <= scale_after:
                 scheduler.step()
-            else:
-                logging.getLogger("train").warning(
-                    f"AMP skip: epoch={epoch} batch={step} scale={scale_before}->{scale_after}")
 
-        total_loss += raw_loss.item()
-        progress_loader.set_postfix(loss=f"{raw_loss.item():.4f}")
+        total_loss += loss.item() * accum_steps
+        progress_loader.set_postfix(loss=f"{loss.item() * accum_steps:.4f}")
 
     return total_loss / len(loader)
 
@@ -111,28 +101,25 @@ def evaluate_epoch(
     device: torch.device,
     desc: str,
 ) -> tuple[float, dict[str, float]]:
+    gc.collect()
+    torch.cuda.empty_cache()
+
     model.eval()
     total_loss = 0.0
     all_pred_ids: list[list[list[int]]] = []
 
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast(device_type=device.type):
         for batch in tqdm(loader, desc=desc, leave=False):
-            images = batch["images"].to(device)
-            boxes = batch["boxes"].to(device)
-            input_ids = batch["input_ids"].to(device)
-            attention_mask = batch["attention_mask"].to(device)
-            box_mask = batch["box_mask"].to(device)
-            relations = batch["relations"].to(device)
-            labels = batch["labels"].to(device)
+            batch = {k: v.to(device) for k, v in batch.items()}
 
             loss, pred_ids = model(
-                images=images,
-                boxes=boxes,
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                box_mask=box_mask,
-                relations=relations,
-                labels=labels,
+                images=batch["images"],
+                boxes=batch["boxes"],
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"],
+                box_mask=batch["box_mask"],
+                relations=batch["relations"],
+                labels=batch["labels"],
                 return_preds=True,
             )
             total_loss += loss.item()
@@ -158,7 +145,7 @@ def evaluate_test(
     logger: logging.Logger,
 ) -> None:
     model.load_state_dict(
-        torch.load(checkpoint_dir / "best_weights.pt", map_location=device, weights_only=True)
+        torch.load(checkpoint_dir / "best_weights.pt", map_location="cpu", weights_only=True)
     )
     loss, metrics = evaluate_epoch(
         model, loader, samples, id2tag, device, "[Test]"
@@ -193,19 +180,18 @@ def save_history(history: list[dict], out_dir: Path) -> None:
 
 def train_model(
     dataset_name: str,
-    epochs: int = 30,
+    epochs: int = 25,
     batch_size: int = 4,
     accum_steps: int = 2,
-    lr: float = 1e-4,
-    min_epochs: int = 5,
+    lr: float = 5e-4,
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
     resume: bool = False,
-    test_only: bool = False,
 ) -> None:
     set_seed()
     repo_dir = get_repo_dir()
+    ensure_training_destination(repo_dir, dataset_name, "pick", resume)
     checkpoint_dir = repo_dir / "checkpoints" / dataset_name / "pick"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
@@ -215,8 +201,13 @@ def train_model(
 
     try:
         logger.info(
-            f"Config: dataset={dataset_name}, epochs={epochs}, batch_size={batch_size}, "
-            f"accum_steps={accum_steps}, lr={lr:g}, min_epochs={min_epochs}, patience={patience}"
+            f"\n--------------------------------------------------\n"
+            f"Config -> {dataset_name}\n"
+            f"  epochs       : {epochs}\n"
+            f"  batch_size   : {batch_size} (accum_steps={accum_steps})\n"
+            f"  lr           : {lr:g}\n"
+            f"  patience     : {patience}\n"
+            f"--------------------------------------------------"
         )
 
         cache_dir = get_cache_dir(dataset_name)
@@ -224,40 +215,48 @@ def train_model(
         labels = load_labels(dataset_name)
         char2id = build_char_vocab()
         tag2id, id2tag = build_tag_vocab(labels)
-        collator = PickDataCollator()
 
         train_ds = PickDataset(cache_dir / "train.jsonl", data_dir, char2id, tag2id)
         val_ds = PickDataset(cache_dir / "val.jsonl", data_dir, char2id, tag2id)
+        test_ds = PickDataset(cache_dir / "test.jsonl", data_dir, char2id, tag2id)
+
+        eval_batch_size = batch_size * 2
+        num_workers = min(2, os.cpu_count() or 0)
 
         train_loader = DataLoader(
-            train_ds, batch_size=batch_size, shuffle=True, collate_fn=collator
+            train_ds,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            pin_memory=True,
+            persistent_workers=num_workers > 0,
         )
         val_loader = DataLoader(
-            val_ds, batch_size=batch_size, shuffle=False, collate_fn=collator
+            val_ds,
+            batch_size=eval_batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            pin_memory=True,
+            persistent_workers=num_workers > 0,
+        )
+        test_loader = DataLoader(
+            test_ds,
+            batch_size=eval_batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            pin_memory=True,
+            persistent_workers=False,
         )
 
+        device = torch.device("cuda")
         model = PICKModel(
             vocab_size=len(char2id),
             num_tags=len(tag2id),
         )
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model.to(device)
-
-        if test_only:
-            test_ds = PickDataset(cache_dir / "test.jsonl", get_data_dir(dataset_name), char2id, tag2id)
-            test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, collate_fn=collator)
-            evaluate_test(
-                model,
-                test_loader,
-                test_ds.samples,
-                id2tag,
-                device,
-                dataset_name,
-                checkpoint_dir,
-                out_dir,
-                logger,
-            )
-            return
 
         no_decay = {"bias", "layernorm", "batchnorm"}
         param_groups = [
@@ -280,46 +279,41 @@ def train_model(
 
         total_steps = (len(train_loader) + accum_steps - 1) // accum_steps * epochs
         warmup_steps = int(total_steps * warmup_ratio)
-        scheduler = get_linear_schedule_with_warmup(
+        scheduler = get_cosine_schedule_with_warmup(
             optimizer,
             num_warmup_steps=warmup_steps,
             num_training_steps=total_steps,
         )
-
-        use_amp = device.type == "cuda"
-        scaler = torch.amp.GradScaler(device.type, enabled=use_amp)
+        scaler = torch.amp.GradScaler()
 
         history: list[dict] = []
         start_epoch = 1
-        best_epoch = 0
         best_f1 = -1.0
+        best_epoch = 0
         patience_counter = 0
 
         checkpoint_file = checkpoint_dir / "last_checkpoint.pt"
-        if checkpoint_file.exists() and not resume:
-            raise FileExistsError(f"Existing run: {checkpoint_dir}; use resume or move the previous run")
-        if resume and not checkpoint_file.exists():
-            raise FileNotFoundError(checkpoint_file)
         if resume and checkpoint_file.exists():
-            checkpoint = torch.load(checkpoint_file, map_location=device, weights_only=True)
-            model.load_state_dict(checkpoint["model_state_dict"])
-            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-            scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
-            scaler.load_state_dict(checkpoint["scaler_state_dict"])
-            start_epoch = checkpoint["epoch"] + 1
-            best_f1 = checkpoint["best_f1"]
-            best_epoch = checkpoint["best_epoch"]
-            patience_counter = checkpoint["patience_counter"]
-            history = checkpoint["history"]
+            ckpt = torch.load(checkpoint_file, map_location="cpu", weights_only=False)
+            model.load_state_dict(ckpt["model_state_dict"])
+            optimizer.load_state_dict(ckpt["optimizer_state"])
+            scheduler.load_state_dict(ckpt["scheduler_state"])
+            scaler.load_state_dict(ckpt["scaler_state"])
+            start_epoch = ckpt["epoch"] + 1
+            best_f1 = ckpt["best_f1"]
+            best_epoch = ckpt["best_epoch"]
+            patience_counter = ckpt["patience_counter"]
+            history = ckpt["history"]
+            random.setstate(ckpt["python_rng_state"])
+            np.random.set_state(ckpt["numpy_rng_state"])
+            torch.set_rng_state(ckpt["torch_rng_state"])
+            torch.cuda.set_rng_state(ckpt["cuda_rng_state"])
+
             if start_epoch > epochs or patience_counter >= patience:
-                logger.info(
-                    f"Resume -> Training already completed at epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f})."
-                )
+                logger.info(f"Resume -> Completed at epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
                 return
 
-            logger.info(
-                f"Resume -> Epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f})"
-            )
+            logger.info(f"Resume -> Epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
 
         for epoch in range(start_epoch, epochs + 1):
             train_loss = train_epoch(
@@ -329,7 +323,6 @@ def train_model(
                 scheduler,
                 scaler,
                 device,
-                use_amp,
                 epoch,
                 epochs,
                 accum_steps,
@@ -363,50 +356,65 @@ def train_model(
                 best_epoch = epoch
                 patience_counter = 0
                 torch.save(model.state_dict(), checkpoint_dir / "best_weights.pt")
-            elif epoch >= min_epochs:
+            elif best_f1 > 0:
                 patience_counter += 1
 
-            torch.save(
-                {
-                    "epoch": epoch,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "scheduler_state_dict": scheduler.state_dict(),
-                    "scaler_state_dict": scaler.state_dict(),
-                    "best_f1": best_f1,
-                    "best_epoch": best_epoch,
-                    "patience_counter": patience_counter,
-                    "history": history,
-                },
-                checkpoint_file,
-            )
+            if resume:
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": model.state_dict(),
+                        "optimizer_state": optimizer.state_dict(),
+                        "scheduler_state": scheduler.state_dict(),
+                        "scaler_state": scaler.state_dict(),
+                        "best_f1": best_f1,
+                        "best_epoch": best_epoch,
+                        "patience_counter": patience_counter,
+                        "history": history,
+                        "python_rng_state": random.getstate(),
+                        "numpy_rng_state": np.random.get_state(),
+                        "torch_rng_state": torch.get_rng_state(),
+                        "cuda_rng_state": torch.cuda.get_rng_state(),
+                    },
+                    checkpoint_file,
+                )
 
-            if epoch >= min_epochs and patience_counter >= patience:
+            if patience_counter >= patience:
                 logger.info(
                     f"Early Stop -> Epoch {epoch:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
                 )
                 break
 
-        save_history(history, out_dir)
+            if epoch == epochs:
+                logger.info(
+                    f"Completed -> Epoch {epochs:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
+                )
 
+        save_history(history, out_dir)
+        evaluate_test(
+            model,
+            test_loader,
+            test_ds.samples,
+            id2tag,
+            device,
+            dataset_name,
+            checkpoint_dir,
+            out_dir,
+            logger,
+        )
     finally:
         close_logger(logger)
-        gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="all", choices=["all", *DATASETS])
-    parser.add_argument("--epochs", type=int, default=30)
+    parser.add_argument("--epochs", type=int, default=25)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--accum_steps", type=int, default=2)
-    parser.add_argument("--lr", type=float, default=1e-4)
-    parser.add_argument("--min_epochs", type=int, default=5)
+    parser.add_argument("--lr", type=float, default=5e-4)
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--test-only", action="store_true")
     return parser.parse_args()
 
 
@@ -420,8 +428,8 @@ if __name__ == "__main__":
             batch_size=args.batch_size,
             accum_steps=args.accum_steps,
             lr=args.lr,
-            min_epochs=args.min_epochs,
             patience=args.patience,
             resume=args.resume,
-            test_only=args.test_only,
         )
+        gc.collect()
+        torch.cuda.empty_cache()

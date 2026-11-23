@@ -1,0 +1,32 @@
+\chapter{PHƯƠNG PHÁP TRIỂN KHAI}
+\section{Quy trình chung}
+Nhóm chuẩn bị các split, chuyển đổi dữ liệu sang đầu vào của từng mô hình, tinh chỉnh trọng số, rồi chọn checkpoint theo Macro-F1 trên validation. Phiên đánh giá nạp checkpoint đó và xuất Precision, Recall và Macro-F1 trên tập test. Hai nhóm đầu ra, nhãn BIO và chuỗi JSON, đều được quy về danh sách giá trị theo trường để chấm.
+
+\begin{table}[htbp]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\caption{Đầu vào và đầu ra của các mô hình triển khai}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Mô hình} & \textbf{Đầu vào} & \textbf{Đầu ra} \\
+\midrule
+RoBERTa & Văn bản từ chú thích & Nhãn BIO theo token \\
+BROS & Văn bản và tọa độ vùng chữ & Nhãn BIO theo token \\
+PICK & Ảnh, ký tự, vùng chữ và quan hệ vị trí & Nhãn chuỗi theo ký tự \\
+LayoutLMv3 & Ảnh, văn bản và tọa độ vùng chữ & Nhãn BIO theo token \\
+Donut & Ảnh và token nhiệm vụ & Chuỗi JSON \\
+Qwen2.5-VL & Ảnh và chỉ dẫn về các trường & Chuỗi JSON \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Từ nhãn và chuỗi sinh tới giá trị}
+Với các mô hình gán nhãn, nhóm ghép những token hoặc ký tự liên tiếp thuộc cùng thực thể để lấy giá trị. Bản BROS sử dụng mặt nạ đánh dấu token đầu tiên của mỗi từ. Bản PICK sử dụng ResNet-50 đã tiền huấn luyện cho nhánh ảnh, học quan hệ giữa các vùng chữ trên đồ thị rồi giải mã từng vùng. Phạm vi giải mã này khác bước giải mã ở mức tài liệu trong bài báo \parencite{yu2020}.
+
+Với các mô hình sinh, nhóm huấn luyện trên chuỗi tuần tự hóa từ đáp án và phân tích chuỗi sinh thành đối tượng JSON. Donut nhận token nhiệm vụ theo bộ dữ liệu. Qwen nhận ảnh cùng chỉ dẫn liệt kê các trường cần lấy. Việc sinh có thể kết thúc do mô hình phát token kết thúc hoặc chạm giới hạn độ dài. Chuỗi JSON thiếu phần kết thúc có thể dẫn đến dự đoán rỗng và bị tính bỏ sót.
+
+\section{Huấn luyện và đánh giá Qwen}
+Nhóm áp dụng LoRA hạng 16, hệ số 32 và dropout 0,05 cho các lớp chiếu được cấu hình trong mô hình. Khi huấn luyện, phần chỉ dẫn trong chuỗi đầu vào được che khỏi hàm mất mát. Mô hình học cách sinh phần đáp án. Sau resize, ảnh được giới hạn ở tối đa 768 token thị giác. Validation và test dùng batch 1, sinh tham lam và giới hạn 1024 token mới.
+
+Phiên train SROIE dùng ngân sách 11 giờ để lưu adapter trước giới hạn của phiên Kaggle. Phiên test được chạy riêng và xác minh SHA-256 của adapter trước khi tải. Cơ chế KV cache lưu lại các biểu diễn trung gian để tái sử dụng khi sinh từng token. Kết quả test và nhật ký được lưu theo phiên để đối chiếu với checkpoint đã chọn.
+

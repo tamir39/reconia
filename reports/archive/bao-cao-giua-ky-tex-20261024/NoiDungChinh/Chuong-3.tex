@@ -1,0 +1,37 @@
+\chapter{PHƯƠNG PHÁP TRIỂN KHAI}
+
+\section{Quy trình chung}
+
+Quy trình gồm đọc dữ liệu gốc, tạo biểu diễn đầu vào, huấn luyện, chọn checkpoint trên validation và đánh giá test. Ba notebook sử dụng cùng chín file dữ liệu đã chuyển đổi; đối chiếu bản lưu xác nhận các file giống nhau từng byte giữa ba lượt chạy. Sau khi dự đoán nhãn, chương trình tạo danh sách giá trị cho từng trường để đưa vào cùng hàm chấm điểm.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.25}
+\fontsize{12}{15}\selectfont
+\setlength{\tabcolsep}{4pt}
+\caption{Đầu vào của các mô hình trong các lượt đã chạy}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Mô hình} & \textbf{Đầu vào} & \textbf{Giới hạn đầu vào} \\
+\midrule
+RoBERTa & Văn bản đã token hóa & 512 token \\
+BROS & Văn bản và tọa độ box & 512 token \\
+PICK & Ảnh, ký tự, box và quan hệ vị trí & Ảnh 512 \(\times\) 512; 256 box; 64 ký tự/box \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+Văn bản và vị trí được chuyển sang định dạng phù hợp với từng mô hình. Nhãn đúng chỉ được dùng để huấn luyện và đánh giá, không đưa vào văn bản đầu vào khi dự đoán.
+
+\section{Cách xử lý của từng mô hình}
+\textbf{RoBERTa} đọc văn bản theo thứ tự đã sắp xếp. Mô hình dự đoán loại thông tin cho từng phần của văn bản, sau đó ghép các phần cùng trường thành giá trị. Ví dụ, các từ thuộc tên cửa hàng được ghép thành trường \texttt{company}.
+
+\textbf{BROS} thực hiện bước gán nhãn tương tự RoBERTa nhưng nhận thêm vị trí các vùng chữ. Thông tin này giúp mô hình phân biệt các giá trị nằm ở những khu vực khác nhau trên hóa đơn. Nhóm sử dụng đầu phân loại nhãn, chưa triển khai nhiệm vụ liên kết thực thể riêng.
+
+\textbf{PICK} xử lý cả chữ và ảnh tại từng vùng. Các vùng trao đổi thông tin qua đồ thị, sau đó bộ giải mã dự đoán nhãn cho từng ký tự. Các ký tự mang cùng loại thông tin được ghép lại thành giá trị đầu ra. Trong bản đã chạy, quá trình giải mã được thực hiện riêng cho từng vùng chữ.
+
+\section{Những điểm cần lưu ý khi so sánh}
+RoBERTa và BROS sử dụng trọng số đã tiền huấn luyện rồi học tiếp trên dữ liệu hóa đơn. PICK dùng ResNet-50 đã tiền huấn luyện cho nhánh ảnh, còn các phần khác được khởi tạo mới. Vì cách khởi tạo và xử lý khác nhau, kết quả không chỉ phản ánh tác dụng của việc thêm vị trí hay thêm ảnh.
+
+Bản PICK của nhóm có một số khác biệt so với bài báo gốc: giải mã riêng từng vùng thay vì toàn tài liệu, thay đổi cách tính khoảng cách trong hàm mất mát đồ thị và chưa có bước hiệu chỉnh SROIE bằng từ điển từ tập huấn luyện \parencite{yu2020}. Nhóm chưa có thí nghiệm riêng để đo ảnh hưởng của từng khác biệt. Vì vậy, báo cáo chỉ kết luận về bản triển khai đã chạy.

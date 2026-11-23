@@ -3,61 +3,39 @@ import csv
 import gc
 import json
 import logging
+import os
+import random
 from pathlib import Path
 
+import numpy as np
 import torch
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import (
-    DonutProcessor,
+    AutoProcessor,
     VisionEncoderDecoderModel,
-    get_linear_schedule_with_warmup,
+    get_cosine_schedule_with_warmup,
 )
 
-from models.donut.dataset import DonutDataCollator, DonutDataset
+from models.donut.dataset import (
+    DonutDataCollator,
+    DonutDataset,
+    decode_predictions,
+)
 from utils.common import (
     DATASETS,
     close_logger,
+    get_data_dir,
     get_repo_dir,
     get_cache_dir,
-    get_data_dir,
+    ensure_training_destination,
     set_seed,
     setup_logger,
 )
-from utils.generation import parse_output
-from utils.baseline_protocol import verify_baseline_data
 from utils.metrics import evaluate_dataset
 from utils.plots import save_train_plots
-
-
-LOSS_PROTOCOL = "donut-aligned-seq2seq-v1"
-
-
-def seq2seq_loss(logits, labels, vocab_size, num_items_in_batch=None, **kwargs):
-    # Decoder inputs are already right-shifted. Transformers 4.57 otherwise
-    # defaults VisionEncoderDecoderModel to a causal loss that shifts labels again.
-    loss = torch.nn.functional.cross_entropy(
-        logits.float().reshape(-1, vocab_size), labels.to(logits.device).reshape(-1),
-        ignore_index=-100, reduction="sum" if num_items_in_batch is not None else "mean",
-    )
-    return loss / num_items_in_batch if num_items_in_batch is not None else loss
-
-
-def build_model(weights_dir, device):
-    processor = DonutProcessor.from_pretrained(weights_dir)
-    processor.image_processor.size = {"height": 1280, "width": 960}
-    model = VisionEncoderDecoderModel.from_pretrained(weights_dir)
-    model.loss_function = seq2seq_loss
-    model.config.pad_token_id = processor.tokenizer.pad_token_id
-    model.config.decoder_start_token_id = processor.tokenizer.bos_token_id
-    model.generation_config.decoder_start_token_id = processor.tokenizer.bos_token_id
-    model.generation_config.forced_bos_token_id = None
-    model.generation_config.forced_eos_token_id = None
-    model.decoder.gradient_checkpointing_enable()
-    model.config.decoder.use_cache = False
-    return model.to(device), processor
 
 
 def train_epoch(
@@ -67,10 +45,9 @@ def train_epoch(
     scheduler: LRScheduler,
     scaler: torch.amp.GradScaler,
     device: torch.device,
-    use_amp: bool,
     epoch: int,
-    epochs: int = 30,
-    accum_steps: int = 8,
+    epochs: int = 25,
+    accum_steps: int = 2,
 ) -> float:
     model.train()
     total_loss = 0.0
@@ -82,24 +59,19 @@ def train_epoch(
         leave=False,
     )
     for step, batch in enumerate(progress_loader, start=1):
-        pixel_values = batch["pixel_values"].to(device)
-        decoder_input_ids = batch["decoder_input_ids"].to(device)
-        decoder_attention_mask = batch["decoder_attention_mask"].to(device)
-        labels = batch["labels"].to(device)
+        batch = {k: v.to(device) for k, v in batch.items()}
 
-        with torch.amp.autocast(device_type=device.type, enabled=use_amp):
+        decoder_input_ids = batch["input_ids"][:, :-1]
+        decoder_labels = batch["labels"][:, 1:]
+
+        with torch.amp.autocast(device_type=device.type):
             outputs = model(
-                pixel_values=pixel_values,
+                pixel_values=batch["pixel_values"],
                 decoder_input_ids=decoder_input_ids,
-                decoder_attention_mask=decoder_attention_mask,
-                labels=labels,
+                labels=decoder_labels,
             )
-            raw_loss = outputs.loss
-            group_size = min(accum_steps, len(loader) - ((step - 1) // accum_steps) * accum_steps)
-            loss = raw_loss / group_size
+            loss = outputs.loss / accum_steps
 
-        if not torch.isfinite(loss):
-            raise FloatingPointError(f"Non-finite loss at epoch {epoch}, batch {step}")
         scaler.scale(loss).backward()
 
         if step % accum_steps == 0 or step == len(loader):
@@ -112,12 +84,9 @@ def train_epoch(
             optimizer.zero_grad()
             if scale_before <= scale_after:
                 scheduler.step()
-            else:
-                logging.getLogger("train").warning(
-                    f"AMP skip: epoch={epoch} batch={step} scale={scale_before}->{scale_after}")
 
-        total_loss += raw_loss.item()
-        progress_loader.set_postfix(loss=f"{raw_loss.item():.4f}")
+        total_loss += loss.item() * accum_steps
+        progress_loader.set_postfix(loss=f"{loss.item() * accum_steps:.4f}")
 
     return total_loss / len(loader)
 
@@ -125,82 +94,89 @@ def train_epoch(
 def evaluate_epoch(
     model: VisionEncoderDecoderModel,
     loader: DataLoader,
-    inference_loader: DataLoader,
     samples: list[dict],
-    processor: DonutProcessor,
+    processor: AutoProcessor,
     device: torch.device,
+    dataset_name: str,
     desc: str,
-    max_new_tokens: int = 1535,
+    max_length: int = 1024,
 ) -> tuple[float, dict[str, float]]:
+    gc.collect()
+    torch.cuda.empty_cache()
+
     model.eval()
     total_loss = 0.0
-    preds: list[dict] = []
-    use_amp = device.type == "cuda"
-    tokenizer = processor.tokenizer
-    invalid_json = 0
+    all_preds: list[dict[str, list[str]]] = []
 
-    with torch.no_grad():
-        for batch in tqdm(loader, desc=f"{desc} Loss", leave=False):
-            batch = {key: value.to(device) for key, value in batch.items()}
-            with torch.amp.autocast(device_type=device.type, enabled=use_amp):
-                outputs = model(**batch)
+    task_prompt = f"<s_{dataset_name}>"
+    prompt_ids = processor.tokenizer.encode(
+        task_prompt,
+        add_special_tokens=False,
+        return_tensors="pt",
+    ).to(device)
+
+    with torch.no_grad(), torch.amp.autocast(device_type=device.type):
+        for batch in tqdm(loader, desc=desc, leave=False):
+            batch = {k: v.to(device) for k, v in batch.items()}
+
+            decoder_input_ids = batch["input_ids"][:, :-1]
+            decoder_labels = batch["labels"][:, 1:]
+
+            outputs = model(
+                pixel_values=batch["pixel_values"],
+                decoder_input_ids=decoder_input_ids,
+                labels=decoder_labels,
+            )
             total_loss += outputs.loss.item()
 
-        # Generate from the image and BOS only, without teacher-forced target tokens.
-        for batch in tqdm(inference_loader, desc=f"{desc} Generate", leave=False):
-            batch = {key: value.to(device) for key, value in batch.items()}
-            prefix_width = batch["decoder_input_ids"].shape[1]
-            with torch.amp.autocast(device_type=device.type, enabled=use_amp):
-                sequences = model.generate(
-                    **batch, max_new_tokens=max_new_tokens,
-                    do_sample=False, num_beams=1, use_cache=True,
-                    pad_token_id=tokenizer.pad_token_id,
-                    eos_token_id=tokenizer.eos_token_id,
-                )
-            texts = tokenizer.batch_decode(sequences[:, prefix_width:], skip_special_tokens=True)
-            for text in texts:
-                try:
-                    preds.append(parse_output(text, strict=True))
-                except ValueError as error:
-                    if invalid_json == 0:
-                        logging.getLogger("train").warning(
-                            "%s invalid generated JSON: %s; excerpt=%r", desc, error, text[:240])
-                    invalid_json += 1
-                    preds.append({})
+            batch_size = batch["pixel_values"].shape[0]
+            decoder_input_ids = prompt_ids.repeat(batch_size, 1)
+
+            valid_lengths = (batch["labels"] != -100).sum(dim=1)
+            batch_max_length = min(
+                max_length,
+                int(valid_lengths.max().item()) + prompt_ids.shape[1] + 32,
+            )
+
+            generated_ids = model.generate(
+                batch["pixel_values"],
+                decoder_input_ids=decoder_input_ids,
+                max_length=batch_max_length,
+                pad_token_id=processor.tokenizer.pad_token_id,
+                eos_token_id=processor.tokenizer.eos_token_id,
+                num_beams=1,
+                use_cache=True,
+            )
+            all_preds.extend(decode_predictions(generated_ids, processor))
 
     avg_loss = total_loss / len(loader)
-    logging.getLogger("train").info(
-        "%s Generated JSON: valid=%d/%d, invalid=%d", desc,
-        len(preds) - invalid_json, len(preds), invalid_json)
-    gts = [sample["gt"] for sample in samples]
-    metrics = evaluate_dataset(gts, preds)
+    gts = [sample.get("gt", {}) for sample in samples]
+    metrics = evaluate_dataset(gts, all_preds)
+
     return avg_loss, metrics
 
 
 def evaluate_test(
     model: VisionEncoderDecoderModel,
     loader: DataLoader,
-    inference_loader: DataLoader,
     samples: list[dict],
-    processor: DonutProcessor,
+    processor: AutoProcessor,
     device: torch.device,
     dataset_name: str,
     checkpoint_dir: Path,
     out_dir: Path,
     logger: logging.Logger,
-    max_new_tokens: int = 1535,
 ) -> None:
     model.load_state_dict(
-        torch.load(checkpoint_dir / "best_weights.pt", map_location=device, weights_only=True)
+        torch.load(checkpoint_dir / "best_weights.pt", map_location="cpu", weights_only=True)
     )
     loss, metrics = evaluate_epoch(
-        model, loader, inference_loader, samples, processor, device, "[Test]", max_new_tokens
+        model, loader, samples, processor, device, dataset_name, "[Test]"
     )
 
     results = {
         "model": "donut",
         "dataset": dataset_name,
-        "data_protocol": "completed-baselines-20261024",
         "loss": loss,
         "precision": metrics["precision"],
         "recall": metrics["recall"],
@@ -227,20 +203,18 @@ def save_history(history: list[dict], out_dir: Path) -> None:
 
 def train_model(
     dataset_name: str,
-    epochs: int = 30,
-    batch_size: int = 1,
-    accum_steps: int = 8,
+    epochs: int = 25,
+    batch_size: int = 4,
+    accum_steps: int = 2,
     lr: float = 3e-5,
-    min_epochs: int = 5,
     patience: int = 5,
     weight_decay: float = 0.01,
     warmup_ratio: float = 0.1,
     resume: bool = False,
-    test_only: bool = False,
-    max_new_tokens: int = 1535,
 ) -> None:
     set_seed()
     repo_dir = get_repo_dir()
+    ensure_training_destination(repo_dir, dataset_name, "donut", resume)
     checkpoint_dir = repo_dir / "checkpoints" / dataset_name / "donut"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
@@ -250,48 +224,70 @@ def train_model(
 
     try:
         logger.info(
-            f"Config: dataset={dataset_name}, epochs={epochs}, batch_size={batch_size}, "
-            f"accum_steps={accum_steps}, lr={lr:g}, min_epochs={min_epochs}, patience={patience}, "
-            f"max_new_tokens={max_new_tokens}"
+            f"\n--------------------------------------------------\n"
+            f"Config -> {dataset_name}\n"
+            f"  epochs       : {epochs}\n"
+            f"  batch_size   : {batch_size} (accum_steps={accum_steps})\n"
+            f"  lr           : {lr:g}\n"
+            f"  patience     : {patience}\n"
+            f"--------------------------------------------------"
         )
 
         cache_dir = get_cache_dir(dataset_name)
-        verify_baseline_data(dataset_name, cache_dir)
-        logger.info("Data protocol: completed-baselines-20261024; prepared splits verified")
-        logger.info("Loss protocol: %s", LOSS_PROTOCOL)
         data_dir = get_data_dir(dataset_name)
+
         weights_dir = repo_dir / "weights" / "donut"
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model, processor = build_model(weights_dir, device)
-        if not 1 <= max_new_tokens < model.config.decoder.max_position_embeddings:
-            raise ValueError("max_new_tokens must fit the decoder positions after the BOS token")
-        collator = DonutDataCollator(processor=processor)
-        inference_collator = DonutDataCollator(processor=processor, training=False)
+        processor = AutoProcessor.from_pretrained(weights_dir)
+        task_prompt = f"<s_{dataset_name}>"
+        processor.tokenizer.add_special_tokens({"additional_special_tokens": [task_prompt]})
+        collate_fn = DonutDataCollator(processor=processor)
 
-        if test_only:
-            test_ds = DonutDataset(cache_dir / "test.jsonl", processor, data_dir,
-                                   max_new_tokens=max_new_tokens)
-            test_inference_ds = DonutDataset(cache_dir / "test.jsonl", processor, data_dir,
-                                             training=False, max_new_tokens=max_new_tokens)
-            test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, collate_fn=collator)
-            test_inference_loader = DataLoader(test_inference_ds, batch_size=batch_size, shuffle=False,
-                                               collate_fn=inference_collator)
-            evaluate_test(
-                model, test_loader, test_inference_loader, test_ds.samples, processor,
-                device, dataset_name, checkpoint_dir, out_dir, logger, max_new_tokens,
-            )
-            return
+        train_ds = DonutDataset(data_dir, cache_dir / "train.jsonl", processor, task_prompt)
+        val_ds = DonutDataset(data_dir, cache_dir / "val.jsonl", processor, task_prompt)
+        test_ds = DonutDataset(data_dir, cache_dir / "test.jsonl", processor, task_prompt)
 
-        train_ds = DonutDataset(cache_dir / "train.jsonl", processor, data_dir,
-                                max_new_tokens=max_new_tokens)
-        val_ds = DonutDataset(cache_dir / "val.jsonl", processor, data_dir,
-                              max_new_tokens=max_new_tokens)
-        val_inference_ds = DonutDataset(cache_dir / "val.jsonl", processor, data_dir,
-                                        training=False, max_new_tokens=max_new_tokens)
-        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=collator)
-        val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, collate_fn=collator)
-        val_inference_loader = DataLoader(val_inference_ds, batch_size=batch_size, shuffle=False,
-                                          collate_fn=inference_collator)
+        eval_batch_size = batch_size * 2
+        num_workers = min(2, os.cpu_count() or 0)
+
+        train_loader = DataLoader(
+            train_ds,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            pin_memory=True,
+            persistent_workers=num_workers > 0,
+        )
+        val_loader = DataLoader(
+            val_ds,
+            batch_size=eval_batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            pin_memory=True,
+            persistent_workers=num_workers > 0,
+        )
+        test_loader = DataLoader(
+            test_ds,
+            batch_size=eval_batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            pin_memory=True,
+            persistent_workers=False,
+        )
+
+        device = torch.device("cuda")
+        model = VisionEncoderDecoderModel.from_pretrained(weights_dir)
+        model.decoder.resize_token_embeddings(len(processor.tokenizer))
+        model.config.decoder_start_token_id = (
+            processor.tokenizer.cls_token_id
+            if processor.tokenizer.cls_token_id is not None
+            else processor.tokenizer.bos_token_id or 0
+        )
+        model.config.pad_token_id = processor.tokenizer.pad_token_id
+        model.gradient_checkpointing_enable()
+        model.to(device)
 
         no_decay = {"bias", "layernorm"}
         param_groups = [
@@ -314,50 +310,41 @@ def train_model(
 
         total_steps = (len(train_loader) + accum_steps - 1) // accum_steps * epochs
         warmup_steps = int(total_steps * warmup_ratio)
-        scheduler = get_linear_schedule_with_warmup(
+        scheduler = get_cosine_schedule_with_warmup(
             optimizer,
             num_warmup_steps=warmup_steps,
             num_training_steps=total_steps,
         )
-
-        use_amp = device.type == "cuda"
-        scaler = torch.amp.GradScaler(device.type, enabled=use_amp)
+        scaler = torch.amp.GradScaler()
 
         history: list[dict] = []
         start_epoch = 1
-        best_epoch = 0
         best_f1 = -1.0
+        best_epoch = 0
         patience_counter = 0
 
         checkpoint_file = checkpoint_dir / "last_checkpoint.pt"
-        if checkpoint_file.exists() and not resume:
-            raise FileExistsError(f"Existing run: {checkpoint_dir}; use resume or move the previous run")
-        if resume and not checkpoint_file.exists():
-            raise FileNotFoundError(checkpoint_file)
         if resume and checkpoint_file.exists():
-            checkpoint = torch.load(checkpoint_file, map_location=device, weights_only=True)
-            if checkpoint.get("loss_protocol") != LOSS_PROTOCOL:
-                raise ValueError("Donut checkpoint uses the old shifted loss; start a fresh run")
-            if checkpoint.get("data_protocol") != "completed-baselines-20261024":
-                raise ValueError("Resume checkpoint uses a different data protocol; start a separate run")
-            model.load_state_dict(checkpoint["model_state_dict"])
-            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-            scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
-            scaler.load_state_dict(checkpoint["scaler_state_dict"])
-            start_epoch = checkpoint["epoch"] + 1
-            best_f1 = checkpoint["best_f1"]
-            best_epoch = checkpoint["best_epoch"]
-            patience_counter = checkpoint["patience_counter"]
-            history = checkpoint["history"]
+            ckpt = torch.load(checkpoint_file, map_location="cpu", weights_only=False)
+            model.load_state_dict(ckpt["model_state_dict"])
+            optimizer.load_state_dict(ckpt["optimizer_state"])
+            scheduler.load_state_dict(ckpt["scheduler_state"])
+            scaler.load_state_dict(ckpt["scaler_state"])
+            start_epoch = ckpt["epoch"] + 1
+            best_f1 = ckpt["best_f1"]
+            best_epoch = ckpt["best_epoch"]
+            patience_counter = ckpt["patience_counter"]
+            history = ckpt["history"]
+            random.setstate(ckpt["python_rng_state"])
+            np.random.set_state(ckpt["numpy_rng_state"])
+            torch.set_rng_state(ckpt["torch_rng_state"])
+            torch.cuda.set_rng_state(ckpt["cuda_rng_state"])
+
             if start_epoch > epochs or patience_counter >= patience:
-                logger.info(
-                    f"Resume -> Training already completed at epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f})."
-                )
+                logger.info(f"Resume -> Completed at epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
                 return
 
-            logger.info(
-                f"Resume -> Epoch {checkpoint['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f})"
-            )
+            logger.info(f"Resume -> Epoch {ckpt['epoch']:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})")
 
         for epoch in range(start_epoch, epochs + 1):
             train_loss = train_epoch(
@@ -367,7 +354,6 @@ def train_model(
                 scheduler,
                 scaler,
                 device,
-                use_amp,
                 epoch,
                 epochs,
                 accum_steps,
@@ -375,12 +361,11 @@ def train_model(
             val_loss, val_metrics = evaluate_epoch(
                 model,
                 val_loader,
-                val_inference_loader,
                 val_ds.samples,
                 processor,
                 device,
+                dataset_name,
                 f"Epoch {epoch:02d}/{epochs:02d} [Val]",
-                max_new_tokens,
             )
 
             logger.info(
@@ -403,53 +388,65 @@ def train_model(
                 best_epoch = epoch
                 patience_counter = 0
                 torch.save(model.state_dict(), checkpoint_dir / "best_weights.pt")
-            elif epoch >= min_epochs:
+            elif best_f1 > 0:
                 patience_counter += 1
 
-            torch.save(
-                {
-                    "epoch": epoch,
-                    "loss_protocol": LOSS_PROTOCOL,
-                    "data_protocol": "completed-baselines-20261024",
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "scheduler_state_dict": scheduler.state_dict(),
-                    "scaler_state_dict": scaler.state_dict(),
-                    "best_f1": best_f1,
-                    "best_epoch": best_epoch,
-                    "patience_counter": patience_counter,
-                    "history": history,
-                },
-                checkpoint_file,
-            )
+            if resume:
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": model.state_dict(),
+                        "optimizer_state": optimizer.state_dict(),
+                        "scheduler_state": scheduler.state_dict(),
+                        "scaler_state": scaler.state_dict(),
+                        "best_f1": best_f1,
+                        "best_epoch": best_epoch,
+                        "patience_counter": patience_counter,
+                        "history": history,
+                        "python_rng_state": random.getstate(),
+                        "numpy_rng_state": np.random.get_state(),
+                        "torch_rng_state": torch.get_rng_state(),
+                        "cuda_rng_state": torch.cuda.get_rng_state(),
+                    },
+                    checkpoint_file,
+                )
 
-            if epoch >= min_epochs and patience_counter >= patience:
+            if patience_counter >= patience:
                 logger.info(
                     f"Early Stop -> Epoch {epoch:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
                 )
                 break
 
-        save_history(history, out_dir)
+            if epoch == epochs:
+                logger.info(
+                    f"Completed -> Epoch {epochs:02d}/{epochs:02d} (Best F1: {best_f1:.4f} at epoch {best_epoch:02d})"
+                )
 
+        save_history(history, out_dir)
+        evaluate_test(
+            model,
+            test_loader,
+            test_ds.samples,
+            processor,
+            device,
+            dataset_name,
+            checkpoint_dir,
+            out_dir,
+            logger,
+        )
     finally:
         close_logger(logger)
-        gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="all", choices=["all", *DATASETS])
-    parser.add_argument("--epochs", type=int, default=30)
-    parser.add_argument("--batch_size", type=int, default=1)
-    parser.add_argument("--accum_steps", type=int, default=8)
+    parser.add_argument("--epochs", type=int, default=25)
+    parser.add_argument("--batch_size", type=int, default=4)
+    parser.add_argument("--accum_steps", type=int, default=2)
     parser.add_argument("--lr", type=float, default=3e-5)
-    parser.add_argument("--min_epochs", type=int, default=5)
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--test-only", action="store_true")
-    parser.add_argument("--max_new_tokens", type=int, default=1535)
     return parser.parse_args()
 
 
@@ -463,9 +460,8 @@ if __name__ == "__main__":
             batch_size=args.batch_size,
             accum_steps=args.accum_steps,
             lr=args.lr,
-            min_epochs=args.min_epochs,
             patience=args.patience,
             resume=args.resume,
-            test_only=args.test_only,
-            max_new_tokens=args.max_new_tokens,
         )
+        gc.collect()
+        torch.cuda.empty_cache()
