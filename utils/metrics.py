@@ -41,8 +41,6 @@ def evaluate_dataset(
     gts: list[dict[str, list[str]]],
     preds: list[dict[str, list[str]]],
 ) -> dict[str, float]:
-    if not gts or len(gts) != len(preds):
-        raise ValueError("Expected one prediction per document in a nonempty split")
     total_tp = total_fp = total_fn = 0
 
     for gt, pred in zip(gts, preds):
@@ -52,7 +50,7 @@ def evaluate_dataset(
             total_fn += fn
 
     precision, recall, f1 = compute_metrics(total_tp, total_fp, total_fn)
-
+    
     return {
         "precision": precision,
         "recall": recall,

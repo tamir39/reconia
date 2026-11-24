@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from utils.common import get_repo_dir, get_cache_dir, get_data_dir, normalize_box, export_labels
+from utils.common import get_repo_dir, get_data_dir, normalize_box, export_labels
 
 
 def load_class_map(class_list_file: Path) -> dict[int, str]:
@@ -87,7 +87,7 @@ def export_split(
 
 
 def prepare_wildreceipt() -> None:
-    cache_dir = get_cache_dir("wildreceipt")
+    cache_dir = get_repo_dir() / ".cache" / "wildreceipt"
     wildreceipt_dir = get_data_dir("wildreceipt")
 
     class_map = load_class_map(wildreceipt_dir / "class_list.txt")

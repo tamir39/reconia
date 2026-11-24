@@ -492,7 +492,7 @@ async function init() {
     const response = await fetch('/api/catalog');
     if (!response.ok) throw new Error('Không tải được dữ liệu demo.');
     catalog = await response.json();
-    if (catalog.api_version !== 5) {
+    if (catalog.api_version !== 6) {
       const status = byId('test-status');
       status.textContent = 'Tab này đang mở phiên demo cũ. ';
       if (location.port !== '8766') {

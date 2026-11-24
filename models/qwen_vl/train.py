@@ -38,8 +38,6 @@ from utils.common import (
     close_logger,
     get_data_dir,
     get_repo_dir,
-    get_cache_dir,
-    ensure_training_destination,
     load_labels,
     set_seed,
     setup_logger,
@@ -237,7 +235,6 @@ def train_model(
     set_seed()
 
     repo_dir = get_repo_dir()
-    ensure_training_destination(repo_dir, dataset_name, "qwen_vl", resume)
     checkpoint_dir = repo_dir / "checkpoints" / dataset_name / "qwen_vl"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
@@ -256,7 +253,7 @@ def train_model(
             f"--------------------------------------------------"
         )
 
-        cache_dir = get_cache_dir(dataset_name)
+        cache_dir = repo_dir / ".cache" / dataset_name
         data_dir = get_data_dir(dataset_name)
         labels = load_labels(dataset_name)
 

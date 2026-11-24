@@ -32,12 +32,12 @@ class LayoutLMv3Dataset(Dataset):
         image_file = self.data_dir / sample["image_path"]
         with Image.open(image_file) as img:
             image = img.convert("RGB")
-
+        
         ocr = sample["ocr"]
         words = [item["text"] for item in ocr]
         boxes = [item["box"] for item in ocr]
         word_labels = [item["label"] for item in ocr]
-
+        
         encoding = self.processor(
             image,
             words,
@@ -181,7 +181,7 @@ def predict_sample(
 ) -> dict[str, list[str]]:
     words = [item["text"] for item in ocr]
     boxes = [item["box"] for item in ocr]
-
+    
     encoding = processor(
         image,
         words,

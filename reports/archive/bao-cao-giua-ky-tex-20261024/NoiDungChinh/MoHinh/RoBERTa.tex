@@ -1,6 +1,0 @@
-\section{RoBERTa sử dụng ngữ cảnh văn bản}
-RoBERTa cải tiến quy trình tiền huấn luyện của BERT bằng dữ liệu lớn hơn, thời gian huấn luyện dài hơn, che token thay đổi qua các lượt học và bỏ mục tiêu dự đoán câu tiếp theo \parencite{liu2019}. Mô hình sử dụng Transformer encoder để tạo biểu diễn theo ngữ cảnh.
-
-Trong bài toán hóa đơn, văn bản được tách thành token con rồi đưa qua encoder và lớp phân loại BIO. Nhóm dùng cấu hình \texttt{roberta-base} đã tiền huấn luyện, với đầu vào tối đa 512 token.
-
-RoBERTa đóng vai trò mốc so sánh chỉ dùng chữ. Mô hình có thể nhận ra quan hệ giữa tên trường và giá trị qua ngữ cảnh, nhưng không nhận trực tiếp tọa độ hay ảnh. Khi hóa đơn có nhiều cột hoặc nhiều số tiền giống nhau, thứ tự sắp xếp chữ có thể ảnh hưởng đến kết quả. Tokenizer cũng có thể tách một từ thành nhiều token, khiến tài liệu dài bị cắt sớm hơn.

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from utils.common import get_repo_dir, get_cache_dir, get_data_dir, normalize_text, normalize_box, export_labels
+from utils.common import get_repo_dir, get_data_dir, normalize_text, normalize_box, export_labels
 
 
 def load_ocr(box_file: Path, width: int, height: int) -> list[dict]:
@@ -140,7 +140,7 @@ def export_split(sample_ids: list[str], split_dir: Path, out_file: Path) -> set[
 
 
 def prepare_sroie() -> None:
-    cache_dir = get_cache_dir("sroie")
+    cache_dir = get_repo_dir() / ".cache" / "sroie"
     sroie_dir = get_data_dir("sroie")
 
     train_dir = sroie_dir / "train"

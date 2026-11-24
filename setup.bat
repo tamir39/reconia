@@ -24,7 +24,7 @@ if errorlevel 1 goto failed
 :packages
 "%RECONIA_PYTHON%" -m pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cpu
 if errorlevel 1 goto failed
-"%RECONIA_PYTHON%" -m pip install -r requirements.txt
+"%RECONIA_PYTHON%" -m pip install -r demo\requirements.txt
 if errorlevel 1 goto failed
 echo Da cai moi truong. Chay run.bat de mo demo.
 exit /b 0

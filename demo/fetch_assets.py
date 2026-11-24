@@ -1,4 +1,4 @@
-"""Download only missing final checkpoints/prepared splits, verifying pinned hashes."""
+"""Download the trained checkpoints used by the demo."""
 import argparse
 from collections import defaultdict
 import hashlib
@@ -14,9 +14,6 @@ def sha(path):
 
 
 def fetch(items):
-    import requests
-    from kaggle.api.kaggle_api_extended import KaggleApi
-    from kagglesdk.kernels.types.kernels_api_service import ApiListKernelSessionOutputRequest
     grouped = defaultdict(list)
     for item in items:
         target = (ROOT / item["local"]).resolve()
@@ -28,6 +25,9 @@ def fetch(items):
             grouped[item["kernel"]].append((item, target))
     if not grouped:
         return
+    import requests
+    from kaggle.api.kaggle_api_extended import KaggleApi
+    from kagglesdk.kernels.types.kernels_api_service import ApiListKernelSessionOutputRequest
     api = KaggleApi()
     api.authenticate()  # Use the user's existing Kaggle configuration; never print it.
     for kernel, pending in grouped.items():
@@ -70,16 +70,11 @@ def fetch(items):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--checkpoints", action="store_true", help="Fetch the 15 large best checkpoints")
-    parser.add_argument("--prepared", action="store_true", help="Fetch nine published JSONL data splits")
     parser.add_argument("--model", choices=("roberta", "bros", "pick", "layoutlmv3", "donut"))
     args = parser.parse_args()
-    if not args.checkpoints and not args.prepared:
-        parser.error("Choose --checkpoints and/or --prepared; nothing is downloaded by default")
     manifest = json.loads((ROOT / "demo/external-assets.json").read_text())
-    wanted = {kind for kind, enabled in (("checkpoint", args.checkpoints), ("prepared", args.prepared)) if enabled}
-    items = [item for item in manifest["files"] if item["kind"] in wanted and
-             (not args.model or item["kind"] == "prepared" or f"/{args.model}/" in item["local"])]
+    items = [item for item in manifest["files"] if item["kind"] == "checkpoint" and
+             (not args.model or f"/{args.model}/" in item["local"])]
     fetch(items)
     # All five published models use the same observed BIO inventory per dataset.
     for dataset in ("sroie", "cord_v2", "wildreceipt"):

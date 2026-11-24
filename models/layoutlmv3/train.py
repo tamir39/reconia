@@ -29,8 +29,6 @@ from utils.common import (
     close_logger,
     get_data_dir,
     get_repo_dir,
-    get_cache_dir,
-    ensure_training_destination,
     load_labels,
     set_seed,
     setup_logger,
@@ -175,7 +173,6 @@ def train_model(
 ) -> None:
     set_seed()
     repo_dir = get_repo_dir()
-    ensure_training_destination(repo_dir, dataset_name, "layoutlmv3", resume)
     checkpoint_dir = repo_dir / "checkpoints" / dataset_name / "layoutlmv3"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
@@ -194,7 +191,7 @@ def train_model(
             f"--------------------------------------------------"
         )
 
-        cache_dir = get_cache_dir(dataset_name)
+        cache_dir = repo_dir / ".cache" / dataset_name
         data_dir = get_data_dir(dataset_name)
         labels = load_labels(dataset_name)
         label2id = {lbl: idx for idx, lbl in enumerate(labels)}
@@ -211,7 +208,7 @@ def train_model(
 
         eval_batch_size = batch_size * 2
         num_workers = min(2, os.cpu_count() or 0)
-
+        
         train_loader = DataLoader(
             train_ds,
             batch_size=batch_size,

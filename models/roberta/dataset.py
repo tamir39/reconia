@@ -34,6 +34,7 @@ class RobertaDataset(Dataset):
             max_length=self.max_length,
             is_split_into_words=True,
             truncation=True,
+            add_prefix_space=True,
         )
 
         labels: list[int] = []
@@ -69,7 +70,7 @@ def align_labels(
 
 
 def extract_entities(
-    ocr: list[dict],
+    ocr: list[dict], 
     labels: dict[int, str]
 ) -> dict[str, list[str]]:
     entities: dict[str, list[str]] = {}
@@ -118,6 +119,7 @@ def decode_predictions(
             max_length=max_length,
             is_split_into_words=True,
             truncation=True,
+            add_prefix_space=True,
         )
         labels = align_labels(pred_ids, encoding.word_ids(), id2label)
         preds.append(extract_entities(ocr, labels))
@@ -139,6 +141,7 @@ def predict_sample(
         max_length=max_length,
         is_split_into_words=True,
         truncation=True,
+        add_prefix_space=True,
         return_tensors="pt",
     )
 

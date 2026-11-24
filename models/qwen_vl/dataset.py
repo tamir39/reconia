@@ -177,8 +177,8 @@ def extract_entities(text: str) -> dict[str, list[str]]:
         for key, value in parsed.items():
             values = value if isinstance(value, list) else [value]
             clean_values = [
-                str(item).strip()
-                for item in values
+                str(item).strip() 
+                for item in values 
                 if item is not None and str(item).strip()
             ]
             if clean_values:
@@ -206,7 +206,7 @@ def predict_sample(
     max_new_tokens: int = 1024,
 ) -> dict[str, list[str]]:
     prompt_text = format_prompt(labels)
-
+    
     messages = [
         {
             "role": "user",

@@ -37,6 +37,21 @@ def baseline_module(model, name="dataset"):
 _LOADED = None
 
 
+class DemoTokenizer:
+    """Adapt dev's tokenizer calls for the local fast-tokenizer API."""
+
+    def __init__(self, tokenizer):
+        self.tokenizer = tokenizer
+
+    def __getattr__(self, name):
+        return getattr(self.tokenizer, name)
+
+    def __call__(self, *args, **kwargs):
+        # Prefix-space behavior is already configured on construction.
+        kwargs.pop("add_prefix_space", None)
+        return self.tokenizer(*args, **kwargs)
+
+
 def load_model(dataset, name):
     global _LOADED
     import os
@@ -87,6 +102,8 @@ def load_model(dataset, name):
         else:
             options = {"add_prefix_space": True} if name == "roberta" else {}
             processor = AutoTokenizer.from_pretrained(assets, local_files_only=True, **options)
+            if name == "roberta":
+                processor = DemoTokenizer(processor)
             cls = RobertaForTokenClassification if name == "roberta" else BrosForTokenClassification
             model = cls(config)
     state = torch.load(path, map_location="cpu", weights_only=True, mmap=True)

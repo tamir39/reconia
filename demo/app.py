@@ -18,7 +18,7 @@ from demo.inference import predict, read_image_text
 PAGE = Path(__file__).with_name("index.html")
 MAX_IMAGE_BYTES = 12 * 1024 * 1024
 MAX_IMAGE_PIXELS = 40_000_000
-API_VERSION = 5
+API_VERSION = 6
 INFERENCE_LOCK = threading.Lock()
 
 

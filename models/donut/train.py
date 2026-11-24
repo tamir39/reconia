@@ -29,8 +29,6 @@ from utils.common import (
     close_logger,
     get_data_dir,
     get_repo_dir,
-    get_cache_dir,
-    ensure_training_destination,
     set_seed,
     setup_logger,
 )
@@ -141,7 +139,7 @@ def evaluate_epoch(
             generated_ids = model.generate(
                 batch["pixel_values"],
                 decoder_input_ids=decoder_input_ids,
-                max_length=batch_max_length,
+                max_length=batch_max_length,    
                 pad_token_id=processor.tokenizer.pad_token_id,
                 eos_token_id=processor.tokenizer.eos_token_id,
                 num_beams=1,
@@ -214,7 +212,6 @@ def train_model(
 ) -> None:
     set_seed()
     repo_dir = get_repo_dir()
-    ensure_training_destination(repo_dir, dataset_name, "donut", resume)
     checkpoint_dir = repo_dir / "checkpoints" / dataset_name / "donut"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
@@ -233,7 +230,7 @@ def train_model(
             f"--------------------------------------------------"
         )
 
-        cache_dir = get_cache_dir(dataset_name)
+        cache_dir = repo_dir / ".cache" / dataset_name
         data_dir = get_data_dir(dataset_name)
 
         weights_dir = repo_dir / "weights" / "donut"

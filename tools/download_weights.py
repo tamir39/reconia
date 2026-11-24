@@ -1,10 +1,9 @@
 import argparse
-import os
 from pathlib import Path
 
-os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
+from huggingface_hub import constants, snapshot_download
 
-from huggingface_hub import snapshot_download
+constants.HF_HUB_DISABLE_XET = True
 
 from utils.common import get_repo_dir
 

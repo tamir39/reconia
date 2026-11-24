@@ -1,3 +1,0 @@
-# Use a separate CUDA environment, not the pinned CPU demo environment.
-# Mirrors the published declaration; this is not a tested runtime lock.
--r models/qwen_vl/requirements-published.txt

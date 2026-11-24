@@ -6,7 +6,7 @@ import re
 import sys
 from pathlib import Path
 
-os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 import numpy as np
 import torch
@@ -15,7 +15,7 @@ from transformers import logging as hf_logging
 hf_logging.set_verbosity_error()
 
 DATASETS = ("sroie", "cord_v2", "wildreceipt")
-MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen_vl")
+MODELS = ("roberta", "bros", "layoutlmv3", "pick", "donut", "qwen_vl")
 
 
 def set_seed(seed: int = 42) -> None:
@@ -32,30 +32,17 @@ def get_repo_dir() -> Path:
 
 
 def get_data_dir(dataset_name: str) -> Path:
-    configured = os.environ.get("RECONIA_DATA_DIR")
-    roots = [Path(configured)] if configured else [
-        get_repo_dir() / "data" / "raw",
-        Path("/kaggle/input/datasets/vhngthnh/reconia-data"),
-        Path("/kaggle/input/reconia-data"),
-        Path("/kaggle/input/private-dataset"),
-        get_repo_dir(),
+    candidates = [
+        Path("/kaggle/input/datasets/vhngthnh/reconia-data") / dataset_name,
+        Path("/kaggle/input/private-dataset") / dataset_name,
+        Path("") / dataset_name,
     ]
-    for root in roots:
-        if (root / dataset_name).is_dir():
-            return root / dataset_name
-    raise FileNotFoundError("Set RECONIA_DATA_DIR to the directory containing the three raw datasets")
-
-
-def get_cache_dir(dataset_name: str) -> Path:
-    return Path(os.environ.get("RECONIA_PREPARED_DIR", get_repo_dir() / ".cache")) / dataset_name
-
-
-def ensure_training_destination(repo_dir: Path, dataset: str, model: str, resume: bool) -> None:
-    """Keep a new experiment from overwriting the submitted checkpoints/results."""
-    existing = [repo_dir / "checkpoints" / dataset / model / name
-                for name in ("best_weights.pt", "last_checkpoint.pt")]
-    if not resume and any(path.exists() for path in existing):
-        raise FileExistsError("Checkpoint already exists. Use a separate checkout for a new run, or --resume to continue it.")
+    
+    for path in candidates:
+        if path.exists():
+            return path
+            
+    raise FileNotFoundError(f"Dataset '{dataset_name}' not found")
 
 
 def normalize_text(text: str | None) -> str:
