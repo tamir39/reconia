@@ -142,6 +142,7 @@
     "Old visualization module archived; demo uses fixed-target input occlusion.",
     "Five notebooks: final-submit source, no embedded source payload; run flags off; published split verification before training.",
     "Trailing whitespace and line endings normalized in active Python source; no model math changed.",
-    "2026-11-24: add published Qwen source with the same path/overwrite protections; prompt, LoRA, loss and evaluation budget unchanged. Qwen has one audited published result, not an interactive demo integration."
+    "2026-11-24: add published Qwen source with the same path/overwrite protections; prompt, LoRA, loss and evaluation budget unchanged. Qwen has one audited published result, not an interactive demo integration.",
+    "2026-11-24: promote the reviewed source to main and point all six notebooks at main; model code and benchmark values unchanged."
   ]
 }

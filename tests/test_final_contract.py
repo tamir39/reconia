@@ -79,7 +79,7 @@ class FinalSourceTests(unittest.TestCase):
                      for node in ast.parse(codes[0]).body if isinstance(node, ast.Assign)
                      and isinstance(node.targets[0], ast.Name) and node.targets[0].id.startswith("RUN_")}
             self.assertEqual(flags, dict.fromkeys(("RUN_PREPARE", "RUN_DOWNLOAD", "RUN_TRAIN", "RUN_EXPORT"), False))
-            self.assertIn('GIT_REF = "final-submit"', codes[0])
+            self.assertIn('GIT_REF = "main"', codes[0])
             self.assertNotIn("b64decode", "".join(codes))
             trainer = SimpleNamespace(train_model=Mock())
             namespace = {"RUN_TRAIN": False, "MODEL": path.stem.removesuffix("_model"),

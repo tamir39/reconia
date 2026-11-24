@@ -1,6 +1,6 @@
 # Bàn giao bản nộp source Reconia
 
-Nhánh: [`final-submit`](https://github.com/tamir39/reconia/tree/final-submit). File nộp source: `dist/reconia-final-source.zip`, tạo từ Git checkout bằng `python -m tools.export_submission`.
+Nhánh: [`main`](https://github.com/tamir39/reconia/tree/main). File nộp source: `dist/reconia-final-source.zip`, tạo từ Git checkout bằng `python -m tools.export_submission`.
 
 ## Phạm vi đã có trong repo
 

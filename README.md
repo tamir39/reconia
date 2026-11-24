@@ -1,15 +1,15 @@
 # Reconia — Trích xuất thông tin hóa đơn
 
-Repository phục vụ bài so sánh **RoBERTa, BROS, PICK, LayoutLMv3, Donut và Qwen2.5-VL** trên **SROIE, CORD-v2, WildReceipt**. Nhánh nộp source: [`final-submit`](https://github.com/tamir39/reconia/tree/final-submit).
+Repository phục vụ bài so sánh **RoBERTa, BROS, PICK, LayoutLMv3, Donut và Qwen2.5-VL** trên **SROIE, CORD-v2, WildReceipt**. Nhánh nộp source: [`main`](https://github.com/tamir39/reconia/tree/main).
 
 Bản hiện tại có **source 6 model, 18 bộ kết quả test**, cùng **demo tương tác 5 model** và 30 trường minh họa đúng/sai. Qwen đã có đủ ba kết quả từ lịch sử Versions của Thịnh; inference Qwen chưa được tích hợp/kiểm chứng trong demo local.
 
 ## Bắt đầu trên Windows
 
-Cần **Python 3.12 hoặc uv**, Internet khi cài dependency và quyền đọc repo. Tải nhánh `final-submit` hoặc giải nén ZIP source. Nếu dùng Git:
+Cần **Python 3.12 hoặc uv**, Internet khi cài dependency và quyền đọc repo. Tải nhánh `main` hoặc giải nén ZIP source. Nếu dùng Git:
 
 ```powershell
-git clone --branch final-submit --single-branch https://github.com/tamir39/reconia.git
+git clone --branch main --single-branch https://github.com/tamir39/reconia.git
 cd reconia
 ```
 
