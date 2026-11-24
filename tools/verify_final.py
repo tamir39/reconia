@@ -85,7 +85,36 @@ def verify(check_weights=False):
             if check_weights and (not path.is_file() or path.stat().st_size != info["checkpoint_bytes"] or file_hash(path) != info["checkpoint_sha256"]):
                 raise ValueError(f"Missing or changed checkpoint: {model}/{dataset}")
             checked.append({"model": model, "dataset": dataset, "f1": metrics["f1"], "epochs": len(history), "checkpoint_present": path.is_file()})
-    return {"metric": "Micro-F1", "model_dataset_pairs": len(checked), "examples": 2 * len(checked), "weights_hashed": check_weights, "checks": checked}
+    extra = json.loads((ROOT / "reports/benchmarks/additional-models.json").read_text())
+    published = []
+    for model, record in extra["models"].items():
+        for dataset, info in record["datasets"].items():
+            if info is None:
+                continue
+            metrics = json.loads((ROOT / info["metrics_file"]).read_text())
+            if metrics != info["metrics"] or metrics["model"] != model or metrics["dataset"] != dataset:
+                raise ValueError("Published extra result differs from its registry")
+            if not all(math.isfinite(float(value)) for value in metrics.values() if isinstance(value, (int, float))):
+                raise ValueError("Nonfinite published extra result")
+            if not all(0 <= metrics[k] <= 1 for k in ("precision", "recall", "f1")):
+                raise ValueError("Invalid published extra metrics")
+            for name, digest in info["output_text_sha256"].items():
+                if text_hash((ROOT / info["metrics_file"]).with_name(name)) != digest:
+                    raise ValueError("Published extra artifact changed: " + name)
+            with (ROOT / info["metrics_file"]).with_name("history.csv").open(newline="") as stream:
+                history = list(csv.DictReader(stream))
+            if [int(row["epoch"]) for row in history] != list(range(1, info["epochs"] + 1)):
+                raise ValueError("Published extra history epochs are not consecutive")
+            if not all(math.isfinite(float(v)) for row in history for v in row.values()):
+                raise ValueError("Nonfinite published extra history")
+            best = max(history, key=lambda row: float(row["f1"]))
+            if int(best["epoch"]) != info["best_epoch"] or float(best["f1"]) != info["best_validation_f1"]:
+                raise ValueError("Published extra best validation selection differs")
+            published.append({"model": model, "dataset": dataset, "f1": metrics["f1"],
+                              "inference_rerun": record["inference_rerun"], "checkpoint_downloaded": record["checkpoint_downloaded"]})
+    return {"metric": "Micro-F1", "model_dataset_pairs": len(checked), "examples": 2 * len(checked),
+            "weights_hashed": check_weights, "checks": checked, "additional_published_results": published,
+            "published_result_pairs": len(checked) + len(published)}
 
 
 def main():
@@ -101,6 +130,7 @@ def main():
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Verified {result['model_dataset_pairs']} benchmark pairs and {result['examples']} examples (Micro-F1).")
+    print(f"Audited {len(result['additional_published_results'])} additional published result(s); total {result['published_result_pairs']} available pairs.")
 
 
 if __name__ == "__main__":

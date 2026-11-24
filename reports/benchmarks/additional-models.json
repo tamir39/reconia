@@ -1,0 +1,55 @@
+{
+  "checked_at": "2026-11-24",
+  "models": {
+    "qwen_vl": {
+      "name": "Qwen2.5-VL-3B",
+      "source": "https://www.kaggle.com/code/vhngthnh/qwen-vl-model",
+      "version": 5,
+      "metric": "Micro-F1",
+      "datasets": {
+        "sroie": null,
+        "cord_v2": null,
+        "wildreceipt": {
+          "metrics": {
+            "model": "qwen_vl",
+            "dataset": "wildreceipt",
+            "loss": 0.20549988011056083,
+            "precision": 0.7632247143461701,
+            "recall": 0.7269246271664651,
+            "f1": 0.7446325350949627
+          },
+          "epochs": 9,
+          "best_epoch": 4,
+          "best_validation_f1": 0.7195449844881076,
+          "status": "published_result_audited",
+          "metrics_file": "reports/benchmarks/wildreceipt/qwen_vl/test_metrics.json",
+          "export_output_sha256": {
+            "test_metrics.json": "156081fe4e506af38e0ae74f54e88df749a83a639eaaf63ff8f04eaa79ce5366",
+            "history.csv": "601ced48ae0e364267af3218635fba47ecb0f9c5af7b95d5d3e11ecf909e1ce9",
+            "train.log": "ed40f4e6d5dc7b41059de49d9fe68e0950e651cb27e4cad616ae94d1cff3cd31",
+            "labels.json": "3c4c737d159f31417ca2bcfdfb3ae3a414fd64501f5b5664de09311780e199e2",
+            "kernel.log.json": "a1e799e73d5e2f79ea4898b161c482ac9cb1ccf55562b1a3bf9a11a4b23b07cb"
+          },
+          "output_text_sha256": {
+            "test_metrics.json": "156081fe4e506af38e0ae74f54e88df749a83a639eaaf63ff8f04eaa79ce5366",
+            "history.csv": "6dd8551ce08598300f11b87485e2a5e55fe399c7d293b82561706fc91f466060",
+            "train.log": "ed40f4e6d5dc7b41059de49d9fe68e0950e651cb27e4cad616ae94d1cff3cd31",
+            "labels.json": "3c4c737d159f31417ca2bcfdfb3ae3a414fd64501f5b5664de09311780e199e2",
+            "kernel.log.json": "612cb90bd5e9d98c92a9d7833346a243809ab9747c84360294e5f5b21dec5067"
+          }
+        }
+      },
+      "interactive_demo": false,
+      "checkpoint_downloaded": false,
+      "inference_rerun": false,
+      "protocol_notes": [
+        "Evaluation generation budget uses min(1024, maximum ground-truth answer token count in the batch + 32).",
+        "Prompt tokens exclude the assistant answer; generated content is decoded separately.",
+        "Latest output contains only WildReceipt; no SROIE/CORD-v2 score is inferred.",
+        "Published run resumes an earlier checkpoint after epoch 6; history has epochs 1 through 9, best at 4, patience 5.",
+        "Adapter checkpoint files are listed remotely but have not been downloaded or loaded in this update."
+      ],
+      "verification_report": "reports/verification-qwen-20261124.json"
+    }
+  }
+}

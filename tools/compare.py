@@ -33,6 +33,9 @@ def save_comparison_md(results: list[dict], out_dir: Path) -> None:
                 f"{item['recall']:.4f} | "
                 f"{item['f1']:.4f} |\n"
             )
+        if any(item["model"] == "qwen_vl" for item in results):
+            file.write("\nQwen: published result, not re-evaluated locally. Its evaluation generation budget uses "
+                       "ground-truth answer length; see models/qwen_vl/README.md for the protocol note.\n")
 
 
 def compare_results(source: Path | None = None, destination: Path | None = None) -> None:

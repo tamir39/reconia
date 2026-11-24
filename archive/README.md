@@ -7,3 +7,5 @@ notebooks, tests, Macro-F1 scorer and notes from the working tree based on commi
 It includes experimental Qwen code and is historical reference, not the final
 five-model Micro-F1 benchmark or demo. The active code is at the repository root.
 No checkpoints or raw datasets are duplicated here.
+
+The newer published Qwen source added on 2026-11-24 is at `models/qwen_vl/`; its WildReceipt score is separate from the 15 fully bundled demo benchmark pairs.

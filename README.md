@@ -1,8 +1,8 @@
 # Reconia
 
-Trích xuất thông tin hóa đơn với **5 model**: RoBERTa, BROS, PICK, LayoutLMv3 và Donut trên SROIE, CORD-v2, WildReceipt. Nhánh chuẩn bị nộp: `final-submit`.
+Trích xuất thông tin hóa đơn với **6 model**: RoBERTa, BROS, PICK, LayoutLMv3, Donut và Qwen2.5-VL trên SROIE, CORD-v2, WildReceipt. Nhánh chuẩn bị nộp: `final-submit`.
 
-Source, nhãn, cấu hình và kết quả được đồng bộ từ output Kaggle của Thịnh đã kiểm chứng ngày **21/11/2026**. Đây là snapshot cố định, không tự nhận output mới khi hash khác. Qwen và baseline sáu model cũ nằm trong `archive/`, không thuộc bảng benchmark này.
+Source, nhãn, cấu hình và kết quả được đồng bộ từ output Kaggle của Thịnh đã kiểm chứng ngày **21/11/2026**. Đây là snapshot cố định, không tự nhận output mới khi hash khác. Ngày **24/11/2026** bổ sung source Qwen của Thịnh và kết quả WildReceipt từ link `vhngthnh/qwen-vl-model` version 5. Source Qwen cũ vẫn được giữ trong `archive/`.
 
 ## Mở demo
 
@@ -34,22 +34,25 @@ Demo chạy inference thật, không train. Mẫu test dùng OCR chú thích; �
 | PICK | 57.58 | 75.43 | 79.99 |
 | LayoutLMv3 | 88.08 | 95.48 | 93.81 |
 | Donut | 77.76 | 72.40 | 56.93 |
+| Qwen2.5-VL | Chưa có từ link này | Chưa có từ link này | 74.46* |
+
+* Qwen: điểm công bố đã đối chiếu source/log/history/split, chưa chạy lại checkpoint trong lần cập nhật này. Lượt cuối resume sau epoch 6, best epoch 4, early stop epoch 9. Generation budget khi chấm có dùng độ dài nhãn chuẩn; xem [ghi chú Qwen](models/qwen_vl/README.md) và [registry bổ sung](reports/benchmarks/additional-models.json). Demo tương tác vẫn gồm năm model đã có checkpoint/30 ví dụ kiểm chứng; Qwen hiện được thêm source và kết quả.
 
 Giá trị đầy đủ, history/log: [reports/benchmarks/](reports/benchmarks/). Nguồn file và thay đổi chạy local: [provenance.json](reports/benchmarks/provenance.json). Không lấy điểm từ báo cáo Macro-F1 cũ. Ví dụ đúng/sai chỉ minh họa một trường, không thay thế đánh giá toàn bộ test.
 
 ## Cấu trúc hiện tại
 
 ```text
-models/              Source 5 model từ các lượt Kaggle đã chốt
-notebooks/           5 notebook gọn; mọi cờ chạy mặc định tắt
+models/              Source 6 model từ các lượt Kaggle đã chốt
+notebooks/           6 notebook gọn; mọi cờ chạy mặc định tắt
 prepare/             Chuẩn bị raw data, manifest kiểm tra 9 split
 utils/               Hàm chung, Micro-F1, biểu đồ
 demo/               App, 30 ví dụ, 16 ảnh, nhãn/config/tokenizer
-reports/benchmarks/  15 bộ metrics/history/log và nguồn đối chiếu
+reports/benchmarks/  15 bộ đầy đủ + 1 kết quả Qwen, kèm nguồn
 reports/archive/     Báo cáo, ghi chú, bản thảo lịch sử
 tests/              Kiểm tra scorer, dữ liệu, notebook, heatmap
 tools/              Tải tài nguyên, kiểm chứng, so sánh, đóng gói
-archive/             Source sáu model cũ để tham khảo
+archive/             Source cũ để tham khảo
 run.bat              Mở demo
 setup.bat            Cài môi trường demo CPU
 ```
@@ -67,8 +70,9 @@ Không đưa lên Git: `.env`, `.venv/`, `.cache/`, `data/`, `weights/`, `checkp
 | PICK | Ảnh + chữ + box OCR | 4 × 2 | 5e-4 |
 | LayoutLMv3 | Ảnh + chữ + box OCR | 4 × 2 | 3e-5 |
 | Donut | Ảnh + task token theo dataset | 4 × 2 | 3e-5 |
+| Qwen2.5-VL | Ảnh + system/user prompt liệt kê trường | 2 × 4 | 1e-4 |
 
-Default source đã xuất: tối đa 25 epoch, patience 5, seed 42; chọn best validation F1 rồi chấm test. Đây không phải cấu hình Qwen/Donut retrain cũ. Cleanup giữ cách tính loss của lượt xuất và không tạo benchmark mới.
+Default source đã xuất: tối đa 25 epoch, patience 5, seed 42; chọn best validation F1 rồi chấm test. Đây không phải các cấu hình retrain thử nghiệm cũ. Qwen dùng QLoRA 4-bit và CUDA; dependency tùy chọn trong `requirements-qwen.txt`, không cài bởi setup demo CPU. Cleanup giữ cách tính loss của lượt xuất và không tạo benchmark mới.
 
 | Dataset | Train | Validation | Test |
 |---|---:|---:|---:|

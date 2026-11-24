@@ -71,13 +71,28 @@
           "final_sha256": "9da2acd4f15f4d85b765b64848c63fc07d86044baec773db2d051e62281be6fa"
         }
       }
+    },
+    "qwen_vl": {
+      "source": "https://www.kaggle.com/code/vhngthnh/qwen-vl-model",
+      "checked_at": "2026-11-24",
+      "version": 5,
+      "files": {
+        "models/qwen_vl/dataset.py": {
+          "export_sha256": "802d34fc5565925685890424b07151b4bd73ef5c114e9cad0a12ff896c0666aa",
+          "final_sha256": "505cee762c3393789b77b8339dfcbff1e3dae24d95334da529f4881b8aca655c"
+        },
+        "models/qwen_vl/train.py": {
+          "export_sha256": "865d4da6eea636c90403be091d30bbb9cb825841cc60311557402d998970a8fb",
+          "final_sha256": "2a3a5216266ab9b47d8e4ed9f22e1c36bb8bb5cb13510c9e3bfb285318a091d9"
+        }
+      }
     }
   },
   "shared": {
     "common.py": {
       "export_sha256": "49348012fd83172d7f67f333b6950e828269a611568aff89d65a84b62591cb8e",
       "local": "utils/common.py",
-      "final_sha256": "c4b39951ffa7fa6b5f98197a8ce879dbe7d8a47141343bb71ceaae403ba6b8d4"
+      "final_sha256": "d53320133055237e5135e9b3e033410bf03c94b1158f91e2367dad1b0ad6054e"
     },
     "metrics.py": {
       "export_sha256": "0e5be60be5a83065faf77033f2a8cb44d5c376b68f8b80dd3a93d5302caeaf7a",
@@ -120,6 +135,7 @@
     "Micro scorer rejects empty/mismatched document lists; scoring arithmetic unchanged.",
     "Old visualization module archived; demo uses fixed-target input occlusion.",
     "Five notebooks: final-submit source, no embedded source payload; run flags off; published split verification before training.",
-    "Trailing whitespace and line endings normalized in active Python source; no model math changed."
+    "Trailing whitespace and line endings normalized in active Python source; no model math changed.",
+    "2026-11-24: add published Qwen source with the same path/overwrite protections; prompt, LoRA, loss and evaluation budget unchanged. Qwen has one audited published result, not an interactive demo integration."
   ]
 }

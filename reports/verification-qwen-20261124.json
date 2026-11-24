@@ -1,0 +1,76 @@
+{
+  "checked_at": "2026-11-24",
+  "source": "https://www.kaggle.com/code/vhngthnh/qwen-vl-model",
+  "version": 5,
+  "status": "COMPLETE",
+  "scope": "published output/source audit; no checkpoint load or local model inference",
+  "available_datasets": [
+    "wildreceipt"
+  ],
+  "unavailable_datasets": [
+    "sroie",
+    "cord_v2"
+  ],
+  "split_checks": {
+    "train": {
+      "count": 1014,
+      "canonical_sha256": "14843aea5350a137c8a38ba24e8a029bd1f1e42248dc90af12923d56eca50c10",
+      "matches_final_split": true
+    },
+    "val": {
+      "count": 253,
+      "canonical_sha256": "2095a33bbbce62cb0a1dbf691d1d3778a35c4857f1152c4db08296b93a2d331f",
+      "matches_final_split": true
+    },
+    "test": {
+      "count": 472,
+      "canonical_sha256": "33d2388b152f3c40f82a0288cff0a16a82d9613713f9cfcf889c6b467b4edde2",
+      "matches_final_split": true
+    }
+  },
+  "micro_scorer_matches_five_model_exports": true,
+  "scorer_export_sha256": "0e5be60be5a83065faf77033f2a8cb44d5c376b68f8b80dd3a93d5302caeaf7a",
+  "metrics": {
+    "model": "qwen_vl",
+    "dataset": "wildreceipt",
+    "loss": 0.20549988011056083,
+    "precision": 0.7632247143461701,
+    "recall": 0.7269246271664651,
+    "f1": 0.7446325350949627
+  },
+  "metric_harmonic_f1_consistent": true,
+  "history_epochs": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "finite_history": true,
+  "resumed_after_epoch": 6,
+  "best_epoch": 4,
+  "best_validation_f1": 0.7195449844881076,
+  "early_stopping_epoch": 9,
+  "patience": 5,
+  "early_stopping_consistent": true,
+  "checkpoint_files_listed": true,
+  "checkpoint_downloaded": false,
+  "checkpoint_content_verified": false,
+  "inference_rerun": false,
+  "json_valid_invalid_counts": "not recorded in the published logs",
+  "evaluation_budget_uses_gt_answer_length": true,
+  "evaluation_prompt_excludes_gt_answer_content": true,
+  "new_training_started": false,
+  "output_export_sha256": {
+    "test_metrics.json": "156081fe4e506af38e0ae74f54e88df749a83a639eaaf63ff8f04eaa79ce5366",
+    "history.csv": "601ced48ae0e364267af3218635fba47ecb0f9c5af7b95d5d3e11ecf909e1ce9",
+    "train.log": "ed40f4e6d5dc7b41059de49d9fe68e0950e651cb27e4cad616ae94d1cff3cd31",
+    "labels.json": "3c4c737d159f31417ca2bcfdfb3ae3a414fd64501f5b5664de09311780e199e2",
+    "kernel.log.json": "a1e799e73d5e2f79ea4898b161c482ac9cb1ccf55562b1a3bf9a11a4b23b07cb"
+  },
+  "unit_tests_passed": 23
+}

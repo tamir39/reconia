@@ -67,9 +67,9 @@ class FinalSourceTests(unittest.TestCase):
             with self.subTest(model=path.parent.name), self.assertRaises(FileExistsError):
                 namespace["train_model"]("sroie")
 
-    def test_five_notebooks_are_disabled_and_loop_three_datasets(self):
+    def test_six_notebooks_are_disabled_and_loop_three_datasets(self):
         paths = list((ROOT / "notebooks").glob("*.ipynb"))
-        self.assertEqual(len(paths), 5)
+        self.assertEqual(len(paths), 6)
         for path in paths:
             notebook = json.loads(path.read_text(encoding="utf-8"))
             codes = ["".join(cell["source"]) for cell in notebook["cells"] if cell["cell_type"] == "code"]

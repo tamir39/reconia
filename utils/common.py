@@ -15,7 +15,7 @@ from transformers import logging as hf_logging
 hf_logging.set_verbosity_error()
 
 DATASETS = ("sroie", "cord_v2", "wildreceipt")
-MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut")
+MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen_vl")
 
 
 def set_seed(seed: int = 42) -> None:
