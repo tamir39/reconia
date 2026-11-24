@@ -15,6 +15,13 @@ if not errorlevel 1 (
     )
 )
 :install
+"%RECONIA_PYTHON%" -c "import sys; assert sys.version_info[:2] == (3, 12), 'Can dung Python 3.12 cho demo nay.'"
+if errorlevel 1 goto failed
+"%RECONIA_PYTHON%" -m pip --version >nul 2>&1
+if not errorlevel 1 goto packages
+"%RECONIA_PYTHON%" -m ensurepip --upgrade
+if errorlevel 1 goto failed
+:packages
 "%RECONIA_PYTHON%" -m pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cpu
 if errorlevel 1 goto failed
 "%RECONIA_PYTHON%" -m pip install -r requirements.txt
