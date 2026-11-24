@@ -5,26 +5,11 @@ __pycache__/
 
 # Virtual environments
 .venv/
-venv/
 
 # Outputs
 checkpoints/
 weights/
 results/
-data/
-output/
-outputs/
-dist/
-backups/
-.env
-.env.*
-*.pt
-*.pth
-*.safetensors
-*.zip
-*.lnk
-*.pyc
-.pytest_cache/
 
 # OS & IDE
 .DS_Store
