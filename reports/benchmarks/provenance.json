@@ -85,7 +85,13 @@
           "export_sha256": "865d4da6eea636c90403be091d30bbb9cb825841cc60311557402d998970a8fb",
           "final_sha256": "2a3a5216266ab9b47d8e4ed9f22e1c36bb8bb5cb13510c9e3bfb285318a091d9"
         }
-      }
+      },
+      "output_versions": {
+        "sroie": 1,
+        "cord_v2": 3,
+        "wildreceipt": 5
+      },
+      "historical_source_matches_version5": true
     }
   },
   "shared": {

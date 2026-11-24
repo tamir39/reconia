@@ -102,14 +102,16 @@ class QwenPublishedTests(unittest.TestCase):
         self.assertEqual(loss, .25)
         self.assertEqual(metrics["f1"], 1)
 
-    def test_missing_dataset_results_are_not_filled_with_scores(self):
+    def test_results_retain_their_historical_output_versions(self):
         registry = json.loads((ROOT / "reports/benchmarks/additional-models.json").read_text())
         qwen = registry["models"]["qwen_vl"]
-        self.assertIsNone(qwen["datasets"]["sroie"])
-        self.assertIsNone(qwen["datasets"]["cord_v2"])
+        self.assertEqual({dataset: info["output_version"] for dataset, info in qwen["datasets"].items()},
+                         {"sroie": 1, "cord_v2": 3, "wildreceipt": 5})
+        self.assertAlmostEqual(qwen["datasets"]["sroie"]["metrics"]["f1"], .7845543125225549)
+        self.assertAlmostEqual(qwen["datasets"]["cord_v2"]["metrics"]["f1"], .8192112456071848)
         self.assertFalse(qwen["interactive_demo"])
         self.assertFalse(qwen["inference_rerun"])
-        self.assertEqual(verify()["published_result_pairs"], 16)
+        self.assertEqual(verify()["published_result_pairs"], 18)
 
     def test_json_parser_preserves_repeated_values_and_ignores_null(self):
         result = extract_entities('```json\n{"total":["10","10",null],"company":" A "}\n```')

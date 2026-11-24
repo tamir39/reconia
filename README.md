@@ -2,7 +2,7 @@
 
 Trích xuất thông tin hóa đơn với **6 model**: RoBERTa, BROS, PICK, LayoutLMv3, Donut và Qwen2.5-VL trên SROIE, CORD-v2, WildReceipt. Nhánh chuẩn bị nộp: `final-submit`.
 
-Source, nhãn, cấu hình và kết quả được đồng bộ từ output Kaggle của Thịnh đã kiểm chứng ngày **21/11/2026**. Đây là snapshot cố định, không tự nhận output mới khi hash khác. Ngày **24/11/2026** bổ sung source Qwen của Thịnh và kết quả WildReceipt từ link `vhngthnh/qwen-vl-model` version 5. Source Qwen cũ vẫn được giữ trong `archive/`.
+Source, nhãn, cấu hình và kết quả được đồng bộ từ output Kaggle của Thịnh đã kiểm chứng ngày **21/11/2026**. Đây là snapshot cố định, không tự nhận output mới khi hash khác. Ngày **24/11/2026** bổ sung source Qwen của Thịnh và đủ ba kết quả theo lịch sử `vhngthnh/qwen-vl-model`: SROIE version 1, CORD-v2 version 3, WildReceipt version 5. Source Qwen cũ vẫn được giữ trong `archive/`.
 
 ## Mở demo
 
@@ -34,9 +34,9 @@ Demo chạy inference thật, không train. Mẫu test dùng OCR chú thích; �
 | PICK | 57.58 | 75.43 | 79.99 |
 | LayoutLMv3 | 88.08 | 95.48 | 93.81 |
 | Donut | 77.76 | 72.40 | 56.93 |
-| Qwen2.5-VL | Chưa có từ link này | Chưa có từ link này | 74.46* |
+| Qwen2.5-VL | 78.46* | 81.92* | 74.46* |
 
-* Qwen: điểm công bố đã đối chiếu source/log/history/split, chưa chạy lại checkpoint trong lần cập nhật này. Lượt cuối resume sau epoch 6, best epoch 4, early stop epoch 9. Generation budget khi chấm có dùng độ dài nhãn chuẩn; xem [ghi chú Qwen](models/qwen_vl/README.md) và [registry bổ sung](reports/benchmarks/additional-models.json). Demo tương tác vẫn gồm năm model đã có checkpoint/30 ví dụ kiểm chứng; Qwen hiện được thêm source và kết quả.
+* Qwen: điểm công bố đã đối chiếu source/log/history/split, chưa chạy lại checkpoint trong lần cập nhật này. Nguồn output theo dataset: SROIE v1 (best epoch 4, stop 9); CORD-v2 v3 (best epoch 5, stop 10); WildReceipt v5 (best epoch 4, stop 9). Output version mới nhất chỉ chứa WildReceipt, hai bộ còn lại được lấy từ Versions. Generation budget khi chấm có dùng độ dài nhãn chuẩn; xem [ghi chú Qwen](models/qwen_vl/README.md) và [registry bổ sung](reports/benchmarks/additional-models.json). Demo tương tác vẫn gồm năm model đã có checkpoint/30 ví dụ kiểm chứng; Qwen hiện được thêm source và kết quả.
 
 Giá trị đầy đủ, history/log: [reports/benchmarks/](reports/benchmarks/). Nguồn file và thay đổi chạy local: [provenance.json](reports/benchmarks/provenance.json). Không lấy điểm từ báo cáo Macro-F1 cũ. Ví dụ đúng/sai chỉ minh họa một trường, không thay thế đánh giá toàn bộ test.
 
@@ -48,7 +48,7 @@ notebooks/           6 notebook gọn; mọi cờ chạy mặc định tắt
 prepare/             Chuẩn bị raw data, manifest kiểm tra 9 split
 utils/               Hàm chung, Micro-F1, biểu đồ
 demo/               App, 30 ví dụ, 16 ảnh, nhãn/config/tokenizer
-reports/benchmarks/  15 bộ đầy đủ + 1 kết quả Qwen, kèm nguồn
+reports/benchmarks/  18 bộ kết quả, kèm source và số version
 reports/archive/     Báo cáo, ghi chú, bản thảo lịch sử
 tests/              Kiểm tra scorer, dữ liệu, notebook, heatmap
 tools/              Tải tài nguyên, kiểm chứng, so sánh, đóng gói

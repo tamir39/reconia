@@ -2,7 +2,15 @@
 
 Nguồn: https://www.kaggle.com/code/vhngthnh/qwen-vl-model — version 5, kiểm tra ngày 24/11/2026. Base model `Qwen/Qwen2.5-VL-3B-Instruct`, QLoRA NF4 4-bit, r=16, alpha=32, dropout=0.05; target các projection attention/MLP của language model. Image budget 256–512 visual tokens. Source giữ system/user prompt và cách train/chấm của output này.
 
-Output hiện có **WildReceipt**: Micro-F1 **0.7446325351**, Precision **0.7632247143**, Recall **0.7269246272**. History 1–9; lượt cuối resume sau epoch 6, best validation ở epoch 4, early stop epoch 9 với patience 5. Không suy ra điểm SROIE/CORD-v2 từ link này.
+Kết quả đã kiểm tra từ lịch sử **Versions của cùng notebook**:
+
+| Dataset | Output version | Test Micro-F1 | Best epoch | Early stop |
+|---|---:|---:|---:|---:|
+| SROIE | 1 | 0.7845543125 | 4 | 9 |
+| CORD-v2 | 3 | 0.8192112456 | 5 | 10 |
+| WildReceipt | 5 | 0.7446325351 | 4 | 9 |
+
+Source dataset/trainer và scorer của cả ba version giống nhau từng byte. Cả 9 split và 3 bộ nhãn đều khớp benchmark đã chốt. SROIE chạy 1–9; lượt cuối CORD-v2 resume sau epoch 8, WildReceipt sau epoch 6. Output của version mới nhất chỉ chứa WildReceipt; không dùng danh sách latest output để kết luận hai dataset còn lại chưa có kết quả. Report kiểm chứng: `reports/verification-qwen-20261124.json`.
 
 `train.py` chỉ sửa đường dẫn prepared data và thêm bảo vệ không ghi đè checkpoint; `dataset.py` chỉ chuẩn hóa whitespace. SHA nguồn/final trong `reports/benchmarks/provenance.json`. `published-config/` và `requirements-published.txt` lưu cấu hình/khai báo dependency đã xuất. Lượt Kaggle không khóa toàn bộ phiên bản dependency, nên chưa có môi trường GPU tái lập được kiểm chứng trong lần cập nhật này.
 

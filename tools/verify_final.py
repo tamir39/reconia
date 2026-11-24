@@ -110,7 +110,7 @@ def verify(check_weights=False):
             best = max(history, key=lambda row: float(row["f1"]))
             if int(best["epoch"]) != info["best_epoch"] or float(best["f1"]) != info["best_validation_f1"]:
                 raise ValueError("Published extra best validation selection differs")
-            published.append({"model": model, "dataset": dataset, "f1": metrics["f1"],
+            published.append({"model": model, "dataset": dataset, "f1": metrics["f1"], "output_version": info["output_version"],
                               "inference_rerun": record["inference_rerun"], "checkpoint_downloaded": record["checkpoint_downloaded"]})
     return {"metric": "Micro-F1", "model_dataset_pairs": len(checked), "examples": 2 * len(checked),
             "weights_hashed": check_weights, "checks": checked, "additional_published_results": published,

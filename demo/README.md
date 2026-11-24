@@ -24,4 +24,4 @@ Heatmap cần nhiều forward pass, lần đầu có thể chậm. Cache tại `
 
 `python -m tools.verify_final` kiểm tra source, 15 bộ metrics và 30 ví dụ. `python -m tools.check_demo_predictions` chạy lại 30 prediction. Báo cáo mới sinh tại `output/verification/`; bằng chứng kiểm toán cũ trong cache local không phải phụ thuộc của app.
 
-Source Qwen và kết quả WildReceipt được bổ sung ngày 24/11/2026 trong `models/qwen_vl/`, `reports/benchmarks/`. Qwen chưa nằm trong bộ lọc demo vì checkpoint/base model và inference chưa được tích hợp, kiểm chứng ở local.
+Source Qwen và ba kết quả SROIE/CORD-v2/WildReceipt từ Versions được bổ sung ngày 24/11/2026 trong `models/qwen_vl/`, `reports/benchmarks/`. Qwen chưa nằm trong bộ lọc demo vì checkpoint/base model và inference chưa được tích hợp, kiểm chứng ở local.
