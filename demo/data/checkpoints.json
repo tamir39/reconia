@@ -1,0 +1,213 @@
+{
+  "schema": 1,
+  "checked_at": "2026-11-26",
+  "files": [
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/roberta-model",
+      "remote": "reconia/checkpoints/sroie/roberta/best_weights.pt",
+      "local": "checkpoints/sroie/roberta/best_weights.pt",
+      "bytes": 496331378,
+      "sha256": "6001ed6d1f3dd2edd923c454a684ac5e5097bfece5bf3a9daf074def67fe343d",
+      "version": 1,
+      "dataset": "sroie",
+      "model": "roberta"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/roberta-model",
+      "remote": "reconia/checkpoints/cord_v2/roberta/best_weights.pt",
+      "local": "checkpoints/cord_v2/roberta/best_weights.pt",
+      "bytes": 496454450,
+      "sha256": "7248462de896416900d1200c2fd0c1f5e7c7f58c88793b8b2cb53646160eb68c",
+      "version": 1,
+      "dataset": "cord_v2",
+      "model": "roberta"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/roberta-model",
+      "remote": "reconia/checkpoints/wildreceipt/roberta/best_weights.pt",
+      "local": "checkpoints/wildreceipt/roberta/best_weights.pt",
+      "bytes": 496343666,
+      "sha256": "0ce62b5cdf125ed6c6ff1a8b111c5f8fea89d96602b917efe870be1a228e0732",
+      "version": 1,
+      "dataset": "wildreceipt",
+      "model": "roberta"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/bros-model",
+      "remote": "reconia/checkpoints/sroie/bros/best_weights.pt",
+      "local": "checkpoints/sroie/bros/best_weights.pt",
+      "bytes": 438094596,
+      "sha256": "7b1065a47a458d49eaca3d23f8a527ee543b35d26833e61dab2b963976fc5a14",
+      "version": 1,
+      "dataset": "sroie",
+      "model": "bros"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/bros-model",
+      "remote": "reconia/checkpoints/cord_v2/bros/best_weights.pt",
+      "local": "checkpoints/cord_v2/bros/best_weights.pt",
+      "bytes": 438217668,
+      "sha256": "e2b9981948ac8a4c2e9acf325e2e302dbd800578a2e16f18c9977b4a076dc041",
+      "version": 1,
+      "dataset": "cord_v2",
+      "model": "bros"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/bros-model",
+      "remote": "reconia/checkpoints/wildreceipt/bros/best_weights.pt",
+      "local": "checkpoints/wildreceipt/bros/best_weights.pt",
+      "bytes": 438106884,
+      "sha256": "f01fdbb44eaf3bb20982b3ccfaeb41c748b9f374d8ea45d615e822017530cc8e",
+      "version": 1,
+      "dataset": "wildreceipt",
+      "model": "bros"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/pick-model",
+      "remote": "reconia/checkpoints/sroie/pick/best_weights.pt",
+      "local": "checkpoints/sroie/pick/best_weights.pt",
+      "bytes": 211226645,
+      "sha256": "e0dc4f3faa3afab372692b22c4d4a1e6bea98927ae6164ae0f7b29f095aec364",
+      "version": 1,
+      "dataset": "sroie",
+      "model": "pick"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/pick-model",
+      "remote": "reconia/checkpoints/cord_v2/pick/best_weights.pt",
+      "local": "checkpoints/cord_v2/pick/best_weights.pt",
+      "bytes": 211400341,
+      "sha256": "e06cd014177c3495ba405761693ba61b7227d63348bb774d90ca7f6878294795",
+      "version": 1,
+      "dataset": "cord_v2",
+      "model": "pick"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/pick-model",
+      "remote": "reconia/checkpoints/wildreceipt/pick/best_weights.pt",
+      "local": "checkpoints/wildreceipt/pick/best_weights.pt",
+      "bytes": 211243349,
+      "sha256": "7a7893c5f898bfd3978ef0b369df6fb2a3072f11c318b13d7377a8c855f5e1e3",
+      "version": 1,
+      "dataset": "wildreceipt",
+      "model": "pick"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/layoutlmv3-model",
+      "remote": "reconia/checkpoints/sroie/layoutlmv3/best_weights.pt",
+      "local": "checkpoints/sroie/layoutlmv3/best_weights.pt",
+      "bytes": 501426079,
+      "sha256": "8093a8f7641ca0290bbae61f55036c984482810d9b110c4feaee05c5b0e7af1a",
+      "version": 1,
+      "dataset": "sroie",
+      "model": "layoutlmv3"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/layoutlmv3-model",
+      "remote": "reconia/checkpoints/cord_v2/layoutlmv3/best_weights.pt",
+      "local": "checkpoints/cord_v2/layoutlmv3/best_weights.pt",
+      "bytes": 503912293,
+      "sha256": "9039d9890871b72b4e87554d901fdd908328ad81c8b8e5484f335aef70065be1",
+      "version": 1,
+      "dataset": "cord_v2",
+      "model": "layoutlmv3"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/layoutlmv3-model",
+      "remote": "reconia/checkpoints/wildreceipt/layoutlmv3/best_weights.pt",
+      "local": "checkpoints/wildreceipt/layoutlmv3/best_weights.pt",
+      "bytes": 503801509,
+      "sha256": "01a7cd90efa75a5dee88299f8b1dd68af8580fc50d7c59dddac2b0846ffff238",
+      "version": 1,
+      "dataset": "wildreceipt",
+      "model": "layoutlmv3"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/donut-model",
+      "remote": "reconia/checkpoints/sroie/donut/best_weights.pt",
+      "local": "checkpoints/sroie/donut/best_weights.pt",
+      "bytes": 809218118,
+      "sha256": "0b4b5216ddc30c3e7f0dbc55bd92580b6d7858a46d86370162db82086762b4d9",
+      "version": 1,
+      "dataset": "sroie",
+      "model": "donut"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/donut-model",
+      "remote": "reconia/checkpoints/cord_v2/donut/best_weights.pt",
+      "local": "checkpoints/cord_v2/donut/best_weights.pt",
+      "bytes": 809218118,
+      "sha256": "56959ca3e81320de22ab5e8bc38206fd05b67ddb23e0245994f95623bcd1a6d7",
+      "version": 1,
+      "dataset": "cord_v2",
+      "model": "donut"
+    },
+    {
+      "kind": "checkpoint",
+      "kernel": "vhngthnh/donut-model",
+      "remote": "reconia/checkpoints/wildreceipt/donut/best_weights.pt",
+      "local": "checkpoints/wildreceipt/donut/best_weights.pt",
+      "bytes": 809218118,
+      "sha256": "53c31b5d84998b610cc7ac40bc7004dade5fdec6d129ed01164bf43bc19e4b6a",
+      "version": 1,
+      "dataset": "wildreceipt",
+      "model": "donut"
+    },
+    {
+      "kind": "checkpoint",
+      "model": "qwen_vl",
+      "dataset": "sroie",
+      "kernel": "vhngthnh/qwen-vl-model",
+      "version": 1,
+      "remote": "reconia/checkpoints/sroie/qwen_vl/best_weights.pt",
+      "local": "checkpoints/sroie/qwen_vl/best_weights.pt",
+      "bytes": 119916165,
+      "sha256": "bc5dc2ac03e67fd1959ca2a20797dd5294eb4df47d024bdda291246a776a1e71",
+      "format": "peft_adapter_state_dict",
+      "base_model": "Qwen/Qwen2.5-VL-3B-Instruct",
+      "adapter_config": "demo/model_assets/qwen_vl/adapter_config.json"
+    },
+    {
+      "kind": "checkpoint",
+      "model": "qwen_vl",
+      "dataset": "cord_v2",
+      "kernel": "vhngthnh/qwen-vl-model",
+      "version": 3,
+      "remote": "reconia/checkpoints/cord_v2/qwen_vl/best_weights.pt",
+      "local": "checkpoints/cord_v2/qwen_vl/best_weights.pt",
+      "bytes": 119916165,
+      "sha256": "b0234d9035d06425fbe6f8bf29ef917460dc32d91c56b93ab8c4ba729c7f284c",
+      "format": "peft_adapter_state_dict",
+      "base_model": "Qwen/Qwen2.5-VL-3B-Instruct",
+      "adapter_config": "demo/model_assets/qwen_vl/adapter_config.json"
+    },
+    {
+      "kind": "checkpoint",
+      "model": "qwen_vl",
+      "dataset": "wildreceipt",
+      "kernel": "vhngthnh/qwen-vl-model",
+      "version": 5,
+      "remote": "reconia/checkpoints/wildreceipt/qwen_vl/best_weights.pt",
+      "local": "checkpoints/wildreceipt/qwen_vl/best_weights.pt",
+      "bytes": 119916165,
+      "sha256": "9eab3465325ce13d7e0e0296fa47c0ce84b244dd5f44700e90d7195df56eb905",
+      "format": "peft_adapter_state_dict",
+      "base_model": "Qwen/Qwen2.5-VL-3B-Instruct",
+      "adapter_config": "demo/model_assets/qwen_vl/adapter_config.json"
+    }
+  ]
+}

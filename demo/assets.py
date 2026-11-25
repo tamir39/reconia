@@ -9,7 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut")
 DATASETS = ("sroie", "cord_v2", "wildreceipt")
 NAMES = dict(zip(MODELS, ("RoBERTa", "BROS", "PICK", "LayoutLMv3", "Donut")))
-MANIFEST = Path(__file__).with_name("artifacts.json")
+DATA = Path(__file__).with_name("data")
+MANIFEST = DATA / "artifacts.json"
 
 
 def model_assets(model):
@@ -21,8 +22,8 @@ def checkpoint(dataset, model):
     return base / dataset / model / "best_weights.pt"
 
 
-def labels(dataset, model):
-    return json.loads((ROOT / "demo/metadata" / dataset / model / "labels.json").read_text(encoding="utf-8"))
+def labels(dataset):
+    return json.loads((DATA / "labels" / f"{dataset}.json").read_text(encoding="utf-8"))
 
 
 @lru_cache(maxsize=1)
@@ -48,7 +49,7 @@ def assert_checkpoint(dataset, model):
 
 @lru_cache(maxsize=15)
 def samples(dataset, model="layoutlmv3"):
-    path = ROOT / "demo/samples.json"
+    path = DATA / "samples.json"
     return json.loads(path.read_text(encoding="utf-8"))[dataset][model]
 
 

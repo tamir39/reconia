@@ -4,7 +4,7 @@ import importlib
 from functools import lru_cache
 
 from demo.assets import (
-    ROOT, assert_checkpoint, labels, model_assets,
+    assert_checkpoint, labels, model_assets,
 )
 
 
@@ -68,7 +68,7 @@ def load_model(dataset, name):
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
     path = assert_checkpoint(dataset, name)
-    tags = labels(dataset, name)
+    tags = labels(dataset)
     id2label = dict(enumerate(tags))
     assets = model_assets(name)
     requested = os.environ.get("RECONIA_DEVICE", "cpu")

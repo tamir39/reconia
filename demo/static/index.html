@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reconia · Demo trích xuất hóa đơn</title>
+<style>
+:root{color-scheme:light;--ink:#17332d;--muted:#526861;--paper:#f7f7f1;--line:#d6e0d7;--accent:#17634e}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 system-ui,sans-serif}
+main{max-width:1160px;margin:auto;padding:24px 24px 48px}header{margin-bottom:24px}
+.eyebrow{font-size:.75rem;font-weight:750;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{font:clamp(2rem,5vw,2.8rem)/1.1 Georgia,serif;letter-spacing:-.035em;margin:10px 0 0}h2{font-size:1.1rem;margin:0}p{margin:8px 0;color:var(--muted)}
+.selectors,.upload-controls{display:grid;gap:12px;align-items:end;margin:16px 0 24px}.selectors{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto}.selectors.has-heatmap{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto auto}.upload-controls{grid-template-columns:minmax(0,1fr) auto auto;max-width:900px;margin-bottom:8px}.upload-controls:has(#upload-heatmap-option[hidden]){grid-template-columns:minmax(0,1fr) auto}label{display:grid;gap:5px;font-size:.85rem;font-weight:650;min-width:0}
+.selectors .filter-options{position:relative;margin:0;min-width:0}
+.filter-options>summary{display:flex;align-items:center;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:white;white-space:nowrap;color:var(--accent)}
+.filter-options>summary::after{content:'▾';margin-left:10px}
+.filter-options[open]>summary::after{content:'▴'}
+.dataset-label-content{position:absolute;z-index:2;right:0;top:calc(100% + 6px);width:min(400px,calc(100vw - 32px));max-height:52dvh;overflow:auto;padding:14px;background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px #17332d1a}
+.dataset-label-content h4{margin:12px 0 4px;font-size:.9rem}
+.dataset-label-content ul{margin:0;padding-left:20px;overflow-wrap:anywhere}
+.dataset-label-content code{font-size:.86rem}
+.heatmap-options-content{width:min(310px,calc(100vw - 32px))}.heatmap-options-content p{font-size:.85rem;font-weight:400;margin:10px 0 0}
+.heatmap-options-content label+label{margin-top:12px}
+select,button,input[type=file]{font:inherit;min-height:44px;border-radius:8px;border:1px solid var(--line);padding:8px 12px;color:var(--ink);background:white}select,input[type=file]{width:100%;min-width:0}
+input::file-selector-button{cursor:pointer;font:inherit}
+[hidden]{display:none!important}
+button{background:var(--accent);color:white;font-weight:700;cursor:pointer;border-color:transparent}button:disabled{opacity:.55;cursor:default}
+:focus-visible{outline:3px solid #38876e;outline-offset:3px}.status{font-size:.85rem;margin:10px 0 0}.status:empty{display:none}
+.workspace,.case-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}.panel{padding:18px;background:#fff;border:1px solid var(--line);border-radius:12px;min-width:0}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.section-note{font-size:.8rem;margin:0}.section-note:empty{display:none}
+.case-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.case-heading h3{margin:0}.case-field{font-size:.85rem;color:var(--muted);text-align:right;min-width:0;overflow-wrap:anywhere}.case-details{margin-top:14px;font-size:.85rem}.case-details summary{color:var(--muted);font-weight:500}.case-details p{margin:8px 0 0}.case-source{font-size:.8rem;color:var(--muted);margin-top:6px}
+.case-footer{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:16px}.case-footer .case-actions{margin:0}.case-footer .status{margin:0;margin-left:auto}
+.preview{position:relative}.zoom-hint{position:absolute;right:8px;bottom:8px;padding:3px 8px;border-radius:5px;background:#ffffffed;color:var(--ink);font-size:.75rem;font-weight:500;pointer-events:none}.workspace.awaiting-run{grid-template-columns:minmax(0,1fr);max-width:540px}.upload-section>.status{margin:8px 0 12px}.file-hint{font-size:.8rem;font-weight:400;color:var(--muted)}
+figure{margin:0}.preview{background:#edf2ed;min-height:220px;display:grid;place-items:center;border-radius:8px}img{display:block;max-width:100%;height:auto;max-height:540px;object-fit:contain}img[hidden]{display:none}
+.preview-button{width:100%;padding:0;border:0;overflow:hidden;cursor:zoom-in}
+.image-dialog{width:min(980px,calc(100% - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--line);border-radius:12px;background:white;color:var(--ink)}
+.image-dialog::backdrop{background:#10231fc9}
+.image-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px}
+.image-toolbar h2{flex:1 1 180px;margin:0;overflow-wrap:anywhere}
+.image-layer-note{padding:0 12px 8px;margin:0;font-size:.85rem}
+.image-scroll{max-height:72dvh;overflow:auto;background:#edf2ed;padding:8px}
+.image-scroll img{width:auto;max-height:calc(72dvh - 16px);margin:auto}
+.image-scroll.zoomed img{height:calc(144dvh - 32px);max-height:none;max-width:none}
+body:has(.image-dialog[open]){overflow:hidden}
+figcaption{display:block;color:var(--muted);font-size:.82rem;margin-top:9px;overflow-wrap:anywhere}
+.case-grid .preview{height:285px}.case-grid img{max-height:100%;min-height:0}.case-values{margin-top:14px}
+.annotated-image{display:block;position:relative;width:min(100%,calc(540px * var(--image-ratio)))}.annotated-image img{width:100%;height:auto;max-height:none}
+.case-grid .annotated-image{width:min(100%,calc(285px * var(--image-ratio)))}
+.image-scroll .annotated-image{width:min(100%,calc((72dvh - 16px) * var(--image-ratio)));margin:auto}
+.image-scroll.zoomed .annotated-image{width:calc((144dvh - 32px) * var(--image-ratio))}
+.case-grid .annotated-image img,.image-scroll .annotated-image img{width:100%;height:auto;max-height:none}
+.receipt-region{position:absolute;outline:2px solid #08794e;background:#29b87924;pointer-events:none}
+.receipt-region.wrong{outline-color:#bb2638;background:#e74c5d24}
+.receipt-heatmap{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.annotated-image:not([data-layer="boxes"]) .receipt-region,
+.annotated-image:not([data-layer="heatmap"]) .receipt-heatmap{display:none}
+.explain-check{display:flex;gap:8px;align-items:center;min-height:44px}.explain-check input{width:20px;height:20px;min-height:20px}.case-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.case-actions button{font-size:.85rem}.source-note{font-size:.82rem}.heat-legend{font-size:.85rem}.heat-legend:empty{display:none}.receipt-region.predicted{outline-color:#2166ac;background:#2166ac18}h3{font-size:1rem;margin:0 0 12px}.upload-section{border-top:1px solid var(--line);margin-top:28px;padding-top:22px}
+dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px 12px;max-height:325px;overflow:auto}dt{font: .85rem ui-monospace,monospace;color:var(--accent);overflow-wrap:anywhere}dd{margin:0;overflow-wrap:anywhere}dd ul{margin:0;padding-left:16px}
+.correct-example{border-top:3px solid var(--accent)}
+.error-example{background:#fff6f6;border-color:#edc5c8;border-top:3px solid #b72d3b}
+.error-example h3,.error-example .case-values dd:last-child{color:#a32330;font-weight:700}
+.case-status-icon{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:8px;border-radius:50%;background:#fbe0e2;font-size:18px;line-height:1;vertical-align:middle}
+.correct-example .case-status-icon{background:#e0f1e8;color:var(--accent)}
+details{margin-top:20px}summary{cursor:pointer;font-weight:700}.table{overflow:auto}table{width:100%;border-collapse:collapse;margin-top:10px;text-align:left}th,td{padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}td{font-variant-numeric:tabular-nums}
+@media(max-width:760px){.case-grid,.workspace{grid-template-columns:1fr}main{padding:24px 16px}}
+@media(max-width:680px){.selectors,.selectors.has-heatmap{grid-template-columns:repeat(2,minmax(0,1fr))}.dataset-label-content{left:0;right:auto}.selectors .filter-options{align-self:start}}
+@media(max-width:480px){.upload-controls{grid-template-columns:minmax(0,1fr) auto}.upload-controls>label:first-child{grid-column:1 / -1}.upload-controls:has(#upload-heatmap-option[hidden]) #run{grid-column:1 / -1}.dataset-label-content{position:static;width:auto;margin-top:6px}.filter-options>summary{white-space:normal;font-size:.85rem}.case-heading{align-items:start}.section-heading{flex-wrap:wrap;gap:4px}.file-hint{font-size:.75rem}}
+</style>
+</head>
+<body><main>
+<header>
+  <div class="eyebrow">Reconia / Demo mô hình</div>
+  <h1>Trích xuất hóa đơn</h1>
+</header>
+
+<div class="selectors">
+  <label>Mô hình<select id="model" disabled></select></label>
+  <label>Dataset<select id="dataset" disabled></select></label>
+  <details id="dataset-labels" class="dataset-labels filter-options" hidden>
+    <summary id="dataset-label-summary">Nhãn dataset</summary>
+    <div id="dataset-label-content" class="dataset-label-content"></div>
+  </details>
+  <details id="heatmap-options" class="filter-options" hidden>
+    <summary>Heatmap</summary>
+    <div class="dataset-label-content heatmap-options-content">
+      <label>Trường hiển thị<select id="explain-field" aria-describedby="heatmap-info"><option value="">Tự chọn</option></select></label>
+      <label id="heatmap-scope-control">Dữ liệu<select id="heatmap-scope"><option value="joint">Ảnh + chữ OCR</option><option value="image">Chỉ ảnh</option></select></label>
+      <p id="heatmap-info">Tính cho một trường. Vùng đỏ hỗ trợ mạnh cho dự đoán đang xem, dù dự đoán đúng hay sai.</p>
+    </div>
+  </details>
+</div>
+<section aria-labelledby="test-heading">
+  <div class="section-heading"><h2 id="test-heading">Mẫu trong tập test</h2>
+  <p id="test-status" class="section-note" role="status">Đang tải…</p></div>
+  <div class="case-grid" id="test-cases"></div>
+</section>
+
+<section class="upload-section" aria-labelledby="upload-heading">
+  <h2 id="upload-heading">Thử ảnh của bạn</h2>
+  <form id="upload-form" class="upload-controls">
+    <label>Ảnh hóa đơn<input type="file" id="upload" accept="image/jpeg,image/png,image/webp" aria-describedby="file-hint upload-status"></label>
+    <label class="explain-check" id="upload-heatmap-option" hidden><input type="checkbox" id="heatmap-check">Kèm heatmap</label>
+    <button id="run" type="submit" disabled>Chạy</button>
+  </form>
+  <p id="file-hint" class="file-hint">JPG, PNG, WebP · Tối đa 12 MB</p>
+  <p id="upload-status" class="status" role="status"></p>
+  <div class="workspace awaiting-run" id="upload-output" hidden>
+    <figure class="panel">
+      <button type="button" class="preview preview-button" id="upload-preview-button" aria-label="Mở lớn ảnh tải lên" aria-haspopup="dialog">
+        <img id="upload-preview" alt="Ảnh hóa đơn tải lên">
+      </button>
+      <figcaption id="upload-name"></figcaption><p id="upload-heatmap-note" class="heat-legend"></p>
+    </figure>
+    <section class="panel" id="prediction-panel" hidden><h3>Kết quả</h3><div id="prediction"></div></section>
+  </div>
+</section>
+
+<details>
+  <summary>Điểm đánh giá · Micro-F1</summary>
+  <p id="scores-note">Điểm từ các lượt Kaggle đã hoàn tất.</p><p class="source-note" id="sources"></p>
+  <div class="table" id="scores"></div>
+</details>
+</main>
+<dialog id="image-dialog" class="image-dialog" aria-labelledby="image-title">
+  <div class="image-toolbar">
+    <h2 id="image-title">Ảnh hóa đơn</h2>
+    <label id="image-layer-control" hidden>Lớp hiển thị
+      <select id="image-layer">
+        <option value="heatmap">Heatmap vùng ảnh</option>
+        <option value="boxes">Ô model chọn</option>
+        <option value="original">Ảnh gốc</option>
+      </select>
+    </label>
+    <button type="button" id="image-zoom" aria-pressed="false">Phóng thêm</button>
+    <form method="dialog"><button autofocus>Đóng</button></form>
+  </div>
+  <p id="image-layer-note" class="image-layer-note" hidden></p>
+  <div class="image-scroll" id="image-scroll" tabindex="0" aria-label="Ảnh phóng to, có thể cuộn">
+  </div>
+</dialog>
+<script>
+const byId = id => document.getElementById(id);
+const model = byId('model'), dataset = byId('dataset'), upload = byId('upload');
+const run = byId('run'), uploadStatus = byId('upload-status'), prediction = byId('prediction');
+const titles = {sroie:'SROIE', cord_v2:'CORD-v2', wildreceipt:'WildReceipt'};
+const fieldNames = {
+  address:'Địa chỉ', company:'Tên cửa hàng', date:'Ngày', total:'Tổng tiền',
+  Date_value:'Ngày', Prod_item_value:'Tên mặt hàng', Prod_price_value:'Giá mặt hàng',
+  Prod_quantity_value:'Số lượng', Store_addr_value:'Địa chỉ cửa hàng', Store_name_value:'Tên cửa hàng',
+  Subtotal_value:'Tạm tính', Tax_value:'Thuế', Tel_value:'Điện thoại', Time_value:'Giờ',
+  Tips_value:'Tiền boa', Total_value:'Tổng tiền',
+  'menu.nm':'Tên món', 'menu.cnt':'Số lượng', 'menu.unitprice':'Đơn giá',
+  'menu.itemsubtotal':'Thành tiền món', 'sub_total.discount_price':'Giảm giá',
+  'menu.discountprice':'Giảm giá món', 'menu.etc':'Thông tin món', 'menu.num':'Mã món',
+  'menu.price':'Giá món', 'menu.sub.cnt':'Số lượng món phụ', 'menu.sub.nm':'Tên món phụ',
+  'menu.sub.price':'Giá món phụ', 'menu.sub.unitprice':'Đơn giá món phụ', 'menu.vatyn':'Thuế của món',
+  'sub_total.subtotal_price':'Tạm tính', 'sub_total.tax_price':'Thuế',
+  'sub_total.etc':'Thông tin phụ phí', 'sub_total.othersvc_price':'Phụ phí khác',
+  'sub_total.service_price':'Phí dịch vụ', 'total.total_price':'Tổng tiền',
+  'total.cashprice':'Tiền mặt', 'total.changeprice':'Tiền thừa', 'total.creditcardprice':'Thanh toán thẻ',
+  'total.emoneyprice':'Thanh toán điện tử', 'total.menuqty_cnt':'Tổng số lượng món',
+  'total.menutype_cnt':'Số loại món', 'total.total_etc':'Thông tin thanh toán',
+  'void_menu.nm':'Món đã hủy', 'void_menu.price':'Giá món đã hủy',
+};
+const fieldGroups = {menu:'Món hàng', sub_total:'Tạm tính và phụ phí', total:'Tổng tiền và thanh toán', void_menu:'Món đã hủy'};
+const maxBytes = 12 * 1024 * 1024;
+let catalog, previewUrl, busy = false;
+const imageDialog = byId('image-dialog');
+const imageScroll = byId('image-scroll'), imageZoom = byId('image-zoom');
+const imageLayer = byId('image-layer');
+let activeAnnotation, uploadAnnotation;
+
+function heatmapDescription(heatmap) {
+  const label = fieldNames[heatmap.field] ?? heatmap.field;
+  const scope = heatmap.scope === 'joint' ? 'ảnh + chữ OCR' : 'chỉ ảnh';
+  if (!heatmap.has_signal) return label + ' · Chưa đo được ảnh hưởng rõ từ ' + scope + '.';
+  const weak = heatmap.max_score_drop < .05 ? ' · Tín hiệu yếu' : '';
+  return label + ' · ' + scope + weak + '. Vùng đỏ: hỗ trợ mạnh cho dự đoán đang xem.';
+}
+
+function updateImageLayer() {
+  const image = imageScroll.querySelector('.annotated-image');
+  const note = byId('image-layer-note');
+  if (image && activeAnnotation?.heatmap) image.dataset.layer = imageLayer.value;
+  note.textContent = imageLayer.value === 'heatmap' && activeAnnotation?.heatmap
+    ? heatmapDescription(activeAnnotation.heatmap)
+    : imageLayer.value === 'boxes' ? activeAnnotation?.legend ?? '' : '';
+  note.hidden = !note.textContent;
+}
+
+function heatmapLayer(heatmap) {
+  const grid = element('canvas');
+  grid.width = heatmap.width;
+  grid.height = heatmap.height;
+  const context = grid.getContext('2d');
+  const pixels = context.createImageData(grid.width, grid.height);
+  heatmap.values.forEach((change, index) => {
+    const strength = Math.max(0, Math.min(1, change));
+    const red = Math.round(255 * Math.max(0, Math.min(1, 1.5 - Math.abs(4 * strength - 3))));
+    const green = Math.round(255 * Math.max(0, Math.min(1, 1.5 - Math.abs(4 * strength - 2))));
+    const blue = Math.round(255 * Math.max(0, Math.min(1, 1.5 - Math.abs(4 * strength - 1))));
+    const signal = heatmap.strength ?? 1;
+    pixels.data.set([red, green, blue, heatmap.has_signal ? Math.round(185 * strength * signal) : 0], index * 4);
+  });
+  context.putImageData(pixels, 0, 0);
+  const layer = element('canvas', null, 'receipt-heatmap');
+  layer.setAttribute('aria-hidden', 'true');
+  layer.width = 448;
+  layer.height = Math.max(1, Math.round(448 * grid.height / grid.width));
+  layer.getContext('2d').drawImage(grid, 0, 0, layer.width, layer.height);
+  return layer;
+}
+
+function setImageZoom(zoomed) {
+  imageScroll.classList.toggle('zoomed', zoomed);
+  imageZoom.setAttribute('aria-pressed', String(zoomed));
+  imageZoom.textContent = zoomed ? 'Vừa khung' : 'Phóng thêm';
+  imageScroll.scrollTo(0, 0);
+}
+
+function annotatedImage(image, annotation) {
+  if (!annotation) return image;
+  const wrapper = element('span', null, 'annotated-image');
+  wrapper.style.setProperty('--image-ratio', annotation.size[0] / annotation.size[1]);
+  wrapper.dataset.layer = annotation.heatmap ? 'heatmap' : 'boxes';
+  wrapper.append(image);
+  if (annotation.heatmap) wrapper.append(heatmapLayer(annotation.heatmap));
+  for (const region of annotation.regions ?? []) {
+    const [left, top, right, bottom] = region.box;
+    const outline = element('span', null, 'receipt-region ' + region.kind);
+    outline.setAttribute('aria-hidden', 'true');
+    Object.assign(outline.style, {
+      left: left / 10 + '%', top: top / 10 + '%',
+      width: (right - left) / 10 + '%', height: (bottom - top) / 10 + '%',
+    });
+    wrapper.append(outline);
+  }
+  return wrapper;
+}
+
+function openLargeImage(image, annotation) {
+  setImageZoom(false);
+  byId('image-title').textContent = image.alt;
+  const large = image.cloneNode();
+  large.id = 'large-image';
+  activeAnnotation = annotation;
+  imageScroll.replaceChildren(annotatedImage(large, annotation));
+  byId('image-layer-control').hidden = !annotation?.heatmap;
+  imageLayer.querySelector('option[value="boxes"]').hidden = !annotation?.regions?.length;
+  imageLayer.value = annotation?.heatmap ? 'heatmap' : 'boxes';
+  updateImageLayer();
+  imageDialog.showModal();
+}
+
+imageLayer.addEventListener('change', updateImageLayer);
+imageZoom.addEventListener('click', () => setImageZoom(!imageScroll.classList.contains('zoomed')));
+imageDialog.addEventListener('click', event => {
+  if (event.target === imageDialog) imageDialog.close();
+});
+imageDialog.addEventListener('close', () => imageScroll.replaceChildren());
+
+function element(tag, text, className) {
+  const node = document.createElement(tag);
+  if (text != null) node.textContent = text;
+  if (className) node.className = className;
+  return node;
+}
+
+function fields(target, data, fallback, translate = false) {
+  const entries = Object.entries(data ?? {});
+  if (!entries.length) {
+    target.replaceChildren(element('p', fallback));
+    return;
+  }
+  const list = element('dl');
+  for (const [key, value] of entries) {
+    const label = element('dt', translate ? fieldNames[key] ?? key : key);
+    if (translate) label.title = key;
+    list.append(label, element('dd', Array.isArray(value) ? value.join(' · ') : String(value)));
+  }
+  target.replaceChildren(list);
+}
+
+function caseCard(example, correct) {
+  const card = element('article', null, correct ? 'panel correct-example' : 'panel error-example');
+  const heading = element('h3');
+  function setOutcome(matches) {
+    card.classList.toggle('correct-example', matches);
+    card.classList.toggle('error-example', !matches);
+    heading.replaceChildren(document.createTextNode(matches ? 'Trường đúng' : 'Trường sai'));
+    const icon = element('span', matches ? '✓' : '×', 'case-status-icon');
+    icon.setAttribute('aria-hidden', 'true');
+    heading.prepend(icon);
+  }
+  setOutcome(correct);
+  const header = element('div', null, 'case-heading');
+  header.append(heading, element('span', fieldNames[example.field] ?? example.label, 'case-field'));
+  card.append(header);
+  const row = catalog.cases[example?.case_index];
+  if (!row) {
+    card.append(element('p', 'Chưa có ảnh hoặc dữ liệu cho mẫu này.'));
+    return card;
+  }
+  const figure = element('figure');
+  const frame = element('button', null, 'preview preview-button');
+  frame.type = 'button';
+  frame.setAttribute('aria-haspopup', 'dialog');
+  frame.setAttribute('aria-label', 'Mở lớn ảnh hóa đơn ' + row.id);
+  const image = element('img');
+  image.alt = 'Hóa đơn mẫu ' + row.id;
+  image.src = '/image/' + example.case_index;
+  function setFrame(annotation) {
+    frame.replaceChildren(annotatedImage(image, annotation), element('span', 'Phóng to', 'zoom-hint'));
+    frame.onclick = () => openLargeImage(image, annotation);
+  }
+  setFrame(example.annotation);
+  const caption = element('figcaption', '', 'heat-legend');
+  if (example.annotation?.heatmap) {
+    caption.append(element('br'), heatmapDescription(example.annotation.heatmap));
+  } else if (example.annotation) {
+    caption.append(element('br'), example.annotation.legend);
+  }
+  figure.append(frame, caption);
+  const values = element('div', null, 'case-values');
+  function showComparison(actual) {
+    fields(values, {'Nhãn chuẩn': example.truth, 'Dự đoán': actual?.length ? actual : 'Bỏ sót'});
+  }
+  showComparison(example.prediction);
+  const explanation = element('details', null, 'case-details');
+  explanation.append(element('summary', 'Giải thích'), element('p', example.explanation),
+                     element('p', row.id + ' · ' + row.boxes + ' vùng chữ', 'case-source'));
+  card.append(figure, values, explanation);
+  const status = element('p', 'Đã lưu', 'status');
+  status.setAttribute('role', 'status');
+  const actions = element('div', null, 'case-actions');
+  const rerun = element('button', 'Chạy');
+  rerun.type = 'button';
+  rerun.setAttribute('aria-label', 'Chạy mẫu ' + row.id);
+  const liveFields = element('div');
+  const allResults = element('details', null, 'case-details');
+  allResults.hidden = true;
+  allResults.append(element('summary', 'Tất cả kết quả'), liveFields);
+  const runCase = async heatmap => {
+    if (busy) return;
+    setBusy(true);
+    setFrame(null);
+    caption.textContent = '';
+    liveFields.replaceChildren();
+    allResults.hidden = true;
+    allResults.open = false;
+    status.textContent = heatmap ? 'Đang che từng vùng để tạo heatmap…' : 'Đang chạy…';
+    try {
+      const response = await fetch('/api/predict', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({case: example.case_index, sample_id: row.id, dataset: dataset.value,
+                              model: model.value, heatmap,
+                              scope: byId('heatmap-scope').value,
+                              field: heatmap ? (byId('explain-field').value || (example.prediction.length ? example.field : '')) : ''}),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      setFrame(result.annotation);
+      const actual = result.fields[example.field] ?? [];
+      showComparison(actual);
+      const normalized = array => array.map(s => String(s).toLowerCase().trim().replace(/\s+/g, ' ')).filter(Boolean).sort();
+      const matches = JSON.stringify(normalized(actual)) === JSON.stringify(normalized(example.truth));
+      setOutcome(matches);
+      explanation.querySelector('p').textContent = matches ? 'Giá trị khớp nhãn chuẩn.'
+        : !actual.length ? 'Model bỏ sót trường này.' : 'Giá trị dự đoán khác nhãn chuẩn.';
+      fields(liveFields, result.fields, 'Chưa tìm thấy thông tin.', true);
+      allResults.hidden = false;
+      if (result.annotation?.heatmap) caption.textContent = heatmapDescription(result.annotation.heatmap);
+      status.textContent = result.annotation?.heatmap?.cached ? 'Heatmap đã tính' : 'Xong · ' + result.seconds + ' giây';
+    } catch (error) { status.textContent = error.message; }
+    finally { setBusy(false); }
+  };
+  rerun.addEventListener('click', () => runCase(false));
+  actions.append(rerun);
+  if (catalog.vision_models.includes(model.value)) {
+    const explain = element('button', 'Xem heatmap');
+    explain.type = 'button';
+    explain.setAttribute('aria-label', 'Xem heatmap mẫu ' + row.id);
+    explain.addEventListener('click', () => runCase(true));
+    actions.append(explain);
+  }
+  const footer = element('div', null, 'case-footer');
+  footer.append(actions, status);
+  card.append(footer, allResults);
+  return card;
+}
+
+function resetUploadResult() {
+  prediction.replaceChildren();
+  byId('prediction-panel').hidden = true;
+  byId('upload-output').classList.add('awaiting-run');
+  const file = upload.files[0];
+  const validFile = file && file.size > 0 && file.size <= maxBytes;
+  const ready = catalog?.ready[dataset.value]?.[model.value];
+  run.disabled = busy || !validFile || !ready;
+  uploadStatus.textContent = !file ? ''
+    : !validFile ? 'Chọn ảnh có dung lượng lớn hơn 0 và tối đa 12 MB.'
+    : !ready ? 'Chưa có mô hình cho lựa chọn này.' : '';
+}
+
+function updateSelection() {
+  const data = dataset.value, name = model.value;
+  const vision = catalog.vision_models.includes(name);
+  document.querySelector('.selectors').classList.toggle('has-heatmap', vision);
+  byId('heatmap-options').hidden = !vision;
+  byId('upload-heatmap-option').hidden = !vision;
+  byId('heatmap-scope-control').hidden = name === 'donut';
+  byId('heatmap-options').open = false;
+  byId('heatmap-check').disabled = !vision;
+  if (!vision) byId('heatmap-check').checked = false;
+  byId('explain-field').disabled = !vision;
+  byId('test-cases').replaceChildren(
+    caseCard(catalog.correct_examples[data]?.[name], true),
+    caseCard(catalog.error_examples[data]?.[name], false),
+  );
+  byId('test-status').textContent = '';
+  uploadAnnotation = null;
+  updateUploadAnnotation();
+  resetUploadResult();
+}
+
+function updateDatasetLabels() {
+  const data = dataset.value;
+  const labels = catalog.dataset_fields?.[data] ?? [];
+  const field = byId('explain-field');
+  field.replaceChildren(new Option('Tự chọn', ''));
+  for (const key of labels) field.add(new Option(fieldNames[key] ?? key, key));
+  const panel = byId('dataset-labels');
+  const content = byId('dataset-label-content');
+  panel.hidden = false;
+  panel.open = false;
+  byId('dataset-label-summary').textContent = labels.length ? 'Nhãn · ' + labels.length : 'Nhãn';
+  content.replaceChildren(element('h3', 'Trường trích xuất · ' + titles[data]));
+  if (!labels.length) {
+    content.append(element('p', 'Chưa có thông tin nhãn. Hãy chạy lại phiên demo mới.'));
+    return;
+  }
+  const groups = new Map();
+  for (const field of labels) {
+    const group = data === 'cord_v2' ? fieldGroups[field.split('.')[0]] : '';
+    if (!groups.has(group)) groups.set(group, element('ul'));
+    const item = element('li');
+    if (fieldNames[field]) item.append(fieldNames[field] + ' · ');
+    item.append(element('code', field));
+    groups.get(group).append(item);
+  }
+  for (const [group, list] of groups) {
+    if (group) content.append(element('h4', group));
+    content.append(list);
+  }
+}
+
+function updatePreview() {
+  if (previewUrl) URL.revokeObjectURL(previewUrl);
+  const file = upload.files[0];
+  previewUrl = file && file.size > 0 && file.size <= maxBytes ? URL.createObjectURL(file) : undefined;
+  const image = byId('upload-preview');
+  byId('upload-output').hidden = !previewUrl;
+  if (previewUrl) image.src = previewUrl;
+  else image.removeAttribute('src');
+  byId('upload-name').textContent = file?.name ?? '';
+  uploadAnnotation = null;
+  updateUploadAnnotation();
+  resetUploadResult();
+}
+
+function showScores() {
+  const table = element('table');
+  const rows = [['Mô hình', ...catalog.datasets.map(d => titles[d])],
+    ...Object.entries(catalog.models).map(([key, name]) => [name, ...catalog.scores[key].map(n => n.toFixed(4))])];
+  rows.forEach((cells, index) => {
+    const row = table.insertRow();
+    for (const text of cells) row.append(element(index ? 'td' : 'th', text));
+  });
+  byId('scores').replaceChildren(table);
+  byId('scores-note').textContent = 'Kết quả Kaggle của Thịnh · Cập nhật 21/11/2026';
+  const links = byId('sources');
+  for (const [key, name] of Object.entries(catalog.models)) {
+    const link = element('a', name);
+    link.href = catalog.sources.models[key].source;
+    link.target = '_blank'; link.rel = 'noopener noreferrer';
+    links.append(link, ' ');
+  }
+}
+
+async function init() {
+  try {
+    const response = await fetch('/api/catalog');
+    if (!response.ok) throw new Error('Không tải được dữ liệu demo.');
+    catalog = await response.json();
+    if (catalog.api_version !== 7) {
+      const status = byId('test-status');
+      status.textContent = 'Tab này đang mở phiên demo cũ. ';
+      if (location.port !== '8766') {
+        const link = element('a', 'Mở demo mới');
+        const url = new URL(location.href);
+        url.port = '8766';
+        url.pathname = '/';
+        url.search = url.hash = '';
+        link.href = url;
+        status.append(link, ' hoặc chạy lại run.bat.');
+      } else {
+        status.append('Đóng phiên cũ rồi chạy lại run.bat.');
+      }
+      return;
+    }
+    for (const [key, name] of Object.entries(catalog.models)) model.add(new Option(name, key));
+    for (const key of catalog.datasets) dataset.add(new Option(titles[key], key));
+    model.value = 'layoutlmv3';
+    model.disabled = dataset.disabled = false;
+    updateDatasetLabels();
+    updateSelection();
+    showScores();
+  } catch (error) {
+    byId('test-status').textContent = error.message;
+  }
+}
+
+model.addEventListener('change', updateSelection);
+dataset.addEventListener('change', () => {
+  updateDatasetLabels();
+  updateSelection();
+});
+upload.addEventListener('change', updatePreview);
+function setBusy(value) {
+  busy = value;
+  for (const control of document.querySelectorAll('button, select, input')) control.disabled = value;
+  if (!value) {
+    const vision = catalog.vision_models.includes(model.value);
+    byId('heatmap-check').disabled = byId('explain-field').disabled = !vision;
+    const f = upload.files[0];
+    run.disabled = !f || f.size === 0 || f.size > maxBytes || !catalog.ready[dataset.value]?.[model.value];
+  }
+}
+
+function updateUploadAnnotation() {
+  const image = byId('upload-preview');
+  const frame = byId('upload-preview-button');
+  frame.replaceChildren(annotatedImage(image, uploadAnnotation), element('span', 'Phóng to', 'zoom-hint'));
+  byId('upload-heatmap-note').textContent = uploadAnnotation?.heatmap ? heatmapDescription(uploadAnnotation.heatmap) : '';
+}
+
+byId('upload-preview-button').addEventListener('click', () => openLargeImage(byId('upload-preview'), uploadAnnotation));
+byId('upload-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (run.disabled) return;
+  const file = upload.files[0];
+  const query = new URLSearchParams({dataset: dataset.value, model: model.value,
+    heatmap: byId('heatmap-check').checked ? '1' : '0', field: byId('explain-field').value,
+    scope: byId('heatmap-scope').value});
+  setBusy(true);
+  uploadAnnotation = null;
+  updateUploadAnnotation();
+  uploadStatus.textContent = byId('heatmap-check').checked ? 'Đang che từng vùng để tạo heatmap…' : 'Đang chạy…';
+  byId('prediction-panel').hidden = false;
+  byId('upload-output').classList.remove('awaiting-run');
+  fields(prediction, null, 'Đang xử lý…');
+  try {
+    const response = await fetch('/api/predict-image?' + query, {
+      method: 'POST',
+      headers: {'Content-Type': file.type || 'application/octet-stream'},
+      body: file,
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+    fields(prediction, result.fields, 'Chưa tìm thấy thông tin.', true);
+    uploadAnnotation = result.annotation;
+    updateUploadAnnotation();
+    uploadStatus.textContent = result.annotation?.heatmap?.cached ? 'Heatmap đã tính' : 'Xong · ' + result.seconds + ' giây';
+  } catch (error) {
+    prediction.replaceChildren();
+    byId('prediction-panel').hidden = true;
+    byId('upload-output').classList.add('awaiting-run');
+    uploadStatus.textContent = error.message;
+  } finally {
+    setBusy(false);
+  }
+});
+const filterMenus = [...document.querySelectorAll('.filter-options')];
+for (const menu of filterMenus) {
+  menu.addEventListener('toggle', () => {
+    if (menu.open) for (const other of filterMenus) if (other !== menu) other.open = false;
+  });
+}
+document.addEventListener('pointerdown', event => {
+  for (const menu of filterMenus) if (!menu.contains(event.target)) menu.open = false;
+});
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape' || imageDialog.open) return;
+  for (const menu of filterMenus) {
+    if (!menu.open) continue;
+    if (menu.contains(document.activeElement)) menu.querySelector('summary').focus();
+    menu.open = false;
+  }
+});
+init();
+</script></body></html>

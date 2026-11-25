@@ -1,71 +1,55 @@
 # Reconia
 
-Đánh giá và so sánh các phương pháp học sâu cho bài toán trích xuất thông tin từ hóa đơn.
+So sánh 6 mô hình trích xuất thông tin hóa đơn trên SROIE, CORD-v2 và WildReceipt. Nhánh [dev](https://github.com/tamir39/reconia/tree/dev) chứa mã huấn luyện; `main` bổ sung demo local.
 
-Source huấn luyện của 6 mô hình lấy từ nhánh [dev](https://github.com/tamir39/reconia/tree/dev) tại commit `3aed933`. Nhánh `main` bổ sung demo và cách chạy local. Các file trong `models/`, `prepare/`, `notebooks/`, `utils/`, hai tool gốc và `requirements.txt` được giữ như `dev`.
+## Chạy demo
 
-## Chạy demo trên Windows
+Cần Python 3.12 hoặc `uv` trên Windows.
 
-Cần Python 3.12 hoặc `uv`.
+1. Chạy `setup.bat` để cài môi trường.
+2. Chạy `run.bat`, mở <http://127.0.0.1:8766>.
+3. Chọn mô hình và dataset, xem mẫu test hoặc tải ảnh lên rồi bấm **Chạy**.
 
-1. Chạy `setup.bat` lần đầu để cài môi trường demo CPU.
-2. Chạy `run.bat`, mở app tại <http://127.0.0.1:8766>.
-3. Chọn model và dataset. Hai thẻ minh họa một trường đúng và một trường sai trên tập test. Bấm **Chạy** để suy luận lại hoặc tải ảnh của bạn lên.
+Demo chạy **RoBERTa, BROS, PICK, LayoutLMv3 và Donut**. Ví dụ đã lưu xem được ngay; suy luận cần checkpoint. Heatmap cho một trường dự đoán có trên PICK, LayoutLMv3 và Donut.
 
-Demo hỗ trợ **RoBERTa, BROS, PICK, LayoutLMv3 và Donut** trên SROIE, CORD-v2, WildReceipt. Qwen có source huấn luyện nhưng chưa được tích hợp suy luận trong demo. Có thể xem các ví dụ đã lưu mà chưa có checkpoint; chạy suy luận thật cần checkpoint tương ứng.
+## Checkpoint
 
-Trọng số đặt tại:
-
-```text
-checkpoints/<dataset>/<model>/best_weights.pt
-```
-
-Nếu đã lưu ở nơi khác, đặt `RECONIA_CHECKPOINT_DIR` trỏ tới thư mục `checkpoints` trước khi mở app. Để tải checkpoint đã huấn luyện, cần tài khoản Kaggle có quyền đọc output của nhóm:
+Có **18 checkpoint của 6 mô hình**, tải từ output Kaggle bằng tài khoản có quyền truy cập:
 
 ```powershell
 .venv/Scripts/python.exe -m pip install -r demo/requirements-assets.txt
 .venv/Scripts/python.exe -m demo.fetch_assets --model layoutlmv3
+.venv/Scripts/python.exe -m demo.fetch_assets --model qwen_vl
 ```
 
-Bỏ `--model` để tải đủ 15 checkpoint. Lệnh chỉ tải output, không chạy huấn luyện. Demo dùng SHA-256 để nhận diện đúng file trọng số của các ví dụ đã lưu. Checkpoint, raw data và credential không nằm trong Git.
+Bỏ `--model` để tải tất cả; thêm `--dataset sroie` để chọn một bộ hoặc `--list` để xem danh sách. File được đặt tại `checkpoints/<dataset>/<model>/best_weights.pt`. Có thể đổi thư mục bằng `RECONIA_CHECKPOINT_DIR`. Lệnh chỉ tải trọng số đã huấn luyện.
 
-Mẫu test dùng OCR chú thích. Ảnh ngoài dùng RapidOCR cho bốn mô hình nhận chữ/hộp; Donut đọc ảnh trực tiếp. Model và dataset đang chọn quyết định checkpoint và bộ trường đầu ra. Ảnh hỗ trợ JPG, PNG, WebP tối đa 12 MB.
+**Qwen:** ba checkpoint là adapter LoRA, lấy từ SROIE **v1**, CORD-v2 **v3**, WildReceipt **v5**. Chúng cần mô hình nền `Qwen/Qwen2.5-VL-3B-Instruct`, processor và cấu hình LoRA tương ứng; hiện chưa có luồng suy luận Qwen trong giao diện. Để tải mô hình nền trong môi trường huấn luyện:
 
-Heatmap dùng **che vùng (Occlusion)** cho một trường dự đoán, có trên PICK, LayoutLMv3 và Donut. Vùng đỏ là vùng mà khi che đi làm điểm của đáp án đang xem giảm; nó không đánh dấu đáp án đúng. Với PICK/LayoutLMv3 có thể chọn che riêng ảnh hoặc ảnh cùng chữ OCR.
+```powershell
+python -m tools.download_weights --model qwen_vl
+```
+
+Checkpoint và mô hình nền lưu ngoài Git. Nguồn và phiên bản nằm trong `demo/data/checkpoints.json`.
 
 ## Huấn luyện
 
-`requirements.txt` và các notebook là môi trường/quy trình huấn luyện từ `dev`, tách với môi trường demo trong `demo/requirements.txt`. Notebook có các lệnh thực nghiệm; chỉ thực thi khi muốn chuẩn bị dữ liệu hoặc train.
-
-Dữ liệu gốc: [vhngthnh/reconia-data](https://www.kaggle.com/datasets/vhngthnh/reconia-data). Source tìm dataset tại các đường dẫn trong `utils/common.py`, gồm mount Kaggle và `<thư mục chạy>/<dataset>`.
+Dùng môi trường riêng theo `requirements.txt` và các notebook trong `notebooks/`. Dữ liệu gốc: [vhngthnh/reconia-data](https://www.kaggle.com/datasets/vhngthnh/reconia-data).
 
 ```bash
 pip install -r requirements.txt
 python -m prepare.prepare_sroie
-python -m prepare.prepare_cord_v2
-python -m prepare.prepare_wildreceipt
 python -m tools.download_weights --model roberta
 python -m models.roberta.train --dataset sroie
 ```
 
-JSONL tại `.cache/<dataset>/`; pretrained weights tại `weights/<model>/`; checkpoint tại `checkpoints/<dataset>/<model>/`; metrics, history và log tại `results/<dataset>/<model>/`. `python -m tools.compare` tổng hợp các kết quả có trong `results/`.
+JSONL ở `.cache/<dataset>/`, pretrained weights ở `weights/<model>/`, kết quả ở `results/<dataset>/<model>/`. Mặc định tối đa 25 epoch, patience 5, seed 42; chọn checkpoint theo validation F1 rồi chấm test. Qwen dùng QLoRA và cần môi trường CUDA phù hợp.
 
-| Model | Đầu vào | Batch × tích lũy | Learning rate |
-|---|---|---:|---:|
-| RoBERTa | Chữ OCR | 8 × 1 | 3e-5 |
-| BROS | Chữ và hộp OCR | 8 × 1 | 3e-5 |
-| PICK | Ảnh, chữ và hộp OCR | 4 × 2 | 5e-4 |
-| LayoutLMv3 | Ảnh, chữ và hộp OCR | 4 × 2 | 3e-5 |
-| Donut | Ảnh và task token | 4 × 2 | 3e-5 |
-| Qwen2.5-VL | Ảnh và chỉ dẫn | 2 × 4 | 1e-4 |
+## Kết quả
 
-Mặc định tối đa 25 epoch, patience 5, seed 42, chọn checkpoint theo validation F1 rồi chấm test. `--resume` bật lưu và tiếp tục trạng thái huấn luyện. Qwen cần môi trường CUDA phù hợp để dùng QLoRA 4-bit.
+Test Micro-F1 (%), khớp trường–giá trị sau chuẩn hóa chữ thường/khoảng trắng và giữ giá trị lặp.
 
-## Kết quả đã lưu trên Kaggle
-
-Test **Micro-F1 (%)**, khớp trường–giá trị sau chuẩn hóa chữ thường và khoảng trắng, giữ giá trị lặp.
-
-| Model | SROIE | CORD-v2 | WildReceipt |
+| Mô hình | SROIE | CORD-v2 | WildReceipt |
 |---|---:|---:|---:|
 | RoBERTa | 86.75 | 94.45 | 89.40 |
 | BROS | 87.68 | 95.80 | 94.34 |
@@ -74,22 +58,25 @@ Test **Micro-F1 (%)**, khớp trường–giá trị sau chuẩn hóa chữ thư
 | Donut | 77.76 | 72.40 | 56.93 |
 | Qwen2.5-VL | 78.46 | 81.92 | 74.46 |
 
-Nguồn: [RoBERTa](https://www.kaggle.com/code/vhngthnh/roberta-model), [BROS](https://www.kaggle.com/code/vhngthnh/bros-model), [PICK](https://www.kaggle.com/code/vhngthnh/pick-model), [LayoutLMv3](https://www.kaggle.com/code/vhngthnh/layoutlmv3-model), [Donut](https://www.kaggle.com/code/vhngthnh/donut-model), [Qwen](https://www.kaggle.com/code/vhngthnh/qwen-vl-model). Qwen: SROIE ở version 1, CORD-v2 ở version 3, WildReceipt ở version 5.
+Output: [RoBERTa](https://www.kaggle.com/code/vhngthnh/roberta-model), [BROS](https://www.kaggle.com/code/vhngthnh/bros-model), [PICK](https://www.kaggle.com/code/vhngthnh/pick-model), [LayoutLMv3](https://www.kaggle.com/code/vhngthnh/layoutlmv3-model), [Donut](https://www.kaggle.com/code/vhngthnh/donut-model), [Qwen](https://www.kaggle.com/code/vhngthnh/qwen-vl-model).
 
-Donut và Qwen dùng độ dài nhãn chuẩn để đặt giới hạn sinh khi đánh giá; demo ảnh ngoài dùng giới hạn cố định. CORD-v2 có một cặp train–test và hai cặp train–validation trùng OCR/nhãn. Các điểm trên giữ theo split và protocol của output gốc.
+Donut/Qwen dùng giới hạn sinh phụ thuộc độ dài nhãn chuẩn khi đánh giá. CORD-v2 có một cặp train–test và hai cặp train–validation trùng OCR/nhãn. Điểm số giữ theo quy trình và split của output gốc. Ảnh ngoài demo dùng OCR tự động và giới hạn sinh cố định, nên không đồng nhất với phép chấm test.
 
-## Cấu trúc source
+## Thư mục
 
 ```text
-models/          6 model từ dev
-notebooks/       6 notebook huấn luyện từ dev
-prepare/         Chuyển dữ liệu gốc sang JSONL
-utils/           Hàm chung, metrics, biểu đồ và visualization từ dev
-tools/           Tải pretrained weights và tổng hợp kết quả từ dev
-demo/            App, ảnh/OCR mẫu, kết quả minh họa, config và tokenizer
-requirements.txt Dependency huấn luyện từ dev
-setup.bat        Cài môi trường demo
-run.bat          Mở demo
+models/          Mã 6 mô hình
+notebooks/       Notebook huấn luyện
+prepare/, utils/ Chuẩn bị dữ liệu và xử lý chung
+tools/           Tải mô hình nền, tổng hợp kết quả
+demo/
+  app.py         HTTP server
+  inference.py   Nạp checkpoint và dự đoán
+  heatmap.py     Giải thích bằng che vùng
+  occlusion.py   Tính điểm sau khi che vùng
+  fetch_assets.py Tải checkpoint
+  static/        Giao diện
+  data/          Mẫu test, nhãn và danh sách checkpoint
+  model_assets/  Config và tokenizer
+  sample_images/ Ảnh minh họa
 ```
-
-Nhánh `dev` tiếp tục giữ code phát triển của Thịnh. Báo cáo học thuật, bản nháp, kiểm tra tự động và tài liệu làm việc được quản lý riêng, không nằm trong source này.

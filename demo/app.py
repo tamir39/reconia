@@ -11,14 +11,14 @@ from urllib.parse import parse_qs, urlsplit
 from urllib.request import urlopen
 import webbrowser
 
-from demo.assets import DATASETS, MODELS, NAMES, ROOT, checkpoint, labels, manifest, samples, sample_image
+from demo.assets import DATA, DATASETS, MODELS, NAMES, checkpoint, labels, manifest, samples, sample_image
 from demo.heatmap import VISION_MODELS, predict_with_heatmap
 from demo.inference import predict, read_image_text
 
-PAGE = Path(__file__).with_name("index.html")
+PAGE = Path(__file__).with_name("static") / "index.html"
 MAX_IMAGE_BYTES = 12 * 1024 * 1024
 MAX_IMAGE_PIXELS = 40_000_000
-API_VERSION = 6
+API_VERSION = 7
 INFERENCE_LOCK = threading.Lock()
 
 
@@ -36,11 +36,11 @@ def init_catalog(server):
     server.cases = []
     server.examples = {}
     indices = {}
+    examples_by_dataset = json.loads((DATA / "examples.json").read_text(encoding="utf-8"))
     for dataset in DATASETS:
         server.examples[dataset] = {}
         for name in MODELS:
-            path = Path(__file__).with_name("examples.json")
-            examples = json.loads(path.read_text(encoding="utf-8"))[dataset][name]
+            examples = examples_by_dataset[dataset][name]
             server.examples[dataset][name] = {}
             for kind, example in examples.items():
                 sample = samples(dataset, name)[example["id"]]
@@ -96,7 +96,7 @@ class Handler(BaseHTTPRequestHandler):
                 "api_version": API_VERSION, "datasets": DATASETS, "models": NAMES,
                 "scores": {m: [metadata["models"][m]["datasets"][d]["metrics"]["f1"] for d in DATASETS] for m in MODELS},
                 "sources": metadata, "metric": "Micro-F1",
-                "dataset_fields": {d: sorted({s[2:] for s in labels(d, "layoutlmv3") if s.startswith("B-")}) for d in DATASETS},
+                "dataset_fields": {d: sorted({s[2:] for s in labels(d) if s.startswith("B-")}) for d in DATASETS},
                 "supports_image_upload": True, "vision_models": sorted(VISION_MODELS),
                 "ready": {d: {m: checkpoint(d, m).is_file() for m in MODELS} for d in DATASETS},
                 "error_examples": {d: {m: self.server.examples[d][m]["error"] for m in MODELS} for d in DATASETS},
@@ -209,7 +209,7 @@ def main():
         with urlopen(f"{url}/api/catalog", timeout=3) as response:
             existing = json.load(response)
         if existing.get("api_version") != API_VERSION or existing.get("sources", {}).get("checked_at") != manifest()["checked_at"]:
-            parser.exit(1, "Close the old Reconia demo window, then reopen run.bat.\n")
+            parser.exit(1, "Đóng cửa sổ demo cũ rồi mở lại run.bat.\n")
         webbrowser.open(url)
         return
     with server:
