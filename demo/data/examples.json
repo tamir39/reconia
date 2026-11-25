@@ -288,6 +288,30 @@
         "checkpoint_sha256": "0b4b5216ddc30c3e7f0dbc55bd92580b6d7858a46d86370162db82086762b4d9",
         "verified_with_checkpoint": true
       }
+    },
+    "qwen_vl": {
+      "correct": {
+        "id": "X51005442388",
+        "field": "total",
+        "label": "Tổng tiền",
+        "truth": [
+          "21.60"
+        ],
+        "prediction": [],
+        "pending": true,
+        "explanation": "Bấm Chạy để trích xuất và đối chiếu với nhãn chuẩn."
+      },
+      "error": {
+        "id": "X51006647933",
+        "field": "total",
+        "label": "Tổng tiền",
+        "truth": [
+          "RM83.00"
+        ],
+        "prediction": [],
+        "pending": true,
+        "explanation": "Bấm Chạy để trích xuất và đối chiếu với nhãn chuẩn."
+      }
     }
   },
   "cord_v2": {
@@ -722,6 +746,30 @@
         },
         "checkpoint_sha256": "56959ca3e81320de22ab5e8bc38206fd05b67ddb23e0245994f95623bcd1a6d7",
         "verified_with_checkpoint": true
+      }
+    },
+    "qwen_vl": {
+      "correct": {
+        "id": "44",
+        "field": "total.total_price",
+        "label": "Tổng tiền",
+        "truth": [
+          "30.000"
+        ],
+        "prediction": [],
+        "pending": true,
+        "explanation": "Bấm Chạy để trích xuất và đối chiếu với nhãn chuẩn."
+      },
+      "error": {
+        "id": "18",
+        "field": "total.total_price",
+        "label": "Tổng tiền",
+        "truth": [
+          "156000"
+        ],
+        "prediction": [],
+        "pending": true,
+        "explanation": "Bấm Chạy để trích xuất và đối chiếu với nhãn chuẩn."
       }
     }
   },
@@ -1198,6 +1246,30 @@
         },
         "checkpoint_sha256": "53c31b5d84998b610cc7ac40bc7004dade5fdec6d129ed01164bf43bc19e4b6a",
         "verified_with_checkpoint": true
+      }
+    },
+    "qwen_vl": {
+      "correct": {
+        "id": "2300",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "truth": [
+          "$5.00"
+        ],
+        "prediction": [],
+        "pending": true,
+        "explanation": "Bấm Chạy để trích xuất và đối chiếu với nhãn chuẩn."
+      },
+      "error": {
+        "id": "f08140cf5dda5ad160d72328eacebc172dbb7fc5",
+        "field": "Total_value",
+        "label": "Tổng tiền",
+        "truth": [
+          "42,00"
+        ],
+        "prediction": [],
+        "pending": true,
+        "explanation": "Bấm Chạy để trích xuất và đối chiếu với nhãn chuẩn."
       }
     }
   }

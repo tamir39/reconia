@@ -10,7 +10,7 @@ Cần Python 3.12 hoặc `uv` trên Windows.
 2. Chạy `run.bat`, mở <http://127.0.0.1:8766>.
 3. Chọn mô hình và dataset, xem mẫu test hoặc tải ảnh lên rồi bấm **Chạy**.
 
-Demo chạy **RoBERTa, BROS, PICK, LayoutLMv3 và Donut**. Ví dụ đã lưu xem được ngay; suy luận cần checkpoint. Heatmap cho một trường dự đoán có trên PICK, LayoutLMv3 và Donut.
+Demo hỗ trợ **RoBERTa, BROS, PICK, LayoutLMv3, Donut và Qwen2.5-VL**. Năm mô hình đầu có ví dụ dự đoán đã lưu; ảnh test Qwen hiển thị **Chưa chạy** cho đến khi thực hiện suy luận. Heatmap cho một trường dự đoán có trên PICK, LayoutLMv3 và Donut.
 
 ## Checkpoint
 
@@ -24,11 +24,13 @@ Có **18 checkpoint của 6 mô hình**, tải từ output Kaggle bằng tài kh
 
 Bỏ `--model` để tải tất cả; thêm `--dataset sroie` để chọn một bộ hoặc `--list` để xem danh sách. File được đặt tại `checkpoints/<dataset>/<model>/best_weights.pt`. Có thể đổi thư mục bằng `RECONIA_CHECKPOINT_DIR`. Lệnh chỉ tải trọng số đã huấn luyện.
 
-**Qwen:** ba checkpoint là adapter LoRA, lấy từ SROIE **v1**, CORD-v2 **v3**, WildReceipt **v5**. Chúng cần mô hình nền `Qwen/Qwen2.5-VL-3B-Instruct`, processor và cấu hình LoRA tương ứng; hiện chưa có luồng suy luận Qwen trong giao diện. Để tải mô hình nền trong môi trường huấn luyện:
+**Qwen:** dùng adapter của Thịnh, lấy từ SROIE **v1**, CORD-v2 **v3**, WildReceipt **v5**. Chạy lại `setup.bat` để cài thư viện Qwen, rồi tải adapter và mô hình nền (khoảng 7 GB):
 
 ```powershell
-python -m tools.download_weights --model qwen_vl
+.venv/Scripts/python.exe -m demo.fetch_assets --model qwen_vl --base
 ```
+
+Qwen đọc ảnh trực tiếp cho cả mẫu test và ảnh tải lên. Dataset đang chọn quyết định adapter và các trường trích xuất. Mô hình được nạp 4-bit và dùng lại khi đổi dataset; chạy trên CPU có thể mất nhiều thời gian. Giá trị chuẩn của mẫu test chỉ dùng để đối chiếu, không đưa vào đầu vào mô hình.
 
 Checkpoint và mô hình nền lưu ngoài Git. Nguồn và phiên bản nằm trong `demo/data/checkpoints.json`.
 

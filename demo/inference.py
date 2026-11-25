@@ -63,6 +63,17 @@ def load_model(dataset, name):
 
     if _LOADED is not None and _LOADED[:2] == (dataset, name):
         return _LOADED[2]
+    if name == "qwen_vl" and _LOADED is not None and _LOADED[1] == name:
+        from demo.qwen import load_adapter
+        model, processor, _, device = _LOADED[2]
+        try:
+            load_adapter(model, dataset)
+        except Exception:
+            _LOADED = None
+            raise
+        result = model, processor, dict(enumerate(labels(dataset))), device
+        _LOADED = dataset, name, result
+        return result
     _LOADED = None
     gc.collect()
     if torch.cuda.is_available():
@@ -76,6 +87,11 @@ def load_model(dataset, name):
         raise ValueError("RECONIA_DEVICE must be cpu or cuda")
     device = torch.device(requested if requested == "cpu" or torch.cuda.is_available() else "cpu")
     torch.set_num_threads(min(torch.get_num_threads(), 6))
+    if name == "qwen_vl":
+        from demo.qwen import load
+        result = load(dataset, device)
+        _LOADED = dataset, name, result
+        return result
     if name == "pick":
         data = baseline_module(name)
         chars = data.build_char_vocab()
@@ -137,6 +153,9 @@ def donut_generate(dataset, model, processor, image, device):
 
 def predict(dataset, name, sample, image):
     model, processor, id2label, device = load_model(dataset, name)
+    if name == "qwen_vl":
+        from demo.qwen import predict as qwen_predict
+        return qwen_predict(dataset, model, processor, device, image)
     data = baseline_module(name)
     if name == "pick":
         if not sample["ocr"]:

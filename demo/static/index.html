@@ -89,6 +89,7 @@ details{margin-top:20px}summary{cursor:pointer;font-weight:700}.table{overflow:a
     </div>
   </details>
 </div>
+<p id="model-status" class="status" role="status" hidden></p>
 <section aria-labelledby="test-heading">
   <div class="section-heading"><h2 id="test-heading">Mẫu trong tập test</h2>
   <p id="test-status" class="section-note" role="status">Đang tải…</p></div>
@@ -282,9 +283,13 @@ function fields(target, data, fallback, translate = false) {
 }
 
 function caseCard(example, correct) {
-  const card = element('article', null, correct ? 'panel correct-example' : 'panel error-example');
+  if (!example) return document.createDocumentFragment();
+  const pending = Boolean(example.pending);
+  const card = element('article', null, pending ? 'panel' : correct ? 'panel correct-example' : 'panel error-example');
+  card.dataset.pending = String(pending);
   const heading = element('h3');
   function setOutcome(matches) {
+    card.dataset.pending = 'false';
     card.classList.toggle('correct-example', matches);
     card.classList.toggle('error-example', !matches);
     heading.replaceChildren(document.createTextNode(matches ? 'Trường đúng' : 'Trường sai'));
@@ -292,7 +297,8 @@ function caseCard(example, correct) {
     icon.setAttribute('aria-hidden', 'true');
     heading.prepend(icon);
   }
-  setOutcome(correct);
+  if (pending) heading.textContent = correct ? 'Ảnh test 1' : 'Ảnh test 2';
+  else setOutcome(correct);
   const header = element('div', null, 'case-heading');
   header.append(heading, element('span', fieldNames[example.field] ?? example.label, 'case-field'));
   card.append(header);
@@ -322,19 +328,21 @@ function caseCard(example, correct) {
   }
   figure.append(frame, caption);
   const values = element('div', null, 'case-values');
-  function showComparison(actual) {
-    fields(values, {'Nhãn chuẩn': example.truth, 'Dự đoán': actual?.length ? actual : 'Bỏ sót'});
+  function showComparison(actual, awaiting = false) {
+    fields(values, {'Nhãn chuẩn': example.truth, 'Dự đoán': awaiting ? 'Chưa chạy' : actual?.length ? actual : 'Bỏ sót'});
   }
-  showComparison(example.prediction);
+  showComparison(example.prediction, pending);
   const explanation = element('details', null, 'case-details');
   explanation.append(element('summary', 'Giải thích'), element('p', example.explanation),
-                     element('p', row.id + ' · ' + row.boxes + ' vùng chữ', 'case-source'));
+                     element('p', row.model === 'qwen_vl' ? row.id : row.id + ' · ' + row.boxes + ' vùng chữ', 'case-source'));
   card.append(figure, values, explanation);
-  const status = element('p', 'Đã lưu', 'status');
+  const status = element('p', pending ? 'Chưa chạy' : 'Đã lưu', 'status');
   status.setAttribute('role', 'status');
   const actions = element('div', null, 'case-actions');
   const rerun = element('button', 'Chạy');
   rerun.type = 'button';
+  rerun.dataset.requiresModel = 'true';
+  rerun.disabled = !catalog.ready[dataset.value]?.[model.value];
   rerun.setAttribute('aria-label', 'Chạy mẫu ' + row.id);
   const liveFields = element('div');
   const allResults = element('details', null, 'case-details');
@@ -342,13 +350,17 @@ function caseCard(example, correct) {
   allResults.append(element('summary', 'Tất cả kết quả'), liveFields);
   const runCase = async heatmap => {
     if (busy) return;
+    if (!catalog.ready[dataset.value]?.[model.value]) {
+      status.textContent = readinessMessage();
+      return;
+    }
     setBusy(true);
     setFrame(null);
     caption.textContent = '';
     liveFields.replaceChildren();
     allResults.hidden = true;
     allResults.open = false;
-    status.textContent = heatmap ? 'Đang che từng vùng để tạo heatmap…' : 'Đang chạy…';
+    status.textContent = heatmap ? 'Đang che từng vùng để tạo heatmap…' : runningMessage();
     try {
       const response = await fetch('/api/predict', {
         method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -379,6 +391,8 @@ function caseCard(example, correct) {
   if (catalog.vision_models.includes(model.value)) {
     const explain = element('button', 'Xem heatmap');
     explain.type = 'button';
+    explain.dataset.requiresModel = 'true';
+    explain.disabled = !catalog.ready[dataset.value]?.[model.value];
     explain.setAttribute('aria-label', 'Xem heatmap mẫu ' + row.id);
     explain.addEventListener('click', () => runCase(true));
     actions.append(explain);
@@ -387,6 +401,15 @@ function caseCard(example, correct) {
   footer.append(actions, status);
   card.append(footer, allResults);
   return card;
+}
+
+function readinessMessage() {
+  return catalog?.readiness_messages?.[dataset.value]?.[model.value]
+    || 'Chưa có checkpoint cho lựa chọn này. Tải theo hướng dẫn trong README.';
+}
+
+function runningMessage() {
+  return model.value === 'qwen_vl' ? 'Đang chạy Qwen… Lần đầu nạp mô hình có thể mất vài phút.' : 'Đang chạy…';
 }
 
 function resetUploadResult() {
@@ -399,7 +422,7 @@ function resetUploadResult() {
   run.disabled = busy || !validFile || !ready;
   uploadStatus.textContent = !file ? ''
     : !validFile ? 'Chọn ảnh có dung lượng lớn hơn 0 và tối đa 12 MB.'
-    : !ready ? 'Chưa có mô hình cho lựa chọn này.' : '';
+    : !ready ? readinessMessage() : '';
 }
 
 function updateSelection() {
@@ -413,11 +436,14 @@ function updateSelection() {
   byId('heatmap-check').disabled = !vision;
   if (!vision) byId('heatmap-check').checked = false;
   byId('explain-field').disabled = !vision;
-  byId('test-cases').replaceChildren(
-    caseCard(catalog.correct_examples[data]?.[name], true),
-    caseCard(catalog.error_examples[data]?.[name], false),
-  );
-  byId('test-status').textContent = '';
+  const correct = catalog.correct_examples[data]?.[name];
+  const error = catalog.error_examples[data]?.[name];
+  byId('test-cases').replaceChildren(caseCard(correct, true), caseCard(error, false));
+  byId('test-status').textContent = !correct && !error
+    ? 'Chưa có mẫu minh họa cho lựa chọn này. Bạn có thể thử ảnh của mình bên dưới.' : '';
+  const modelStatus = byId('model-status');
+  modelStatus.hidden = catalog.ready[data]?.[name] || name !== 'qwen_vl';
+  modelStatus.textContent = modelStatus.hidden ? '' : readinessMessage();
   uploadAnnotation = null;
   updateUploadAnnotation();
   resetUploadResult();
@@ -471,15 +497,16 @@ function updatePreview() {
 function showScores() {
   const table = element('table');
   const rows = [['Mô hình', ...catalog.datasets.map(d => titles[d])],
-    ...Object.entries(catalog.models).map(([key, name]) => [name, ...catalog.scores[key].map(n => n.toFixed(4))])];
+    ...Object.entries(catalog.models).map(([key, name]) => [name, ...catalog.scores[key].map(n => n == null ? '—' : n.toFixed(4))])];
   rows.forEach((cells, index) => {
     const row = table.insertRow();
     for (const text of cells) row.append(element(index ? 'td' : 'th', text));
   });
   byId('scores').replaceChildren(table);
-  byId('scores-note').textContent = 'Kết quả Kaggle của Thịnh · Cập nhật 21/11/2026';
+  byId('scores-note').textContent = 'Kết quả kiểm thử trên Kaggle · Micro-F1';
   const links = byId('sources');
   for (const [key, name] of Object.entries(catalog.models)) {
+    if (!catalog.sources.models[key]?.source) continue;
     const link = element('a', name);
     link.href = catalog.sources.models[key].source;
     link.target = '_blank'; link.rel = 'noopener noreferrer';
@@ -492,7 +519,7 @@ async function init() {
     const response = await fetch('/api/catalog');
     if (!response.ok) throw new Error('Không tải được dữ liệu demo.');
     catalog = await response.json();
-    if (catalog.api_version !== 7) {
+    if (catalog.api_version !== 8) {
       const status = byId('test-status');
       status.textContent = 'Tab này đang mở phiên demo cũ. ';
       if (location.port !== '8766') {
@@ -534,6 +561,9 @@ function setBusy(value) {
     byId('heatmap-check').disabled = byId('explain-field').disabled = !vision;
     const f = upload.files[0];
     run.disabled = !f || f.size === 0 || f.size > maxBytes || !catalog.ready[dataset.value]?.[model.value];
+    for (const button of document.querySelectorAll('[data-requires-model]')) {
+      button.disabled = !catalog.ready[dataset.value]?.[model.value];
+    }
   }
 }
 
@@ -555,7 +585,7 @@ byId('upload-form').addEventListener('submit', async event => {
   setBusy(true);
   uploadAnnotation = null;
   updateUploadAnnotation();
-  uploadStatus.textContent = byId('heatmap-check').checked ? 'Đang che từng vùng để tạo heatmap…' : 'Đang chạy…';
+  uploadStatus.textContent = byId('heatmap-check').checked ? 'Đang che từng vùng để tạo heatmap…' : runningMessage();
   byId('prediction-panel').hidden = false;
   byId('upload-output').classList.remove('awaiting-run');
   fields(prediction, null, 'Đang xử lý…');
