@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-11-26",
+  "checked_at": "2026-11-21T06:16:15.761589+00:00",
   "models": {
     "roberta": {
       "source": "https://www.kaggle.com/code/vhngthnh/roberta-model",
@@ -253,55 +253,6 @@
           "split_sha256": "f87a92ff11b8163db1818887978d8be4e76b8b08e43362fda7ab05e403d874b2",
           "checkpoint_sha256": "53c31b5d84998b610cc7ac40bc7004dade5fdec6d129ed01164bf43bc19e4b6a",
           "checkpoint_bytes": 809218118
-        }
-      }
-    },
-    "qwen_vl": {
-      "source": "https://www.kaggle.com/code/vhngthnh/qwen-vl-model",
-      "version": 5,
-      "metric": "Micro-F1",
-      "datasets": {
-        "sroie": {
-          "metrics": {
-            "model": "qwen_vl",
-            "dataset": "sroie",
-            "loss": 0.07945500237562148,
-            "precision": 0.7859725234996384,
-            "recall": 0.7831412103746398,
-            "f1": 0.7845543125225549
-          },
-          "output_version": 1,
-          "test_count": 347,
-          "checkpoint_sha256": "bc5dc2ac03e67fd1959ca2a20797dd5294eb4df47d024bdda291246a776a1e71",
-          "checkpoint_bytes": 119916165
-        },
-        "cord_v2": {
-          "metrics": {
-            "model": "qwen_vl",
-            "dataset": "cord_v2",
-            "loss": 0.07400510305538774,
-            "precision": 0.8325396825396826,
-            "recall": 0.8063028439661799,
-            "f1": 0.8192112456071848
-          },
-          "output_version": 3,
-          "test_count": 100,
-          "checkpoint_sha256": "b0234d9035d06425fbe6f8bf29ef917460dc32d91c56b93ab8c4ba729c7f284c",
-          "checkpoint_bytes": 119916165
-        },
-        "wildreceipt": {
-          "metrics": {
-            "model": "qwen_vl",
-            "dataset": "wildreceipt",
-            "loss": 0.20549988011056083,
-            "precision": 0.7632247143461701,
-            "recall": 0.7269246271664651,
-            "f1": 0.7446325350949627
-          },
-          "output_version": 5,
-          "test_count": 472,
-          "checkpoint_sha256": "9eab3465325ce13d7e0e0296fa47c0ce84b244dd5f44700e90d7195df56eb905",
-          "checkpoint_bytes": 119916165
         }
       }
     }

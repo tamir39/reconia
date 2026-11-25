@@ -11020,50 +11020,6 @@
         "demo_image": "sample_images/sroie/X51005301666.jpg",
         "image_sha256": "177122548f177241b25024338de0f877b164614f4d5b26fecf649a488e95f9fc"
       }
-    },
-    "qwen_vl": {
-      "X51005442388": {
-        "id": "X51005442388",
-        "image_path": "test/img/X51005442388.jpg",
-        "ocr": [],
-        "gt": {
-          "company": [
-            "CONTENTO"
-          ],
-          "date": [
-            "20/03/18"
-          ],
-          "address": [
-            "15, JALAN PERMAS 10/7,PERMAS 81750 MASAI JOHOR"
-          ],
-          "total": [
-            "21.60"
-          ]
-        },
-        "demo_image": "sample_images/sroie/X51005442388.jpg",
-        "image_sha256": "7a5c1bb2c33885d7aa9a4b3bea6481270705602459e65f12e63d432fa9ff40be"
-      },
-      "X51006647933": {
-        "id": "X51006647933",
-        "image_path": "test/img/X51006647933.jpg",
-        "ocr": [],
-        "gt": {
-          "company": [
-            "RESTORAN HOETIM"
-          ],
-          "date": [
-            "28/05/2018"
-          ],
-          "address": [
-            "1-G,JALAN OS 1/3,ONE SELAYANG OFF JALAN RAWANG 68100 B.CAVES"
-          ],
-          "total": [
-            "RM83.00"
-          ]
-        },
-        "demo_image": "sample_images/sroie/X51006647933.jpg",
-        "image_sha256": "a051e491278779c0b15d0ed85ed5e181b4da4bac593499a4affbfe6178208538"
-      }
     }
   },
   "cord_v2": {
@@ -13146,65 +13102,6 @@
         },
         "demo_image": "sample_images/cord_v2/70.png",
         "image_sha256": "ca0698c4e0e39499e2b5f2ac1ecac60498fc7554a03f5f298d2eeace5af34fe2"
-      }
-    },
-    "qwen_vl": {
-      "44": {
-        "id": "44",
-        "image_path": "images/test/44.png",
-        "ocr": [],
-        "gt": {
-          "menu.nm": [
-            "Combo 1"
-          ],
-          "menu.cnt": [
-            "1"
-          ],
-          "menu.price": [
-            "30.000"
-          ],
-          "total.total_price": [
-            "30.000"
-          ],
-          "total.cashprice": [
-            "50.000"
-          ],
-          "total.changeprice": [
-            "20.000"
-          ]
-        },
-        "demo_image": "sample_images/cord_v2/44.png",
-        "image_sha256": "a5063e010cce24d1b1b91592706533c9741f44391c016b7f4c06f8552328f437"
-      },
-      "18": {
-        "id": "18",
-        "image_path": "images/test/18.png",
-        "ocr": [],
-        "gt": {
-          "menu.nm": [
-            "Propolis Cair"
-          ],
-          "menu.unitprice": [
-            "156000"
-          ],
-          "menu.cnt": [
-            "1"
-          ],
-          "menu.price": [
-            "156000"
-          ],
-          "total.total_price": [
-            "156000"
-          ],
-          "total.cashprice": [
-            "156000"
-          ],
-          "total.changeprice": [
-            "Rp. 0"
-          ]
-        },
-        "demo_image": "sample_images/cord_v2/18.png",
-        "image_sha256": "88c35bbd2e2a634e89f2c5bfd30f7b530b1082c1f4e6e7cb3cb913f0b46c3868"
       }
     }
   },
@@ -16969,69 +16866,6 @@
         },
         "demo_image": "sample_images/wildreceipt/2300.jpeg",
         "image_sha256": "38f65d5919297799e044dba3210c14c5585e1bd89c70fe2e6993c1e0597a8653"
-      }
-    },
-    "qwen_vl": {
-      "2300": {
-        "id": "2300",
-        "image_path": "image_files/Image_14/11/2300.jpeg",
-        "ocr": [],
-        "gt": {
-          "Store_name_value": [
-            "PLAZA:Benicia-MartinezBridge"
-          ],
-          "Date_value": [
-            "ThuAug09,2012"
-          ],
-          "Time_value": [
-            "10:09:10"
-          ],
-          "Total_value": [
-            "$5.00"
-          ]
-        },
-        "demo_image": "sample_images/wildreceipt/2300.jpeg",
-        "image_sha256": "38f65d5919297799e044dba3210c14c5585e1bd89c70fe2e6993c1e0597a8653"
-      },
-      "f08140cf5dda5ad160d72328eacebc172dbb7fc5": {
-        "id": "f08140cf5dda5ad160d72328eacebc172dbb7fc5",
-        "image_path": "image_files/Image_17/11/f08140cf5dda5ad160d72328eacebc172dbb7fc5.jpeg",
-        "ocr": [],
-        "gt": {
-          "Store_name_value": [
-            "MIOPRONTO"
-          ],
-          "Store_addr_value": [
-            "RuemarcheauxPoulets57",
-            "1000Bruxelles"
-          ],
-          "Tel_value": [
-            "02/511.06.66"
-          ],
-          "Prod_quantity_value": [
-            "2",
-            "1",
-            "2",
-            "1"
-          ],
-          "Prod_item_value": [
-            "KRIK",
-            "LEFFEBLONDE",
-            "QUATRESTAGIONI",
-            "CAPRICCIOSA"
-          ],
-          "Prod_price_value": [
-            "5,00",
-            "3,50",
-            "23,00",
-            "10,50"
-          ],
-          "Total_value": [
-            "42,00"
-          ]
-        },
-        "demo_image": "sample_images/wildreceipt/f08140cf5dda5ad160d72328eacebc172dbb7fc5.jpeg",
-        "image_sha256": "494f41af52a5941480bba90bba5057a8ee84e4a60298d92c9bf45824fdc4be37"
       }
     }
   }

@@ -6,9 +6,9 @@ from functools import lru_cache
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen_vl")
+MODELS = ("roberta", "bros", "pick", "layoutlmv3", "donut")
 DATASETS = ("sroie", "cord_v2", "wildreceipt")
-NAMES = dict(zip(MODELS, ("RoBERTa", "BROS", "PICK", "LayoutLMv3", "Donut", "Qwen2.5-VL")))
+NAMES = dict(zip(MODELS, ("RoBERTa", "BROS", "PICK", "LayoutLMv3", "Donut")))
 DATA = Path(__file__).with_name("data")
 MANIFEST = DATA / "artifacts.json"
 
@@ -36,7 +36,7 @@ def file_hash(path):
         return hashlib.file_digest(source, "sha256").hexdigest()
 
 
-@lru_cache(maxsize=18)
+@lru_cache(maxsize=15)
 def assert_checkpoint(dataset, model):
     info = manifest()["models"][model]["datasets"][dataset]
     path = checkpoint(dataset, model)
@@ -47,10 +47,10 @@ def assert_checkpoint(dataset, model):
     return path
 
 
-@lru_cache(maxsize=18)
+@lru_cache(maxsize=15)
 def samples(dataset, model="layoutlmv3"):
     path = DATA / "samples.json"
-    return json.loads(path.read_text(encoding="utf-8")).get(dataset, {}).get(model, {})
+    return json.loads(path.read_text(encoding="utf-8"))[dataset][model]
 
 
 def sample_image(dataset, row):

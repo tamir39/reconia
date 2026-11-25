@@ -18,7 +18,7 @@ from demo.inference import predict, read_image_text
 PAGE = Path(__file__).with_name("static") / "index.html"
 MAX_IMAGE_BYTES = 12 * 1024 * 1024
 MAX_IMAGE_PIXELS = 40_000_000
-API_VERSION = 8
+API_VERSION = 7
 INFERENCE_LOCK = threading.Lock()
 
 
@@ -40,49 +40,19 @@ def init_catalog(server):
     for dataset in DATASETS:
         server.examples[dataset] = {}
         for name in MODELS:
-            examples = examples_by_dataset.get(dataset, {}).get(name, {})
+            examples = examples_by_dataset[dataset][name]
             server.examples[dataset][name] = {}
             for kind, example in examples.items():
-                sample = samples(dataset, name).get(example["id"])
-                if sample is None and name == "qwen_vl":
-                    continue
-                try:
-                    image = sample_image(dataset, sample)
-                except ValueError:
-                    if name == "qwen_vl":
-                        continue
-                    raise
+                sample = samples(dataset, name)[example["id"]]
                 key = dataset, name, example["id"]
                 if key not in indices:
                     indices[key] = len(server.cases)
                     server.cases.append({
                         "dataset": dataset, "model": name, "id": example["id"],
                         "gt": sample["gt"], "boxes": len(sample["ocr"]),
-                        "image": image,
+                        "image": sample_image(dataset, sample),
                     })
                 server.examples[dataset][name][kind] = dict(example, case_index=indices[key])
-
-
-def model_readiness():
-    ready = {d: {m: checkpoint(d, m).is_file() for m in MODELS} for d in DATASETS}
-    messages = {d: {} for d in DATASETS}
-    try:
-        from demo.qwen import runtime_status
-        qwen_ready, message = runtime_status()
-    except ImportError:
-        qwen_ready, message = False, "Cài thêm môi trường Qwen theo hướng dẫn trong README."
-    for dataset in DATASETS:
-        adapter = checkpoint(dataset, "qwen_vl")
-        if not adapter.is_file():
-            ready[dataset]["qwen_vl"] = False
-            messages[dataset]["qwen_vl"] = "Tải checkpoint Qwen cho bộ dữ liệu đang chọn theo hướng dẫn trong README."
-        elif not adapter.with_name("adapter_config.json").is_file():
-            ready[dataset]["qwen_vl"] = False
-            messages[dataset]["qwen_vl"] = "Tải lại tài nguyên Qwen để bổ sung cấu hình checkpoint."
-        else:
-            ready[dataset]["qwen_vl"] = qwen_ready
-            messages[dataset]["qwen_vl"] = message if not qwen_ready else ""
-    return ready, messages
 
 
 def run_prediction(dataset, name, sample, image, heatmap, field=None, scope="joint"):
@@ -122,16 +92,15 @@ class Handler(BaseHTTPRequestHandler):
             self.send_bytes(PAGE.read_bytes(), "text/html; charset=utf-8")
         elif path == "/api/catalog":
             metadata = manifest()
-            ready, messages = model_readiness()
             self.send_json({
                 "api_version": API_VERSION, "datasets": DATASETS, "models": NAMES,
-                "scores": {m: [metadata["models"].get(m, {}).get("datasets", {}).get(d, {}).get("metrics", {}).get("f1") for d in DATASETS] for m in MODELS},
+                "scores": {m: [metadata["models"][m]["datasets"][d]["metrics"]["f1"] for d in DATASETS] for m in MODELS},
                 "sources": metadata, "metric": "Micro-F1",
                 "dataset_fields": {d: sorted({s[2:] for s in labels(d) if s.startswith("B-")}) for d in DATASETS},
                 "supports_image_upload": True, "vision_models": sorted(VISION_MODELS),
-                "ready": ready, "readiness_messages": messages,
-                "error_examples": {d: {m: self.server.examples[d][m].get("error") for m in MODELS} for d in DATASETS},
-                "correct_examples": {d: {m: self.server.examples[d][m].get("correct") for m in MODELS} for d in DATASETS},
+                "ready": {d: {m: checkpoint(d, m).is_file() for m in MODELS} for d in DATASETS},
+                "error_examples": {d: {m: self.server.examples[d][m]["error"] for m in MODELS} for d in DATASETS},
+                "correct_examples": {d: {m: self.server.examples[d][m]["correct"] for m in MODELS} for d in DATASETS},
                 "cases": [{k: v for k, v in row.items() if k != "image"} for row in self.server.cases],
             })
         elif path.startswith("/image/") and path[7:].isdigit():
@@ -210,14 +179,14 @@ class Handler(BaseHTTPRequestHandler):
             return
         try:
             with INFERENCE_LOCK:
-                ocr = [] if name in {"donut", "qwen_vl"} else read_image_text(image)
-            if name not in {"donut", "qwen_vl"} and not ocr:
+                ocr = [] if name == "donut" else read_image_text(image)
+            if name != "donut" and not ocr:
                 self.send_json({"error": "OCR chưa đọc được chữ. Thử ảnh rõ nét hơn."}, 422)
                 return
             result = run_prediction(dataset, name, {"id": "upload", "ocr": ocr}, image,
                                     query.get("heatmap", ["0"])[0] == "1", query.get("field", [""])[0] or None,
                                     query.get("scope", ["joint"])[0])
-            result["ocr_boxes"] = None if name in {"donut", "qwen_vl"} else len(ocr)
+            result["ocr_boxes"] = None if name == "donut" else len(ocr)
             self.send_json(result)
         except ValueError as error:
             self.send_json({"error": str(error)}, 422)

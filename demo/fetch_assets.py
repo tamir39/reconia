@@ -77,11 +77,8 @@ def main():
     parser.add_argument("--model", choices=("roberta", "bros", "pick", "layoutlmv3", "donut", "qwen_vl", "qwen"))
     parser.add_argument("--dataset", choices=("sroie", "cord_v2", "wildreceipt"))
     parser.add_argument("--list", action="store_true", help="Show checkpoint sources without downloading")
-    parser.add_argument("--base", action="store_true", help="Also download the pretrained Qwen model and processor")
     args = parser.parse_args()
     model = "qwen_vl" if args.model == "qwen" else args.model
-    if args.base and model not in (None, "qwen_vl"):
-        parser.error("--base is only available for Qwen")
     manifest = json.loads((ROOT / "demo/data/checkpoints.json").read_text(encoding="utf-8"))
     items = [item for item in manifest["files"] if item["kind"] == "checkpoint" and
              (not model or item["model"] == model) and
@@ -93,9 +90,6 @@ def main():
             print(f"{item['model']}/{item['dataset']} | {item['kernel']} v{item['version']} | {item['bytes'] / 1_000_000:.0f} MB")
         return
     fetch(items)
-    if args.base:
-        from demo.qwen import download_base
-        download_base()
     for item in items:
         if not item.get("adapter_config"):
             continue
