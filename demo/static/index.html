@@ -4,133 +4,87 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reconia · Demo trích xuất hóa đơn</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314211d'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,sans-serif' font-size='17' font-weight='700' text-anchor='middle' fill='%23f3efe6'%3ER%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f4e79'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,sans-serif' font-size='17' font-weight='700' text-anchor='middle' fill='%23ffffff'%3ER%3C/text%3E%3C/svg%3E">
 <style>
 :root{
   color-scheme:light;
-  --paper:#f3efe6;--card:#fffdf8;--ink:#14211d;--muted:#5b6862;--line:#ddd5c4;--line-strong:#c9bfaa;
-  --accent:#135c46;--accent-soft:#e3efe8;--match:#1d7a51;--match-soft:#e4f2ea;
-  --miss:#b3261e;--miss-soft:#fbe9e6;--gold:#b7791f;--gold-soft:#f8ecd6;
-  --display:"Bahnschrift","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
-  --body:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
-  --mono:"Cascadia Mono","Consolas","Segoe UI Mono",monospace;
-  --radius:14px;--preview-h:420px;
+  --text:#1c2430;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ec;--soft:#f5f7f9;
+  --accent:#1f4e79;--accent-hover:#173c5e;
+  --ok:#1a7f37;--bad:#c0392b;
+  --mono:Consolas,"Cascadia Mono",monospace;
 }
 *{box-sizing:border-box}
-body{margin:0;color:var(--ink);font:15px/1.55 var(--body);
-  background:radial-gradient(1200px 500px at 85% -10%,#e7efe6 0,transparent 60%),
-             radial-gradient(900px 400px at -10% 10%,#f6ead6 0,transparent 55%),var(--paper)}
-main{max-width:1200px;margin:auto;padding:0 28px 64px}
+body{margin:0;background:#fcfcfd;color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1120px;margin:auto;padding:0 32px}
 [hidden]{display:none!important}
-:focus-visible{outline:3px solid #2f8a69;outline-offset:3px}
-h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;margin:0}
-p{margin:6px 0;color:var(--muted)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{margin:0;font-weight:600}
+p{margin:0}
 a{color:var(--accent)}
 
-/* Masthead */
-.masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0;border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:10px;font:600 1.05rem var(--display);letter-spacing:.02em}
-.brand-mark{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:var(--paper);font-size:.95rem}
-.masthead-meta{font-size:.82rem;color:var(--muted)}
-.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:32px;align-items:end;padding:36px 0 26px}
-.eyebrow{font:600 .74rem var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
-h1{font-size:clamp(2rem,4.4vw,3.1rem);line-height:1.05;font-weight:700}
-.lede{max-width:560px;margin-top:14px;font-size:1rem}
-
-/* Score strip for the selected model */
-.score-strip{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
-.score-strip-title{display:flex;justify-content:space-between;gap:8px;font-size:.8rem;color:var(--muted);margin-bottom:10px}
-.score-strip-title strong{color:var(--ink);font-family:var(--display);font-size:.95rem}
-.score-cells{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.score-cell{border-radius:10px;padding:10px 12px;background:#f6f2e9;border:1px solid transparent}
-.score-cell span{display:block;font-size:.76rem;color:var(--muted)}
-.score-cell b{font:700 1.45rem/1.15 var(--display);font-variant-numeric:tabular-nums}
-.score-cell.current{background:var(--gold-soft);border-color:#e6cf9f}
-.score-cell.current span{color:#8a5a12}
-
-/* Controls */
-.selectors{display:grid;grid-template-columns:auto auto 1fr;gap:18px 28px;align-items:end;padding:18px 20px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 1px 0 #fff inset,0 10px 30px -22px #14211d55}
-.control-label{display:block;font:600 .74rem var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.pills{display:flex;flex-wrap:wrap;gap:6px}
-.pill{font:600 .9rem var(--body);min-height:40px;padding:8px 14px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;color:var(--ink);cursor:pointer;transition:background .15s,border-color .15s,color .15s}
-.pill:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:#fff}
-.pill[aria-checked="true"],.pill[aria-checked="true"]:hover:not(:disabled){background:var(--ink);border-color:var(--ink);color:#fff}
-.pill:disabled{opacity:.55;cursor:default}
-.control-menus{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.filter-options{position:relative;margin:0}
-.filter-options>summary{display:flex;align-items:center;gap:8px;min-height:40px;padding:8px 14px;border:1px solid var(--line-strong);border-radius:10px;background:#fff;white-space:nowrap;color:var(--accent);font-weight:600;cursor:pointer;list-style:none}
+/* Header + toolbar */
+header{border-bottom:1px solid var(--line);background:#fff}
+.title{display:flex;align-items:baseline;gap:12px;padding:20px 0 4px}
+.title h1{font-size:1.3rem}
+.title span{color:var(--muted)}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:12px 0 16px}
+.toolbar>label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.9rem}
+select{font:inherit;font-size:.92rem;min-height:34px;border-radius:6px;border:1px solid #cfd6de;padding:4px 8px;color:var(--text);background:#fff}
+.toolbar select{min-width:150px}
+.toolbar-links{display:flex;gap:16px;margin-left:auto}
+.filter-options{position:relative}
+.filter-options>summary{list-style:none;cursor:pointer;color:var(--accent);font-size:.9rem;white-space:nowrap}
 .filter-options>summary::-webkit-details-marker{display:none}
-.filter-options>summary::after{content:'▾';font-size:.8rem}
-.filter-options[open]>summary::after{content:'▴'}
-.dataset-label-content{position:absolute;z-index:3;right:0;top:calc(100% + 8px);width:min(400px,calc(100vw - 32px));max-height:52dvh;overflow:auto;padding:16px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 40px -18px #14211d66}
-.dataset-label-content h3{font-size:1rem;margin-bottom:6px}
-.dataset-label-content h4{margin:12px 0 4px;font-size:.88rem}
-.dataset-label-content ul{margin:0;padding-left:20px;overflow-wrap:anywhere}
-.dataset-label-content code{font:.82rem var(--mono);color:var(--muted)}
-.heatmap-options-content{width:min(320px,calc(100vw - 32px))}
-.heatmap-options-content label{display:grid;gap:6px;font-size:.85rem;font-weight:600}
-.heatmap-options-content label+label{margin-top:12px}
-.heatmap-options-content p{font-size:.84rem;margin:12px 0 0}
-select,input[type=file]{font:inherit;min-height:40px;border-radius:10px;border:1px solid var(--line-strong);padding:7px 10px;color:var(--ink);background:#fff;width:100%;min-width:0}
+.filter-options>summary::after{content:' ▾'}
+.dataset-label-content{position:absolute;z-index:3;right:0;top:calc(100% + 8px);width:min(360px,calc(100vw - 32px));max-height:52dvh;overflow:auto;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px #1c243018}
+.dataset-label-content h3{font-size:.92rem;margin-bottom:6px}
+.dataset-label-content h4{margin:10px 0 2px;font-size:.86rem}
+.dataset-label-content ul{margin:0;padding-left:18px;overflow-wrap:anywhere;font-size:.9rem}
+.dataset-label-content code{font:.8rem var(--mono);color:var(--muted)}
+.heatmap-options-content label{display:grid;gap:4px;font-size:.86rem;color:var(--muted)}
+.heatmap-options-content label+label{margin-top:10px}
+.heatmap-options-content select{width:100%}
+.heatmap-options-content p{font-size:.84rem;color:var(--muted);margin-top:10px}
 
 /* Buttons */
-button{font:600 .9rem var(--body);min-height:40px;padding:8px 16px;border-radius:10px;border:1px solid transparent;background:var(--accent);color:#fff;cursor:pointer;transition:background .15s,transform .1s}
-button:hover:not(:disabled){background:#0f4a39}
-button:active:not(:disabled){transform:translateY(1px)}
-button:disabled{opacity:.5;cursor:default}
-.button-ghost{background:#fff;color:var(--accent);border-color:var(--line-strong)}
-.button-ghost:hover:not(:disabled){background:var(--accent-soft)}
-.preview-button{background:transparent;color:inherit;min-height:0;padding:0;border:0;border-radius:10px;width:100%}
-.preview-button:hover:not(:disabled){background:transparent}
+button{font:inherit;font-size:.9rem;font-weight:600;min-height:34px;padding:5px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+button:hover:not(:disabled){background:var(--accent-hover)}
+button:disabled{opacity:.45;cursor:default}
+.secondary{background:#fff;color:var(--accent);border-color:#cfd6de}
+.secondary:hover:not(:disabled){background:var(--soft)}
+.preview-button{display:grid;place-items:center;width:100%;min-height:0;padding:0;border:0;border-radius:8px;background:var(--soft);cursor:zoom-in}
+.preview-button:hover:not(:disabled){background:#eef1f4}
 
 /* Sections */
-section{margin-top:40px}
-.section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
-.section-heading h2{font-size:1.45rem}
-.section-note{font-size:.84rem;margin:0}
-.section-note:empty{display:none}
-.status{font-size:.84rem;margin:0}
+main section{padding:32px 0;border-bottom:1px solid var(--line)}
+main section:last-child{border-bottom:0}
+main section>h2{font-size:1.05rem;margin-bottom:16px}
+.status{font-size:.86rem;color:var(--muted)}
 .status:empty{display:none}
 
-/* Test cases */
-.case-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0}
-.case-grid .panel{animation:rise .45s ease both}
-.case-grid .panel:nth-child(2){animation-delay:.08s}
-@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.case-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.case-heading h3{display:flex;align-items:center;gap:8px;font-size:1.05rem}
-.case-status-icon{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;font-size:15px;line-height:1;font-family:var(--body)}
-.correct-example .case-status-icon{background:var(--match-soft);color:var(--match)}
-.error-example .case-status-icon{background:var(--miss-soft);color:var(--miss)}
-.correct-example h3{color:var(--match)}
-.error-example h3{color:var(--miss)}
-.case-field{font-size:.8rem;font-weight:600;padding:4px 10px;border-radius:999px;background:#f1ece1;color:var(--ink);overflow-wrap:anywhere;text-align:right}
-.correct-example{box-shadow:inset 0 4px 0 var(--match)}
-.error-example{box-shadow:inset 0 4px 0 var(--miss)}
-
-/* Field comparison: the key information of each card */
-.case-values dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;max-height:none}
-.case-values dt,.case-values dd{padding:10px 14px;border-bottom:1px solid var(--line)}
-.case-values dt:last-of-type,.case-values dd:last-of-type{border-bottom:0}
-.case-values dt{font:600 .78rem var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;background:#f7f3ea;display:flex;align-items:center}
-.case-values dd{margin:0;font:600 1.15rem/1.35 var(--mono);color:var(--ink);overflow-wrap:anywhere}
-.correct-example .case-values dd:last-of-type{color:var(--match);background:var(--match-soft)}
-.error-example .case-values dd:last-of-type{color:var(--miss);background:var(--miss-soft)}
-
+/* Examples */
+.case-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px}
+.case-heading{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
+.case-heading h3{font-size:1rem}
+.correct-example h3{color:var(--ok)}
+.error-example h3{color:var(--bad)}
+.case-field{color:var(--muted);font-size:.9rem}
+.case-field::before{content:'· '}
+.case-values dl{grid-template-columns:96px minmax(0,1fr);gap:6px 12px;max-height:none}
+.case-values dt{color:var(--muted);font-size:.88rem;font-weight:400;padding-top:2px}
+.case-values dd{font:1.05rem/1.4 var(--mono)}
+.correct-example .case-values dd:last-of-type{color:var(--ok);font-weight:700}
+.error-example .case-values dd:last-of-type{color:var(--bad);font-weight:700}
 figure{margin:16px 0 0}
-.preview{position:relative;display:grid;place-items:center;min-height:220px;border-radius:10px;overflow:hidden;
-  background:repeating-linear-gradient(135deg,#f4efe4 0 10px,#efe9dc 10px 20px)}
-.case-grid .preview{height:var(--preview-h)}
+.case-grid .preview-button{height:380px;overflow:hidden}
 img{display:block;max-width:100%;height:auto;max-height:540px;object-fit:contain}
 img[hidden]{display:none}
 .case-grid img{max-height:100%;min-height:0}
-.zoom-hint{position:absolute;right:10px;bottom:10px;padding:4px 10px;border-radius:999px;background:#14211dd9;color:#fff;font-size:.74rem;font-weight:600;pointer-events:none}
-figcaption{display:block;color:var(--muted);font-size:.82rem;margin-top:8px;overflow-wrap:anywhere}
+figcaption{color:var(--muted);font-size:.84rem;margin-top:8px;overflow-wrap:anywhere}
 figcaption:empty{display:none}
 .annotated-image{display:block;position:relative;width:min(100%,calc(540px * var(--image-ratio)))}
 .annotated-image img{width:100%;height:auto;max-height:none}
-.case-grid .annotated-image{width:min(100%,calc(var(--preview-h) * var(--image-ratio)))}
+.case-grid .annotated-image{width:min(100%,calc(380px * var(--image-ratio)))}
 .image-scroll .annotated-image{width:min(100%,calc((72dvh - 16px) * var(--image-ratio)));margin:auto}
 .image-scroll.zoomed .annotated-image{width:calc((144dvh - 32px) * var(--image-ratio))}
 .case-grid .annotated-image img,.image-scroll .annotated-image img{width:100%;height:auto;max-height:none}
@@ -140,156 +94,129 @@ figcaption:empty{display:none}
 .receipt-heatmap{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .annotated-image:not([data-layer="boxes"]) .receipt-region,
 .annotated-image:not([data-layer="heatmap"]) .receipt-heatmap{display:none}
-
-.case-details{margin-top:12px;font-size:.86rem}
-.case-details summary{cursor:pointer;color:var(--accent);font-weight:600}
-.case-details p{margin:8px 0 0}
-.case-source{font-size:.78rem;color:var(--muted);font-family:var(--mono)}
-.case-footer{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line-strong)}
+.case-footer{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-top:16px}
 .case-actions{display:flex;gap:8px;flex-wrap:wrap}
-.case-footer .status{margin-left:auto}
+.case-details{margin-top:12px;font-size:.88rem}
+.case-details summary{cursor:pointer;color:var(--accent);width:fit-content}
+.case-details p{margin-top:6px;color:var(--muted)}
+.case-source{font:.8rem var(--mono)}
 
-/* Generic field lists (live results, uploaded image) */
-dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px 14px;max-height:360px;overflow:auto}
-dt{font-size:.86rem;font-weight:600;color:var(--accent);overflow-wrap:anywhere}
-dd{margin:0;overflow-wrap:anywhere;font-family:var(--mono);font-size:.9rem}
+/* Field lists (live results, uploaded image) */
+dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:6px 16px;max-height:360px;overflow:auto}
+dt{color:var(--muted);font-size:.88rem;overflow-wrap:anywhere}
+dd{margin:0;overflow-wrap:anywhere;font:.92rem var(--mono)}
 
 /* Upload */
-.upload-controls{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:stretch}
-.upload-controls:has(#upload-heatmap-option[hidden]){grid-template-columns:minmax(0,1fr) auto}
-.dropzone{position:relative;display:grid;gap:2px;align-content:center;min-height:92px;padding:16px 20px 16px 72px;border:2px dashed var(--line-strong);border-radius:var(--radius);background:var(--card);cursor:pointer;transition:border-color .15s,background .15s}
-.dropzone::before{content:'';position:absolute;left:20px;top:50%;width:36px;height:36px;margin-top:-18px;border-radius:10px;
-  background:var(--accent-soft) center/20px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23135c46' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4M7 9l5-5 5 5'/%3E%3Cpath d='M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3'/%3E%3C/svg%3E")}
-.dropzone:hover,.dropzone.dragging{border-color:var(--accent);background:#f9fbf7}
-.dropzone:focus-within{outline:3px solid #2f8a69;outline-offset:3px}
-.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;min-height:0;width:100%}
-.dropzone-title{font-weight:600;color:var(--ink)}
-.dropzone-file{font-size:.86rem;font-weight:600;color:var(--accent);overflow-wrap:anywhere}
-.dropzone-file:empty{display:none}
-.file-hint{font-size:.8rem;color:var(--muted);margin:0}
-.explain-check{display:flex;gap:8px;align-items:center;padding:0 16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);font-size:.88rem;font-weight:600;cursor:pointer}
-.explain-check input{width:18px;height:18px;min-height:0;accent-color:var(--accent)}
-#run{min-width:140px;border-radius:var(--radius);font-size:1rem}
-.upload-section>.status{margin:12px 0 0}
-.workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start;margin-top:16px}
-.workspace.awaiting-run{grid-template-columns:minmax(0,1fr);max-width:560px}
-.workspace figure,.workspace section{margin:0}
-.workspace h3{font-size:1.05rem;margin-bottom:12px}
-.heat-legend{font-size:.84rem}
+.upload-intro{color:var(--muted);font-size:.9rem;margin:-8px 0 16px}
+.upload-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;border-radius:8px;outline:2px dashed transparent;outline-offset:8px}
+.upload-controls.dragging{outline-color:var(--accent)}
+.file-picker{position:relative;display:inline-flex}
+.file-picker input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.file-picker span{display:inline-flex;align-items:center;min-height:34px;padding:5px 14px;border:1px solid #cfd6de;border-radius:6px;background:#fff;color:var(--accent);font-weight:600;font-size:.9rem}
+.file-picker:hover span{background:var(--soft)}
+.file-picker:focus-within span{outline:2px solid var(--accent);outline-offset:2px}
+.file-name{color:var(--muted);font-size:.9rem;overflow-wrap:anywhere;flex:1 1 220px}
+.explain-check{display:flex;gap:6px;align-items:center;font-size:.9rem;cursor:pointer}
+#upload-status{margin-top:12px}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;margin-top:24px}
+.workspace.awaiting-run{grid-template-columns:minmax(0,1fr);max-width:520px}
+.workspace figure,.workspace .result{margin:0}
+.workspace h3{font-size:1rem;margin-bottom:12px}
+.heat-legend{font-size:.84rem;color:var(--muted);margin-top:8px}
 .heat-legend:empty{display:none}
 
 /* Scores */
-.table{overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--radius)}
-table{width:100%;border-collapse:collapse;text-align:left}
-th,td{padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
-tbody tr:last-child td{border-bottom:0}
-th{font:600 .76rem var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:#f7f3ea}
-td{font-variant-numeric:tabular-nums;font-family:var(--mono)}
-td:first-child{font-family:var(--body);font-weight:600}
-td.best{color:var(--accent);font-weight:700}
-td.best::after{content:' ▲';font-size:.7rem}
-tr.current td{background:var(--gold-soft)}
-.source-note{font-size:.82rem;margin-top:10px}
+.scores{width:auto;min-width:min(100%,560px);border-collapse:collapse}
+.scores th,.scores td{padding:8px 16px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap;text-align:right}
+.scores th:first-child,.scores td:first-child{text-align:left;padding-right:40px}
+.scores th{font-weight:600;font-size:.88rem;color:var(--muted)}
+.scores td{font-variant-numeric:tabular-nums}
+.scores td.best{font-weight:700}
+.scores tr.current td{color:var(--accent);font-weight:600}
+.table{overflow:auto}
+.notes{margin-top:12px;font-size:.84rem;color:var(--muted);display:grid;gap:2px}
 
 /* Large image dialog */
-.image-dialog{width:min(980px,calc(100% - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--ink)}
-.image-dialog::backdrop{background:#10231fcc}
-.image-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
-.image-toolbar h2{flex:1 1 180px;font-size:1.05rem;overflow-wrap:anywhere}
-.image-toolbar label{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600}
-.image-toolbar select{width:auto}
-.image-layer-note{padding:8px 14px 0;margin:0;font-size:.85rem}
-.image-scroll{max-height:72dvh;overflow:auto;background:#efe9dc;padding:8px;margin-top:8px}
+.image-dialog{width:min(980px,calc(100% - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text)}
+.image-dialog::backdrop{background:#1c243099}
+.image-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.image-toolbar h2{flex:1 1 180px;font-size:1rem;overflow-wrap:anywhere}
+.image-toolbar label{display:flex;align-items:center;gap:6px;font-size:.88rem;color:var(--muted)}
+.image-layer-note{padding:8px 14px 0;font-size:.85rem;color:var(--muted)}
+.image-scroll{max-height:72dvh;overflow:auto;background:var(--soft);padding:8px;margin-top:8px}
 .image-scroll img{width:auto;max-height:calc(72dvh - 16px);margin:auto}
 .image-scroll.zoomed img{height:calc(144dvh - 32px);max-height:none;max-width:none}
 body:has(.image-dialog[open]){overflow:hidden}
 
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-@media(max-width:900px){.hero{grid-template-columns:1fr;gap:20px;padding-top:24px}.selectors{grid-template-columns:1fr}.control-menus{justify-content:flex-start}}
-@media(max-width:760px){main{padding:0 16px 48px}.case-grid,.workspace{grid-template-columns:1fr}:root{--preview-h:340px}
-  .section-heading{flex-direction:column;align-items:flex-start;gap:4px}
-  .upload-controls,.upload-controls:has(#upload-heatmap-option[hidden]){grid-template-columns:1fr}.explain-check{min-height:44px}
-  .dataset-label-content{left:0;right:auto}.masthead-meta{display:none}}
+@media(max-width:760px){
+  .wrap{padding:0 16px}
+  .case-grid,.workspace{grid-template-columns:1fr;gap:32px}
+  .case-grid .preview-button{height:320px}
+  .case-grid .annotated-image{width:min(100%,calc(320px * var(--image-ratio)))}
+  .toolbar>label{flex:1 1 100%;display:grid;grid-template-columns:84px minmax(0,1fr)}.toolbar select{min-width:0;width:100%}
+  .toolbar-links{margin-left:0}.dataset-label-content{right:auto;left:0}
+}
 </style>
 </head>
-<body><main>
-<header class="masthead">
-  <div class="brand"><span class="brand-mark" aria-hidden="true">R</span>Reconia</div>
-  <div class="masthead-meta">Dự án Công nghệ thông tin · Trích xuất thông tin hóa đơn</div>
-</header>
+<body>
+<header><div class="wrap">
+  <div class="title"><h1>Reconia</h1><span>Demo trích xuất thông tin hóa đơn</span></div>
+  <div class="toolbar">
+    <label>Mô hình <select id="model" disabled></select></label>
+    <label>Bộ dữ liệu <select id="dataset" disabled></select></label>
+    <div class="toolbar-links">
+      <details id="dataset-labels" class="filter-options" hidden>
+        <summary id="dataset-label-summary">Các trường</summary>
+        <div id="dataset-label-content" class="dataset-label-content"></div>
+      </details>
+      <details id="heatmap-options" class="filter-options" hidden>
+        <summary>Tùy chọn bản đồ nhiệt</summary>
+        <div class="dataset-label-content heatmap-options-content">
+          <label>Trường hiển thị<select id="explain-field" aria-describedby="heatmap-info"><option value="">Tự chọn</option></select></label>
+          <label id="heatmap-scope-control">Dữ liệu bị che<select id="heatmap-scope"><option value="joint">Ảnh + chữ OCR</option><option value="image">Chỉ ảnh</option></select></label>
+          <p id="heatmap-info">Tính cho một trường. Vùng đỏ là nơi khi bị che thì điểm của dự đoán đang xem giảm mạnh, dù dự đoán đúng hay sai.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</div></header>
 
-<div class="hero">
-  <div>
-    <p class="eyebrow">Demo mô hình</p>
-    <h1>Trích xuất thông tin hóa đơn</h1>
-    <p class="lede">Chọn mô hình và bộ dữ liệu để xem một trường được trích xuất đúng và một trường bị sai trên tập kiểm thử, chạy lại mô hình hoặc xem bản đồ nhiệt giải thích dự đoán.</p>
-  </div>
-  <div class="score-strip" id="model-scores" aria-live="polite"></div>
-</div>
-
-<div class="selectors">
-  <div class="control">
-    <span class="control-label" id="model-label">Mô hình</span>
-    <div class="pills" id="model-pills" role="radiogroup" aria-labelledby="model-label"></div>
-  </div>
-  <div class="control">
-    <span class="control-label" id="dataset-label">Bộ dữ liệu</span>
-    <div class="pills" id="dataset-pills" role="radiogroup" aria-labelledby="dataset-label"></div>
-  </div>
-  <div class="control-menus">
-    <details id="dataset-labels" class="dataset-labels filter-options" hidden>
-      <summary id="dataset-label-summary">Các trường</summary>
-      <div id="dataset-label-content" class="dataset-label-content"></div>
-    </details>
-    <details id="heatmap-options" class="filter-options" hidden>
-      <summary>Bản đồ nhiệt</summary>
-      <div class="dataset-label-content heatmap-options-content">
-        <label>Trường hiển thị<select id="explain-field" aria-describedby="heatmap-info"><option value="">Tự chọn</option></select></label>
-        <label id="heatmap-scope-control">Dữ liệu bị che<select id="heatmap-scope"><option value="joint">Ảnh + chữ OCR</option><option value="image">Chỉ ảnh</option></select></label>
-        <p id="heatmap-info">Tính cho một trường. Vùng đỏ là nơi khi bị che thì điểm của dự đoán đang xem giảm mạnh, dù dự đoán đúng hay sai.</p>
-      </div>
-    </details>
-  </div>
-  <label hidden>Mô hình<select id="model" disabled></select></label>
-  <label hidden>Bộ dữ liệu<select id="dataset" disabled></select></label>
-</div>
-
+<main class="wrap">
 <section aria-labelledby="test-heading">
-  <div class="section-heading"><h2 id="test-heading">Mẫu trong tập kiểm thử</h2>
-  <p id="test-status" class="section-note" role="status">Đang tải…</p></div>
+  <h2 id="test-heading">Ví dụ trong tập kiểm thử</h2>
+  <p id="test-status" class="status" role="status">Đang tải…</p>
   <div class="case-grid" id="test-cases"></div>
 </section>
 
 <section class="upload-section" aria-labelledby="upload-heading">
-  <div class="section-heading"><h2 id="upload-heading">Thử với ảnh của bạn</h2>
-  <p class="section-note">Ảnh ngoài được nhận dạng chữ bằng OCR tự động trước khi đưa vào mô hình.</p></div>
+  <h2 id="upload-heading">Thử với ảnh khác</h2>
+  <p class="upload-intro">Ảnh tải lên được nhận dạng chữ bằng OCR tự động, sau đó đưa vào mô hình đang chọn.</p>
   <form id="upload-form" class="upload-controls">
-    <label class="dropzone" id="dropzone">
-      <input type="file" id="upload" accept="image/jpeg,image/png,image/webp" aria-describedby="file-hint upload-status">
-      <span class="dropzone-title">Kéo thả ảnh hóa đơn vào đây hoặc bấm để chọn</span>
-      <span id="file-hint" class="file-hint">JPG, PNG, WebP · tối đa 12 MB</span>
-      <span id="dropzone-file" class="dropzone-file"></span>
-    </label>
+    <label class="file-picker"><input type="file" id="upload" accept="image/jpeg,image/png,image/webp" aria-describedby="file-name upload-status"><span>Chọn ảnh…</span></label>
+    <span id="file-name" class="file-name">JPG, PNG hoặc WebP, tối đa 12 MB. Có thể kéo thả ảnh vào đây.</span>
     <label class="explain-check" id="upload-heatmap-option" hidden><input type="checkbox" id="heatmap-check">Kèm bản đồ nhiệt</label>
     <button id="run" type="submit" disabled>Trích xuất</button>
   </form>
   <p id="upload-status" class="status" role="status"></p>
   <div class="workspace awaiting-run" id="upload-output" hidden>
-    <figure class="panel">
-      <button type="button" class="preview preview-button" id="upload-preview-button" aria-label="Mở lớn ảnh tải lên" aria-haspopup="dialog">
+    <figure>
+      <button type="button" class="preview-button" id="upload-preview-button" aria-label="Mở lớn ảnh tải lên" aria-haspopup="dialog" title="Bấm để phóng to">
         <img id="upload-preview" alt="Ảnh hóa đơn tải lên">
       </button>
       <figcaption id="upload-name"></figcaption><p id="upload-heatmap-note" class="heat-legend"></p>
     </figure>
-    <section class="panel" id="prediction-panel" hidden><h3>Kết quả trích xuất</h3><div id="prediction"></div></section>
+    <div class="result" id="prediction-panel" hidden><h3>Kết quả trích xuất</h3><div id="prediction"></div></div>
   </div>
 </section>
 
 <section aria-labelledby="scores-heading">
-  <div class="section-heading"><h2 id="scores-heading">Micro-F1 trên tập kiểm thử</h2>
-  <p id="scores-note" class="section-note"></p></div>
+  <h2 id="scores-heading">Micro-F1 trên tập kiểm thử (%)</h2>
   <div class="table" id="scores"></div>
-  <p class="source-note" id="sources"></p>
+  <div class="notes">
+    <p>In đậm: cao nhất trên mỗi bộ dữ liệu.</p>
+    <p id="reference-note" hidden>* Chỉ có điểm, không chạy trong demo này.</p>
+    <p id="sources"></p>
+  </div>
 </section>
 </main>
 <dialog id="image-dialog" class="image-dialog" aria-labelledby="image-title">
@@ -302,7 +229,7 @@ body:has(.image-dialog[open]){overflow:hidden}
         <option value="original">Ảnh gốc</option>
       </select>
     </label>
-    <button type="button" id="image-zoom" class="button-ghost" aria-pressed="false">Phóng thêm</button>
+    <button type="button" id="image-zoom" class="secondary" aria-pressed="false">Phóng thêm</button>
     <form method="dialog"><button autofocus>Đóng</button></form>
   </div>
   <p id="image-layer-note" class="image-layer-note" hidden></p>
@@ -335,6 +262,7 @@ const fieldNames = {
 };
 const fieldGroups = {menu:'Món hàng', sub_total:'Tạm tính và phụ phí', total:'Tổng tiền và thanh toán', void_menu:'Món đã hủy'};
 const maxBytes = 12 * 1024 * 1024;
+const noFileText = 'JPG, PNG hoặc WebP, tối đa 12 MB. Có thể kéo thả ảnh vào đây.';
 let catalog, previewUrl, busy = false;
 const imageDialog = byId('image-dialog');
 const imageScroll = byId('image-scroll'), imageZoom = byId('image-zoom');
@@ -452,60 +380,13 @@ function fields(target, data, fallback, translate = false) {
   target.replaceChildren(list);
 }
 
-// Segmented choices mirror the hidden <select> elements, which stay the single source of truth.
-const pillGroups = [[model, byId('model-pills')], [dataset, byId('dataset-pills')]];
-function buildPills() {
-  for (const [select, host] of pillGroups) {
-    host.replaceChildren();
-    for (const option of select.options) {
-      const pill = element('button', option.textContent, 'pill');
-      pill.type = 'button';
-      pill.setAttribute('role', 'radio');
-      pill.dataset.value = option.value;
-      pill.addEventListener('click', () => {
-        if (select.value === option.value) return;
-        select.value = option.value;
-        select.dispatchEvent(new Event('change'));
-      });
-      host.append(pill);
-    }
-  }
-  syncPills();
-}
-function syncPills() {
-  for (const [select, host] of pillGroups) {
-    for (const pill of host.children) pill.setAttribute('aria-checked', String(pill.dataset.value === select.value));
-  }
-}
-
-function percent(value) {
-  return (value * 100).toFixed(2);
-}
-
-function showModelScores() {
-  const strip = byId('model-scores');
-  const scores = catalog.scores[model.value] ?? [];
-  const title = element('div', null, 'score-strip-title');
-  title.append(element('strong', catalog.models[model.value] ?? model.value), element('span', 'Micro-F1 trên tập kiểm thử (%)'));
-  const cells = element('div', null, 'score-cells');
-  catalog.datasets.forEach((key, index) => {
-    const cell = element('div', null, 'score-cell' + (key === dataset.value ? ' current' : ''));
-    cell.append(element('span', titles[key]), element('b', scores[index] != null ? percent(scores[index]) : '–'));
-    cells.append(cell);
-  });
-  strip.replaceChildren(title, cells);
-}
-
 function caseCard(example, correct) {
-  const card = element('article', null, correct ? 'panel correct-example' : 'panel error-example');
+  const card = element('article', null, correct ? 'correct-example' : 'error-example');
   const heading = element('h3');
   function setOutcome(matches) {
     card.classList.toggle('correct-example', matches);
     card.classList.toggle('error-example', !matches);
-    heading.replaceChildren(document.createTextNode(matches ? 'Dự đoán đúng' : 'Dự đoán sai'));
-    const icon = element('span', matches ? '✓' : '✕', 'case-status-icon');
-    icon.setAttribute('aria-hidden', 'true');
-    heading.prepend(icon);
+    heading.textContent = (matches ? '✓ ' : '✗ ') + (matches ? 'Dự đoán đúng' : 'Dự đoán sai');
   }
   setOutcome(correct);
   const header = element('div', null, 'case-heading');
@@ -517,15 +398,16 @@ function caseCard(example, correct) {
     return card;
   }
   const figure = element('figure');
-  const frame = element('button', null, 'preview preview-button');
+  const frame = element('button', null, 'preview-button');
   frame.type = 'button';
+  frame.title = 'Bấm để phóng to';
   frame.setAttribute('aria-haspopup', 'dialog');
   frame.setAttribute('aria-label', 'Mở lớn ảnh hóa đơn ' + row.id);
   const image = element('img');
   image.alt = 'Hóa đơn mẫu ' + row.id;
   image.src = '/image/' + example.case_index;
   function setFrame(annotation) {
-    frame.replaceChildren(annotatedImage(image, annotation), element('span', 'Phóng to', 'zoom-hint'));
+    frame.replaceChildren(annotatedImage(image, annotation));
     frame.onclick = () => openLargeImage(image, annotation);
   }
   setFrame(example.annotation);
@@ -541,20 +423,20 @@ function caseCard(example, correct) {
     fields(values, {'Nhãn chuẩn': example.truth, 'Dự đoán': actual?.length ? actual : 'Bỏ sót'});
   }
   showComparison(example.prediction);
-  const explanation = element('details', null, 'case-details');
-  explanation.append(element('summary', 'Giải thích'), element('p', example.explanation),
-                     element('p', row.id + ' · ' + row.boxes + ' vùng chữ', 'case-source'));
-  card.append(values, figure, explanation);
-  const status = element('p', 'Kết quả đã lưu sẵn', 'status');
+  const status = element('p', '', 'status');
   status.setAttribute('role', 'status');
   const actions = element('div', null, 'case-actions');
-  const rerun = element('button', 'Chạy lại mô hình');
+  const rerun = element('button', 'Chạy lại mô hình', 'secondary');
   rerun.type = 'button';
   rerun.setAttribute('aria-label', 'Chạy lại mô hình trên mẫu ' + row.id);
   const liveFields = element('div');
   const allResults = element('details', null, 'case-details');
   allResults.hidden = true;
   allResults.append(element('summary', 'Tất cả trường trích xuất'), liveFields);
+  const explanation = element('details', null, 'case-details');
+  explanation.append(element('summary', 'Giải thích'), element('p', example.explanation),
+                     element('p', row.id + ' · ' + row.boxes + ' vùng chữ', 'case-source'));
+  card.append(values, figure);
   const runCase = async heatmap => {
     if (busy) return;
     setBusy(true);
@@ -585,14 +467,14 @@ function caseCard(example, correct) {
       fields(liveFields, result.fields, 'Chưa tìm thấy thông tin.', true);
       allResults.hidden = false;
       if (result.annotation?.heatmap) caption.textContent = heatmapDescription(result.annotation.heatmap);
-      status.textContent = result.annotation?.heatmap?.cached ? 'Bản đồ nhiệt đã tính sẵn' : 'Xong · ' + result.seconds + ' giây';
+      status.textContent = result.annotation?.heatmap?.cached ? 'Bản đồ nhiệt đã tính trước đó' : 'Xong · ' + result.seconds + ' giây';
     } catch (error) { status.textContent = error.message; }
     finally { setBusy(false); }
   };
   rerun.addEventListener('click', () => runCase(false));
   actions.append(rerun);
   if (catalog.vision_models.includes(model.value)) {
-    const explain = element('button', 'Xem bản đồ nhiệt', 'button-ghost');
+    const explain = element('button', 'Xem bản đồ nhiệt', 'secondary');
     explain.type = 'button';
     explain.setAttribute('aria-label', 'Xem bản đồ nhiệt của mẫu ' + row.id);
     explain.addEventListener('click', () => runCase(true));
@@ -600,7 +482,7 @@ function caseCard(example, correct) {
   }
   const footer = element('div', null, 'case-footer');
   footer.append(actions, status);
-  card.append(footer, allResults);
+  card.append(footer, explanation, allResults);
   return card;
 }
 
@@ -620,8 +502,6 @@ function resetUploadResult() {
 function updateSelection() {
   const data = dataset.value, name = model.value;
   const vision = catalog.vision_models.includes(name);
-  syncPills();
-  showModelScores();
   showScores();
   byId('heatmap-options').hidden = !vision;
   byId('upload-heatmap-option').hidden = !vision;
@@ -634,7 +514,7 @@ function updateSelection() {
     caseCard(catalog.correct_examples[data]?.[name], true),
     caseCard(catalog.error_examples[data]?.[name], false),
   );
-  byId('test-status').textContent = catalog.models[name] + ' · ' + titles[data];
+  byId('test-status').textContent = '';
   uploadAnnotation = null;
   updateUploadAnnotation();
   resetUploadResult();
@@ -650,8 +530,8 @@ function updateDatasetLabels() {
   const content = byId('dataset-label-content');
   panel.hidden = false;
   panel.open = false;
-  byId('dataset-label-summary').textContent = labels.length ? 'Các trường · ' + labels.length : 'Các trường';
-  content.replaceChildren(element('h3', 'Trường trích xuất · ' + titles[data]));
+  byId('dataset-label-summary').textContent = labels.length ? 'Các trường (' + labels.length + ')' : 'Các trường';
+  content.replaceChildren(element('h3', 'Trường trích xuất của ' + titles[data]));
   if (!labels.length) {
     content.append(element('p', 'Chưa có thông tin nhãn. Hãy chạy lại phiên demo mới.'));
     return;
@@ -680,37 +560,43 @@ function updatePreview() {
   if (previewUrl) image.src = previewUrl;
   else image.removeAttribute('src');
   byId('upload-name').textContent = file?.name ?? '';
-  byId('dropzone-file').textContent = file ? 'Đã chọn: ' + file.name : '';
+  byId('file-name').textContent = file?.name ?? noFileText;
   uploadAnnotation = null;
   updateUploadAnnotation();
   resetUploadResult();
 }
 
 function showScores() {
-  const table = element('table');
-  const keys = Object.keys(catalog.models);
-  const best = catalog.datasets.map((_, column) => Math.max(...keys.map(key => catalog.scores[key][column])));
+  const table = element('table', null, 'scores');
+  // Demo models first, then reference-only models (scored on Kaggle but not run by this demo).
+  const rows = [
+    ...Object.keys(catalog.models).map(key => ({key, name: catalog.models[key], scores: catalog.scores[key],
+                                                 source: catalog.sources.models[key].source})),
+    ...Object.entries(catalog.reference_scores ?? {}).map(([key, ref]) => ({key, name: ref.name, scores: ref.scores,
+                                                                            source: ref.source, reference: true})),
+  ];
+  const best = catalog.datasets.map((_, column) => Math.max(...rows.map(r => r.scores[column])));
   const head = table.createTHead().insertRow();
   for (const text of ['Mô hình', ...catalog.datasets.map(d => titles[d])]) head.append(element('th', text));
   const body = table.createTBody();
-  for (const key of keys) {
+  for (const item of rows) {
     const row = body.insertRow();
-    if (key === model.value) row.className = 'current';
-    row.append(element('td', catalog.models[key]));
-    catalog.scores[key].forEach((value, column) => {
-      row.append(element('td', percent(value), value === best[column] ? 'best' : null));
+    if (item.key === model.value) row.className = 'current';
+    row.append(element('td', item.name + (item.reference ? '*' : '')));
+    item.scores.forEach((value, column) => {
+      row.append(element('td', (value * 100).toFixed(2), value === best[column] ? 'best' : null));
     });
   }
   byId('scores').replaceChildren(table);
-  byId('scores-note').textContent = '▲ cao nhất mỗi bộ dữ liệu · kết quả Kaggle, cập nhật 21/11/2026';
+  byId('reference-note').hidden = !rows.some(r => r.reference);
   const links = byId('sources');
-  links.replaceChildren('Notebook nguồn: ');
-  for (const [key, name] of Object.entries(catalog.models)) {
-    const link = element('a', name);
-    link.href = catalog.sources.models[key].source;
+  links.replaceChildren('Notebook Kaggle: ');
+  rows.forEach((item, index) => {
+    const link = element('a', item.name);
+    link.href = item.source;
     link.target = '_blank'; link.rel = 'noopener noreferrer';
-    links.append(link, ' ');
-  }
+    links.append(index ? ', ' : '', link);
+  });
 }
 
 async function init() {
@@ -738,7 +624,6 @@ async function init() {
     for (const key of catalog.datasets) dataset.add(new Option(titles[key], key));
     model.value = 'layoutlmv3';
     model.disabled = dataset.disabled = false;
-    buildPills();
     updateDatasetLabels();
     updateSelection();
   } catch (error) {
@@ -752,12 +637,12 @@ dataset.addEventListener('change', () => {
   updateSelection();
 });
 upload.addEventListener('change', updatePreview);
-const dropzone = byId('dropzone');
+const uploadForm = byId('upload-form');
 for (const type of ['dragenter', 'dragover']) {
-  dropzone.addEventListener(type, event => { event.preventDefault(); if (!busy) dropzone.classList.add('dragging'); });
+  uploadForm.addEventListener(type, event => { event.preventDefault(); if (!busy) uploadForm.classList.add('dragging'); });
 }
-for (const type of ['dragleave', 'drop']) dropzone.addEventListener(type, () => dropzone.classList.remove('dragging'));
-dropzone.addEventListener('drop', event => {
+for (const type of ['dragleave', 'drop']) uploadForm.addEventListener(type, () => uploadForm.classList.remove('dragging'));
+uploadForm.addEventListener('drop', event => {
   event.preventDefault();
   if (busy || !event.dataTransfer.files.length) return;
   upload.files = event.dataTransfer.files;
@@ -776,13 +661,12 @@ function setBusy(value) {
 
 function updateUploadAnnotation() {
   const image = byId('upload-preview');
-  const frame = byId('upload-preview-button');
-  frame.replaceChildren(annotatedImage(image, uploadAnnotation), element('span', 'Phóng to', 'zoom-hint'));
+  byId('upload-preview-button').replaceChildren(annotatedImage(image, uploadAnnotation));
   byId('upload-heatmap-note').textContent = uploadAnnotation?.heatmap ? heatmapDescription(uploadAnnotation.heatmap) : '';
 }
 
 byId('upload-preview-button').addEventListener('click', () => openLargeImage(byId('upload-preview'), uploadAnnotation));
-byId('upload-form').addEventListener('submit', async event => {
+uploadForm.addEventListener('submit', async event => {
   event.preventDefault();
   if (run.disabled) return;
   const file = upload.files[0];
@@ -807,7 +691,7 @@ byId('upload-form').addEventListener('submit', async event => {
     fields(prediction, result.fields, 'Chưa tìm thấy thông tin.', true);
     uploadAnnotation = result.annotation;
     updateUploadAnnotation();
-    uploadStatus.textContent = result.annotation?.heatmap?.cached ? 'Bản đồ nhiệt đã tính sẵn' : 'Xong · ' + result.seconds + ' giây';
+    uploadStatus.textContent = result.annotation?.heatmap?.cached ? 'Bản đồ nhiệt đã tính trước đó' : 'Xong · ' + result.seconds + ' giây';
   } catch (error) {
     prediction.replaceChildren();
     byId('prediction-panel').hidden = true;
