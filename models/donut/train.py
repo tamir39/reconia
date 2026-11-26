@@ -130,16 +130,10 @@ def evaluate_epoch(
             batch_size = batch["pixel_values"].shape[0]
             decoder_input_ids = prompt_ids.repeat(batch_size, 1)
 
-            valid_lengths = (batch["labels"] != -100).sum(dim=1)
-            batch_max_length = min(
-                max_length,
-                int(valid_lengths.max().item()) + prompt_ids.shape[1] + 32,
-            )
-
             generated_ids = model.generate(
                 batch["pixel_values"],
                 decoder_input_ids=decoder_input_ids,
-                max_length=batch_max_length,    
+                max_length=max_length,
                 pad_token_id=processor.tokenizer.pad_token_id,
                 eos_token_id=processor.tokenizer.eos_token_id,
                 num_beams=1,

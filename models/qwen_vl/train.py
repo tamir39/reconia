@@ -118,12 +118,6 @@ def evaluate_epoch(
         for batch in tqdm(loader, desc=desc, leave=False):
             batch_gpu = {key: value.to(device) for key, value in batch.items()}
             batch_loss = {key: value for key, value in batch_gpu.items() if key != "prompt_len"}
-            valid_lengths = (batch_gpu["labels"] != -100).sum(dim=1)
-            batch_max_new_tokens = min(
-                max_new_tokens,
-                int(valid_lengths.max().item()) + 32,
-            )
-
             outputs = model(**batch_loss)
             total_loss += outputs.loss.item()
             del outputs
@@ -158,7 +152,7 @@ def evaluate_epoch(
                 attention_mask=prompt_attention_mask,
                 pixel_values=batch_gpu["pixel_values"],
                 image_grid_thw=batch_gpu["image_grid_thw"],
-                max_new_tokens=batch_max_new_tokens,
+                max_new_tokens=max_new_tokens,
                 do_sample=False,
                 use_cache=True,
             )
