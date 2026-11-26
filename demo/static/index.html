@@ -4,65 +4,85 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reconia · Demo trích xuất hóa đơn</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f4e79'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,sans-serif' font-size='17' font-weight='700' text-anchor='middle' fill='%23ffffff'%3ER%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23173350'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,sans-serif' font-size='17' font-weight='700' text-anchor='middle' fill='%23ffffff'%3ER%3C/text%3E%3C/svg%3E">
 <style>
 :root{
   color-scheme:light;
-  --text:#1c2430;--muted:#5f6b7a;--line:#e2e6eb;--panel:#f6f7f9;--hover:#eef1f5;
-  --accent:#1f4e79;--accent-hover:#173c5e;--accent-soft:#e8eef5;
-  --ok:#1a7f37;--ok-soft:#e9f5ec;--bad:#c0392b;--bad-soft:#fbecea;
+  --text:#1b2533;--muted:#5d6979;--line:#e1e5eb;--bg:#f1f3f6;--surface:#fff;--subtle:#f7f8fa;
+  --accent:#1f5a8f;--accent-hover:#184a77;--accent-soft:#e6eef7;
+  --side:#173350;--side-text:#e9eff6;--side-muted:#a9b8c9;--side-line:#2a4766;--side-hover:#20405f;
+  --ok:#17773a;--ok-soft:#e3f3e8;--bad:#b8322a;--bad-soft:#fbe7e4;--warn:#8a5a00;--warn-soft:#fbf0d9;
   --mono:Consolas,"Cascadia Mono",monospace;
-  --sidebar:272px;
+  --shadow:0 1px 2px #10182814,0 1px 3px #1018280a;
+  --sidebar:280px;--stage-h:calc(100vh - 230px);
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:#fff;color:var(--text);font:14.5px/1.5 "Segoe UI",system-ui,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);font:14.5px/1.5 "Segoe UI",system-ui,sans-serif}
 [hidden]{display:none!important}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:focus-visible{outline:2px solid #4a90d9;outline-offset:2px}
 h1,h2,h3{margin:0;font-weight:600}
 p{margin:0}
 a{color:var(--accent)}
 .app{display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);min-height:100vh}
 
 /* Sidebar */
-.sidebar{background:var(--panel);border-right:1px solid var(--line);padding:20px 20px 24px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh;overflow:auto}
-.brand h1{font-size:1.2rem}
-.brand p{color:var(--muted);font-size:.86rem;margin-top:2px}
-.group{display:grid;gap:10px}
-.group-title{font-size:.8rem;font-weight:600;color:var(--muted)}
-.field{display:grid;gap:4px;font-size:.88rem}
+.sidebar{background:var(--side);color:var(--side-text);padding:22px 20px 24px;display:flex;flex-direction:column;gap:24px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:#fff;color:var(--side);font-weight:700;font-size:1.05rem}
+.brand h1{font-size:1.15rem;line-height:1.2}
+.brand p{color:var(--side-muted);font-size:.82rem}
+.group{display:grid;gap:12px}
+.group+.group{padding-top:20px;border-top:1px solid var(--side-line)}
+.group-title{font-size:.78rem;font-weight:600;color:var(--side-muted)}
+.field{display:grid;gap:5px;font-size:.86rem;color:var(--side-text)}
 select{font:inherit;font-size:.9rem;min-height:34px;width:100%;border-radius:6px;border:1px solid #cfd6de;padding:4px 8px;color:var(--text);background:#fff}
-.hint{font-size:.8rem;color:var(--muted)}
-.score-list{display:grid;gap:2px;font-size:.9rem}
-.score-list div{display:flex;justify-content:space-between;padding:4px 8px;border-radius:5px}
-.score-list div.current{background:var(--accent-soft);color:var(--accent);font-weight:600}
-.score-list span:last-child{font-variant-numeric:tabular-nums}
-details.fields-list summary{cursor:pointer;font-size:.86rem;color:var(--accent)}
-details.fields-list ul{margin:8px 0 0;padding-left:18px;font-size:.84rem;max-height:220px;overflow:auto}
-details.fields-list h4{margin:8px 0 2px;font-size:.82rem}
-details.fields-list code{font:.78rem var(--mono);color:var(--muted)}
+.sidebar select{border-color:transparent}
+.hint{font-size:.8rem;color:var(--side-muted)}
+.score-list{display:grid;gap:4px}
+.score-row{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:7px 10px;border-radius:6px;font-size:.88rem}
+.score-row .bar{grid-column:1/-1;height:4px;border-radius:2px;background:#ffffff1f;overflow:hidden}
+.score-row .bar span{display:block;height:100%;background:#7fb3e6;border-radius:2px}
+.score-row b{font-weight:600;font-variant-numeric:tabular-nums}
+.score-row.current{background:var(--side-hover)}
+.score-row.current .bar span{background:#fff}
+details.fields-list summary{cursor:pointer;font-size:.86rem;color:var(--side-text)}
+details.fields-list ul{margin:8px 0 0;padding-left:18px;font-size:.84rem;max-height:240px;overflow:auto;color:var(--side-text)}
+details.fields-list h4{margin:8px 0 2px;font-size:.82rem;color:var(--side-muted)}
+details.fields-list code{font:.76rem var(--mono);color:var(--side-muted)}
 
 /* Main */
 .main{min-width:0;display:flex;flex-direction:column}
-.tabs{display:flex;gap:4px;padding:0 28px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:2;overflow-x:auto}
-.tab{font:inherit;font-size:.92rem;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:14px 10px 12px;cursor:pointer;white-space:nowrap;border-radius:0;min-height:0}
+.tabs{display:flex;gap:2px;padding:0 28px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2;overflow-x:auto}
+.tab{font:inherit;font-size:.93rem;background:none;border:0;box-shadow:none;border-bottom:2px solid transparent;color:var(--muted);padding:15px 12px 13px;cursor:pointer;white-space:nowrap;border-radius:0;min-height:0;display:flex;align-items:center;gap:6px}
 .tab:hover:not(:disabled){color:var(--text);background:none}
 .tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
-.tab .mark{margin-right:5px}
-.tab-ok .mark{color:var(--ok)}
-.tab-bad .mark{color:var(--bad)}
-.panel{padding:24px 28px 40px}
-.workbench{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:start}
+.tab .dot{width:8px;height:8px;border-radius:50%}
+.tab-ok .dot{background:var(--ok)}
+.tab-bad .dot{background:var(--bad)}
+.panel{padding:22px 28px 40px}
+.page-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:16px}
+.page-head h2{font-size:1.25rem}
+.page-head .sub{color:var(--muted);font-size:.88rem;margin-top:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.84rem;font-weight:600;white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.neutral{background:var(--accent-soft);color:var(--accent)}
+.workbench{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);min-width:0}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);min-height:54px}
+.card-head h3{font-size:.95rem}
+.card-head .meta{font:.8rem var(--mono);color:var(--muted);overflow-wrap:anywhere}
+.card-head select{width:auto}
+.card-body{padding:16px}
 
 /* Viewer */
-.viewer-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;min-height:34px}
-.viewer-bar .title{font-size:.9rem;color:var(--muted);overflow-wrap:anywhere}
-.viewer-bar select{width:auto}
-.stage{display:flex;align-items:center;justify-content:center;height:calc(100vh - 170px);min-height:420px;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;padding:0;width:100%;cursor:zoom-in}
-.stage:hover:not(:disabled){background:var(--hover)}
-.stage img{display:block;max-width:100%;max-height:100%;object-fit:contain}
-.stage .annotated-image{width:min(100%,calc((100vh - 172px) * var(--image-ratio)))}
-.stage-note{font-size:.84rem;color:var(--muted);margin-top:8px}
+.stage{display:flex;align-items:center;justify-content:center;width:100%;height:var(--stage-h);min-height:400px;padding:12px;border:0;box-shadow:none;border-radius:0 0 10px 10px;background:var(--subtle);cursor:zoom-in;overflow:hidden}
+.stage:hover:not(:disabled){background:#f0f2f5}
+.stage img{display:block;max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 1px 4px #1018281f}
+.stage .annotated-image{width:min(100%,calc((var(--stage-h) - 24px) * var(--image-ratio)));box-shadow:0 1px 4px #1018281f}
+.stage .annotated-image img{box-shadow:none}
+.stage-note{font-size:.84rem;color:var(--muted);padding:10px 16px;border-top:1px solid var(--line)}
 .stage-note:empty{display:none}
 .annotated-image{display:block;position:relative}
 .annotated-image img{width:100%;height:auto;max-height:none}
@@ -74,86 +94,97 @@ details.fields-list code{font:.78rem var(--mono);color:var(--muted)}
 .annotated-image:not([data-layer="heatmap"]) .receipt-heatmap{display:none}
 
 /* Results */
-.result-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px;min-height:34px}
-.result-head h2{font-size:1rem}
-.summary{font-size:.88rem;color:var(--muted)}
 .fields-table{width:100%;border-collapse:collapse;font-size:.9rem}
-.fields-table th{font-weight:600;color:var(--muted);text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);font-size:.84rem}
-.fields-table td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+.fields-table th{font-weight:600;color:var(--muted);text-align:left;padding:8px 12px;background:var(--subtle);border-bottom:1px solid var(--line);font-size:.82rem}
+.fields-table td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+.fields-table tbody tr:last-child td{border-bottom:0}
 .fields-table td.value{font-family:var(--mono);font-size:.88rem}
-.fields-table td.mark{width:28px;text-align:center;font-weight:700}
-.fields-table tr.ok td.mark{color:var(--ok)}
-.fields-table tr.bad td.mark{color:var(--bad)}
-.fields-table tr.bad td.pred{color:var(--bad)}
-.fields-table tr.focus td{background:var(--accent-soft)}
-.fields-table tr.focus.bad td{background:var(--bad-soft)}
-.fields-table tr.focus.ok td{background:var(--ok-soft)}
-.fields-table td.name{white-space:nowrap;width:1%;padding-right:16px}
+.fields-table td.name{white-space:nowrap;width:1%;padding-right:18px}
 .fields-table .name small{display:block;color:var(--muted);font:.74rem var(--mono)}
+.fields-table td.state{width:1%;white-space:nowrap;text-align:right}
+.fields-table tr.bad td.pred{color:var(--bad)}
+.fields-table tr.focus td{background:#f4f8fc}
+.fields-table tr.focus td.name{font-weight:600}
+.fields-table tr.focus .name small::after{content:' · trường minh họa';font-family:"Segoe UI",system-ui,sans-serif}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.76rem;font-weight:600}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
 .missing{color:var(--muted);font-style:italic;font-family:"Segoe UI",system-ui,sans-serif}
-.explain{margin-top:14px;padding:10px 12px;border-radius:6px;background:var(--panel);font-size:.88rem}
+.explain{margin:16px;padding:12px 14px;border-radius:8px;background:var(--subtle);border:1px solid var(--line);font-size:.88rem}
 .explain b{font-weight:600}
-.actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:16px}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:14px 16px;border-top:1px solid var(--line)}
 .status{font-size:.86rem;color:var(--muted)}
 .status:empty{display:none}
-.meta{font:.78rem var(--mono);color:var(--muted);margin-top:12px}
 
 /* Buttons */
-button{font:inherit;font-size:.9rem;font-weight:600;min-height:34px;padding:5px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+button{font:inherit;font-size:.9rem;font-weight:600;min-height:34px;padding:5px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;box-shadow:0 1px 2px #1018281a}
 button:hover:not(:disabled){background:var(--accent-hover)}
 button:disabled{opacity:.45;cursor:default}
-.secondary{background:#fff;color:var(--accent);border-color:#cfd6de}
-.secondary:hover:not(:disabled){background:var(--panel)}
+.secondary{background:#fff;color:var(--accent);border-color:#cdd5df}
+.secondary:hover:not(:disabled){background:var(--subtle)}
 
 /* Upload tab */
-.dropzone{position:relative;display:grid;place-items:center;align-content:center;gap:6px;height:calc(100vh - 170px);min-height:420px;border:2px dashed #cfd6de;border-radius:8px;background:var(--panel);text-align:center;color:var(--muted);padding:24px}
+.dropzone{position:relative;display:grid;place-items:center;align-content:center;gap:6px;height:var(--stage-h);min-height:400px;margin:12px;border:2px dashed #c9d2dd;border-radius:8px;background:var(--subtle);text-align:center;color:var(--muted);padding:24px}
 .dropzone.dragging{border-color:var(--accent);background:var(--accent-soft)}
 .dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer}
-.dropzone strong{color:var(--text);font-weight:600}
+.dropzone strong{color:var(--text);font-weight:600;font-size:1rem}
+.dropzone .hint{color:var(--muted)}
 .dropzone:focus-within{outline:2px solid var(--accent);outline-offset:2px}
-.upload-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .check{display:flex;align-items:center;gap:6px;font-size:.9rem;cursor:pointer}
-.empty{color:var(--muted);font-size:.9rem;padding:16px 0}
+.empty{color:var(--muted);font-size:.9rem;padding:16px}
 
 /* Scores tab */
-.scores{border-collapse:collapse;min-width:min(100%,560px)}
-.scores th,.scores td{padding:9px 18px 9px 0;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
-.scores th:first-child,.scores td:first-child{text-align:left;padding-right:48px}
-.scores th{font-weight:600;color:var(--muted);font-size:.86rem}
+.scores{border-collapse:collapse;width:100%}
+.scores th,.scores td{padding:11px 16px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.scores tbody tr:last-child td{border-bottom:0}
+.scores th{font-weight:600;color:var(--muted);font-size:.82rem;background:var(--subtle)}
 .scores td{font-variant-numeric:tabular-nums}
-.scores td.best{font-weight:700}
-.scores tr.current td{color:var(--accent);font-weight:600}
-.notes{display:grid;gap:3px;margin-top:14px;font-size:.84rem;color:var(--muted)}
-.panel>h2{font-size:1.05rem;margin-bottom:14px}
+.scores td.model{font-weight:600}
+.scores .cell{display:grid;grid-template-columns:52px minmax(60px,1fr);align-items:center;gap:10px}
+.scores .bar{height:8px;border-radius:4px;background:#e9edf2;overflow:hidden}
+.scores .bar span{display:block;height:100%;border-radius:4px;background:#9bbbd9}
+.scores td.best .bar span{background:var(--accent)}
+.scores td.best .num{font-weight:700;color:var(--accent)}
+.scores tr.current td{background:#f4f8fc}
+.scores tr.current td.model::after{content:' · đang chọn';font-weight:400;color:var(--muted);font-size:.82rem}
+.notes{display:grid;gap:3px;padding:12px 16px;border-top:1px solid var(--line);font-size:.84rem;color:var(--muted)}
 
 /* Large image dialog */
 .image-dialog{width:min(980px,calc(100% - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text)}
-.image-dialog::backdrop{background:#1c243099}
+.image-dialog::backdrop{background:#0f1c2bb3}
 .image-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;border-bottom:1px solid var(--line)}
 .image-toolbar h2{flex:1 1 180px;font-size:1rem;overflow-wrap:anywhere}
-.image-scroll{max-height:80dvh;overflow:auto;background:var(--panel);padding:8px}
+.image-scroll{max-height:80dvh;overflow:auto;background:var(--subtle);padding:8px}
 .image-scroll img{width:auto;max-height:calc(80dvh - 16px);margin:auto;display:block}
 .image-scroll .annotated-image{width:min(100%,calc((80dvh - 16px) * var(--image-ratio)));margin:auto}
 .image-scroll.zoomed img{height:calc(160dvh - 32px);max-height:none;max-width:none}
 .image-scroll.zoomed .annotated-image{width:calc((160dvh - 32px) * var(--image-ratio))}
 body:has(.image-dialog[open]){overflow:hidden}
 
-@media(max-width:1100px){.workbench{grid-template-columns:1fr}.stage,.dropzone{height:60vh}.stage .annotated-image{width:min(100%,calc((60vh - 2px) * var(--image-ratio)))}}
+@media(max-width:1100px){:root{--stage-h:60vh}.workbench{grid-template-columns:1fr}}
 @media(max-width:820px){
   .app{grid-template-columns:1fr}
-  .sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px;gap:16px}
-  .tabs{padding:0 8px;gap:0}.tab{padding:12px 7px 10px;font-size:.86rem}.panel{padding:16px 16px 32px}
+  .sidebar{position:static;height:auto;padding:16px;gap:16px}
+  .tabs{padding:0 8px;gap:0}.tab{padding:12px 7px 10px;font-size:.86rem}
+  .panel{padding:16px 12px 32px}
+  .scores .cell{grid-template-columns:48px 40px}
 }
 </style>
 </head>
 <body>
 <div class="app">
 <aside class="sidebar" aria-label="Điều khiển">
-  <div class="brand"><h1>Reconia</h1><p>Demo trích xuất thông tin hóa đơn</p></div>
+  <div class="brand"><span class="brand-mark" aria-hidden="true">R</span><div><h1>Reconia</h1><p>Demo trích xuất hóa đơn</p></div></div>
 
   <div class="group">
     <label class="field">Mô hình<select id="model" disabled></select></label>
     <label class="field">Bộ dữ liệu<select id="dataset" disabled></select></label>
+  </div>
+
+  <div class="group">
+    <span class="group-title" id="score-title">Micro-F1 trên tập kiểm thử (%)</span>
+    <div class="score-list" id="model-scores"></div>
   </div>
 
   <div class="group" id="heatmap-group" hidden>
@@ -164,20 +195,17 @@ body:has(.image-dialog[open]){overflow:hidden}
   </div>
 
   <div class="group">
-    <span class="group-title" id="score-title">Micro-F1 trên tập kiểm thử (%)</span>
-    <div class="score-list" id="model-scores"></div>
+    <details class="fields-list" id="dataset-labels">
+      <summary id="dataset-label-summary">Các trường của bộ dữ liệu</summary>
+      <div id="dataset-label-content"></div>
+    </details>
   </div>
-
-  <details class="fields-list" id="dataset-labels">
-    <summary id="dataset-label-summary">Các trường của bộ dữ liệu</summary>
-    <div id="dataset-label-content"></div>
-  </details>
 </aside>
 
 <div class="main">
   <div class="tabs" role="tablist" aria-label="Nội dung">
-    <button class="tab tab-ok" role="tab" id="tab-correct" data-tab="correct" aria-controls="panel-example"><span class="mark" aria-hidden="true">✓</span>Ví dụ đúng</button>
-    <button class="tab tab-bad" role="tab" id="tab-error" data-tab="error" aria-controls="panel-example"><span class="mark" aria-hidden="true">✗</span>Ví dụ sai</button>
+    <button class="tab tab-ok" role="tab" id="tab-correct" data-tab="correct" aria-controls="panel-example"><span class="dot" aria-hidden="true"></span>Ví dụ đúng</button>
+    <button class="tab tab-bad" role="tab" id="tab-error" data-tab="error" aria-controls="panel-example"><span class="dot" aria-hidden="true"></span>Ví dụ sai</button>
     <button class="tab" role="tab" id="tab-upload" data-tab="upload" aria-controls="panel-upload">Ảnh của bạn</button>
     <button class="tab" role="tab" id="tab-scores" data-tab="scores" aria-controls="panel-scores">Bảng điểm</button>
   </div>
@@ -185,39 +213,47 @@ body:has(.image-dialog[open]){overflow:hidden}
   <!-- Saved test-set examples -->
   <section class="panel" id="panel-example" role="tabpanel">
     <p id="load-status" class="status" role="status">Đang tải…</p>
-    <div class="workbench" id="example-view" hidden>
-      <div>
-        <div class="viewer-bar">
-          <span class="title" id="example-title"></span>
-          <select id="example-layer" aria-label="Lớp hiển thị" hidden>
-            <option value="heatmap">Bản đồ nhiệt</option>
-            <option value="boxes">Vùng mô hình chọn</option>
-            <option value="original">Ảnh gốc</option>
-          </select>
-        </div>
-        <button type="button" class="stage" id="example-stage" aria-haspopup="dialog" title="Bấm để phóng to"></button>
-        <p class="stage-note" id="example-note"></p>
+    <div id="example-view" hidden>
+      <div class="page-head">
+        <div><h2 id="example-heading"></h2><p class="sub" id="example-sub"></p></div>
+        <span class="chip" id="example-summary"></span>
       </div>
-      <div>
-        <div class="result-head"><h2>Kết quả trích xuất</h2><span class="summary" id="example-summary"></span></div>
-        <table class="fields-table" id="example-fields"></table>
-        <div class="explain" id="example-explain"></div>
-        <div class="actions">
-          <button type="button" class="secondary" id="rerun">Chạy lại mô hình</button>
-          <button type="button" class="secondary" id="heatmap-run" hidden>Xem bản đồ nhiệt</button>
-          <span class="status" id="example-status" role="status"></span>
+      <div class="workbench">
+        <div class="card">
+          <div class="card-head">
+            <span class="meta" id="example-title"></span>
+            <select id="example-layer" aria-label="Lớp hiển thị" hidden>
+              <option value="heatmap">Bản đồ nhiệt</option>
+              <option value="boxes">Vùng mô hình chọn</option>
+              <option value="original">Ảnh gốc</option>
+            </select>
+          </div>
+          <button type="button" class="stage" id="example-stage" aria-haspopup="dialog" title="Bấm để phóng to"></button>
+          <p class="stage-note" id="example-note"></p>
         </div>
-        <p class="meta" id="example-meta"></p>
+        <div class="card">
+          <div class="card-head"><h3>Kết quả trích xuất</h3><span class="status" id="example-source"></span></div>
+          <table class="fields-table" id="example-fields"></table>
+          <div class="explain" id="example-explain"></div>
+          <div class="actions">
+            <button type="button" id="rerun">Chạy lại mô hình</button>
+            <button type="button" class="secondary" id="heatmap-run" hidden>Xem bản đồ nhiệt</button>
+            <span class="status" id="example-status" role="status"></span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- External image -->
   <section class="panel" id="panel-upload" role="tabpanel" hidden>
+    <div class="page-head">
+      <div><h2>Thử với ảnh của bạn</h2><p class="sub">Ảnh được nhận dạng chữ bằng OCR tự động, sau đó đưa vào mô hình đang chọn.</p></div>
+    </div>
     <div class="workbench">
-      <div>
-        <div class="viewer-bar">
-          <span class="title" id="upload-title">Ảnh hóa đơn</span>
+      <div class="card">
+        <div class="card-head">
+          <span class="meta" id="upload-title">Chưa chọn ảnh</span>
           <select id="upload-layer" aria-label="Lớp hiển thị" hidden>
             <option value="heatmap">Bản đồ nhiệt</option>
             <option value="boxes">Vùng mô hình chọn</option>
@@ -233,27 +269,31 @@ body:has(.image-dialog[open]){overflow:hidden}
         <button type="button" class="stage" id="upload-stage" aria-haspopup="dialog" title="Bấm để phóng to" hidden></button>
         <p class="stage-note" id="upload-note"></p>
       </div>
-      <div>
-        <div class="result-head"><h2>Kết quả trích xuất</h2></div>
-        <div class="upload-bar">
-          <label class="check" id="upload-heatmap-option" hidden><input type="checkbox" id="heatmap-check">Kèm bản đồ nhiệt</label>
+      <div class="card">
+        <div class="card-head"><h3>Kết quả trích xuất</h3></div>
+        <div id="prediction"><p class="empty">Chọn một ảnh, sau đó bấm Trích xuất.</p></div>
+        <div class="actions">
           <button type="button" id="run" disabled>Trích xuất</button>
           <button type="button" class="secondary" id="change-image" hidden>Chọn ảnh khác</button>
+          <label class="check" id="upload-heatmap-option" hidden><input type="checkbox" id="heatmap-check">Kèm bản đồ nhiệt</label>
           <span class="status" id="upload-status" role="status"></span>
         </div>
-        <div id="prediction"><p class="empty">Chọn một ảnh, sau đó bấm Trích xuất. Ảnh được nhận dạng chữ bằng OCR tự động trước khi đưa vào mô hình đang chọn.</p></div>
       </div>
     </div>
   </section>
 
   <!-- Scores -->
   <section class="panel" id="panel-scores" role="tabpanel" hidden>
-    <h2>Micro-F1 trên tập kiểm thử (%)</h2>
-    <div id="scores"></div>
-    <div class="notes">
-      <p>In đậm: cao nhất trên mỗi bộ dữ liệu. Dòng màu xanh: mô hình đang chọn.</p>
-      <p id="reference-note" hidden>* Chỉ có điểm, không chạy trong demo này.</p>
-      <p id="sources"></p>
+    <div class="page-head">
+      <div><h2>Micro-F1 trên tập kiểm thử</h2><p class="sub">Đơn vị phần trăm. Độ dài thanh tính trên thang 0–100.</p></div>
+    </div>
+    <div class="card">
+      <div id="scores" style="overflow:auto"></div>
+      <div class="notes">
+        <p>Tô đậm: cao nhất trên mỗi bộ dữ liệu.</p>
+        <p id="reference-note" hidden>* Chỉ có điểm, không chạy trong demo này.</p>
+        <p id="sources"></p>
+      </div>
     </div>
   </section>
 </div>
@@ -309,6 +349,7 @@ const label = key => fieldNames[key] ?? key;
 const asList = value => value == null ? [] : Array.isArray(value) ? value : [value];
 const norm = values => asList(values).map(s => String(s).toLowerCase().trim().replace(/\s+/g, ' ')).filter(Boolean).sort();
 const same = (a, b) => JSON.stringify(norm(a)) === JSON.stringify(norm(b));
+const pct = value => (value * 100).toFixed(2);
 
 function heatmapDescription(heatmap) {
   const name = label(heatmap.field);
@@ -400,13 +441,22 @@ imageZoom.addEventListener('click', () => setImageZoom(!imageScroll.classList.co
 imageDialog.addEventListener('click', event => { if (event.target === imageDialog) imageDialog.close(); });
 imageDialog.addEventListener('close', () => imageScroll.replaceChildren());
 
+function bar(value) {
+  const track = element('span', null, 'bar');
+  const fill = element('span');
+  fill.style.width = Math.max(0, Math.min(100, value * 100)) + '%';
+  track.append(fill);
+  return track;
+}
+
 // ---------- Sidebar ----------
 function showModelScores() {
   const list = byId('model-scores');
   list.replaceChildren();
   catalog.datasets.forEach((key, index) => {
-    const row = element('div', null, key === dataset.value ? 'current' : null);
-    row.append(element('span', titles[key]), element('span', (catalog.scores[model.value][index] * 100).toFixed(2)));
+    const value = catalog.scores[model.value][index];
+    const row = element('div', null, 'score-row' + (key === dataset.value ? ' current' : ''));
+    row.append(element('span', titles[key]), element('b', pct(value)), bar(value));
     list.append(row);
   });
   byId('score-title').textContent = 'Micro-F1 của ' + catalog.models[model.value] + ' (%)';
@@ -452,26 +502,43 @@ function loadExample() {
   renderExample();
 }
 
-function fieldRows(truth, predicted, focus) {
+function fieldOrder(truth, predicted, focus) {
   const order = catalog.dataset_fields[dataset.value] ?? [];
   const keys = [...new Set([...Object.keys(truth), ...Object.keys(predicted)])]
     .sort((a, b) => (order.indexOf(a) + 1 || 999) - (order.indexOf(b) + 1 || 999));
-  if (focus && keys.includes(focus)) keys.splice(keys.indexOf(focus), 1), keys.unshift(focus);
+  if (focus && keys.includes(focus)) { keys.splice(keys.indexOf(focus), 1); keys.unshift(focus); }
   return keys;
 }
 
 function valueCell(values, className) {
   const cell = element('td', null, 'value ' + className);
   const list = asList(values);
-  if (!list.length) cell.append(element('span', className === 'pred' ? 'bỏ sót' : 'không có', 'missing'));
+  if (!list.length) cell.append(element('span', '—', 'missing'));
   else cell.textContent = list.join(' · ');
+  return cell;
+}
+
+function fieldState(truth, predicted) {
+  if (same(truth, predicted)) return ['ok', 'Khớp'];
+  if (!asList(predicted).length) return ['bad', 'Bỏ sót'];
+  if (!asList(truth).length) return ['warn', 'Thừa'];
+  return ['bad', 'Sai'];
+}
+
+function nameCell(key) {
+  const cell = element('td', label(key), 'name');
+  if (label(key) !== key) cell.append(element('small', key));
   return cell;
 }
 
 function renderExample() {
   const {example, row, fields, annotation} = current;
   const truth = row.gt ?? {};
-  byId('example-title').textContent = titles[dataset.value] + ' · ' + row.id;
+  const focusOk = same(truth[example.field], fields[example.field]);
+  byId('example-heading').textContent = (tab === 'error' ? 'Ví dụ sai' : 'Ví dụ đúng') + ' · ' + label(example.field);
+  byId('example-sub').textContent = catalog.models[model.value] + ' trên ' + titles[dataset.value] + ', tập kiểm thử';
+  byId('example-title').textContent = row.id + ' · ' + row.boxes + ' vùng chữ';
+  byId('example-source').textContent = current.live ? 'Kết quả vừa chạy' : 'Kết quả đã lưu';
   renderStage(byId('example-stage'), byId('example-layer'), byId('example-note'),
               '/image/' + example.case_index, 'Hóa đơn ' + row.id, annotation);
   const table = byId('example-fields');
@@ -480,22 +547,22 @@ function renderExample() {
   for (const text of ['Trường', 'Nhãn chuẩn', 'Dự đoán', '']) head.append(element('th', text));
   const body = table.createTBody();
   let matched = 0, total = 0;
-  for (const key of fieldRows(truth, fields, example.field)) {
-    const ok = same(truth[key], fields[key]);
-    total += 1; matched += ok;
+  for (const key of fieldOrder(truth, fields, example.field)) {
+    const [kind, text] = fieldState(truth[key], fields[key]);
+    total += 1; matched += kind === 'ok';
     const tr = body.insertRow();
-    tr.className = (ok ? 'ok' : 'bad') + (key === example.field ? ' focus' : '');
-    const name = element('td', label(key), 'name');
-    if (label(key) !== key) name.append(element('small', key));
-    tr.append(name, valueCell(truth[key], 'truth'), valueCell(fields[key], 'pred'), element('td', ok ? '✓' : '✗', 'mark'));
+    tr.className = kind + (key === example.field ? ' focus' : '');
+    const state = element('td', null, 'state');
+    state.append(element('span', text, 'tag ' + kind));
+    tr.append(nameCell(key), valueCell(truth[key], 'truth'), valueCell(fields[key], 'pred'), state);
   }
-  byId('example-summary').textContent = 'Khớp ' + matched + '/' + total + ' trường';
-  const focusOk = same(truth[example.field], fields[example.field]);
-  const explain = byId('example-explain');
-  explain.replaceChildren(element('b', 'Trường minh họa: ' + label(example.field) + '. '),
-    current.live ? (focusOk ? 'Lần chạy lại cho giá trị khớp nhãn chuẩn.' : !asList(fields[example.field]).length
-      ? 'Lần chạy lại bỏ sót trường này.' : 'Lần chạy lại cho giá trị khác nhãn chuẩn.') : example.explanation);
-  byId('example-meta').textContent = row.id + ' · ' + row.boxes + ' vùng chữ · ' + (current.live ? 'kết quả vừa chạy' : 'kết quả đã lưu');
+  const summary = byId('example-summary');
+  summary.textContent = matched + '/' + total + ' trường khớp nhãn chuẩn';
+  summary.className = 'chip ' + (matched === total ? 'ok' : 'bad');
+  byId('example-explain').replaceChildren(element('b', 'Giải thích: '),
+    current.live ? (focusOk ? 'Lần chạy lại cho giá trị ' + label(example.field).toLowerCase() + ' khớp nhãn chuẩn.'
+      : !asList(fields[example.field]).length ? 'Lần chạy lại bỏ sót trường ' + label(example.field).toLowerCase() + '.'
+      : 'Lần chạy lại cho giá trị ' + label(example.field).toLowerCase() + ' khác nhãn chuẩn.') : example.explanation);
   byId('heatmap-run').hidden = !catalog.vision_models.includes(model.value);
 }
 
@@ -535,9 +602,9 @@ function showUploadPreview() {
   byId('dropzone').hidden = !!previewUrl;
   byId('upload-stage').hidden = !previewUrl;
   byId('change-image').hidden = !previewUrl;
-  byId('upload-title').textContent = file ? file.name : 'Ảnh hóa đơn';
-  byId('prediction').replaceChildren(element('p', valid ? 'Bấm Trích xuất để chạy ' + catalog.models[model.value] + '.'
-    : 'Chọn một ảnh, sau đó bấm Trích xuất. Ảnh được nhận dạng chữ bằng OCR tự động trước khi đưa vào mô hình đang chọn.', 'empty'));
+  byId('upload-title').textContent = file ? file.name : 'Chưa chọn ảnh';
+  byId('prediction').replaceChildren(element('p', valid ? 'Bấm Trích xuất để chạy ' + catalog.models[model.value] + ' trên ảnh này.'
+    : 'Chọn một ảnh, sau đó bấm Trích xuất.', 'empty'));
   byId('upload-status').textContent = file && !valid ? 'Ảnh phải lớn hơn 0 và tối đa 12 MB.' : '';
   if (previewUrl) renderStage(byId('upload-stage'), byId('upload-layer'), byId('upload-note'), previewUrl, file.name, null);
   else { byId('upload-layer').hidden = true; byId('upload-note').textContent = ''; }
@@ -583,12 +650,7 @@ run.addEventListener('click', async () => {
       const head = table.createTHead().insertRow();
       for (const text of ['Trường', 'Dự đoán']) head.append(element('th', text));
       const body = table.createTBody();
-      for (const [key, value] of entries) {
-        const tr = body.insertRow();
-        const name = element('td', label(key), 'name');
-        if (label(key) !== key) name.append(element('small', key));
-        tr.append(name, valueCell(value, 'pred-plain'));
-      }
+      for (const [key, value] of entries) body.insertRow().append(nameCell(key), valueCell(value, 'pred-plain'));
       byId('prediction').replaceChildren(table);
     }
     byId('upload-status').textContent = result.annotation?.heatmap?.cached ? 'Bản đồ nhiệt đã tính trước đó' : 'Xong · ' + result.seconds + ' giây';
@@ -615,8 +677,14 @@ function showScores() {
   for (const item of rows) {
     const tr = body.insertRow();
     if (item.key === model.value) tr.className = 'current';
-    tr.append(element('td', item.name + (item.reference ? '*' : '')));
-    item.scores.forEach((value, column) => tr.append(element('td', (value * 100).toFixed(2), value === best[column] ? 'best' : null)));
+    tr.append(element('td', item.name + (item.reference ? '*' : ''), 'model'));
+    item.scores.forEach((value, column) => {
+      const td = element('td', null, value === best[column] ? 'best' : null);
+      const cell = element('div', null, 'cell');
+      cell.append(element('span', pct(value), 'num'), bar(value));
+      td.append(cell);
+      tr.append(td);
+    });
   }
   byId('scores').replaceChildren(table);
   byId('reference-note').hidden = !rows.some(r => r.reference);
