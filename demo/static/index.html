@@ -15,6 +15,7 @@
   --mono:Consolas,"Cascadia Mono",monospace;
   --shadow:0 1px 2px #2222220d;
   --sidebar:280px;--stage-h:calc(100vh - 230px);
+  --ease:cubic-bezier(.25,1,.5,1);
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -35,7 +36,7 @@ a{color:var(--accent)}
 .group{display:grid;gap:12px}
 .group+.group{padding-top:20px;border-top:1px solid var(--side-line)}
 .group-title{font-size:.78rem;font-weight:600;color:var(--side-muted)}
-.field{display:grid;gap:5px;font-size:.86rem;color:var(--side-text)}
+.field{display:grid;gap:5px;font-size:.86rem}
 select{font:inherit;font-size:.9rem;min-height:34px;width:100%;border-radius:6px;border:1px solid #d6d5d0;padding:4px 8px;color:var(--text);background:#fff}
 .hint{font-size:.8rem;color:var(--side-muted)}
 .score-list{display:grid;gap:4px}
@@ -45,10 +46,11 @@ select{font:inherit;font-size:.9rem;min-height:34px;width:100%;border-radius:6px
 .score-row b{font-weight:600;font-variant-numeric:tabular-nums}
 .score-row.current{background:var(--side-hover)}
 .score-row.current .bar span{background:var(--accent)}
-details.fields-list summary{cursor:pointer;font-size:.86rem;color:var(--side-text)}
-details.fields-list ul{margin:8px 0 0;padding-left:18px;font-size:.84rem;max-height:240px;overflow:auto;color:var(--side-text)}
+details.fields-list summary{cursor:pointer;font-size:.86rem}
+details.fields-list ul{margin:8px 0 0;padding-left:18px;font-size:.84rem;max-height:240px;overflow:auto}
 details.fields-list h4{margin:8px 0 2px;font-size:.82rem;color:var(--side-muted)}
 details.fields-list code{font:.76rem var(--mono);color:var(--side-muted)}
+.bar span{transition:width .6s var(--ease)}
 
 /* Main */
 .main{min-width:0;display:flex;flex-direction:column}
@@ -61,51 +63,77 @@ details.fields-list code{font:.76rem var(--mono);color:var(--side-muted)}
 .tab-bad .dot{background:var(--bad)}
 .panel{padding:22px 28px 40px}
 .page-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:16px}
-.page-head h2{font-size:1.25rem}
+.page-head h2{font-size:1.3rem}
 .page-head .sub{color:var(--muted);font-size:.88rem;margin-top:2px}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.84rem;font-weight:600;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:.86rem;font-weight:600;white-space:nowrap}
 .chip.ok{background:var(--ok-soft);color:var(--ok)}
 .chip.bad{background:var(--bad-soft);color:var(--bad)}
-.chip.neutral{background:var(--accent-soft);color:var(--accent)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
 .workbench{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);min-width:0}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);min-height:54px}
 .card-head h3{font-size:.95rem}
 .card-head .meta{font:.8rem var(--mono);color:var(--muted);overflow-wrap:anywhere}
 .card-head select{width:auto}
-.card-body{padding:16px}
+.fade-in{animation:fade .28s var(--ease)}
+@keyframes fade{from{opacity:.35}to{opacity:1}}
 
 /* Viewer */
 .stage{display:flex;align-items:center;justify-content:center;width:100%;height:var(--stage-h);min-height:400px;padding:12px;border:0;box-shadow:none;border-radius:0 0 10px 10px;background:var(--subtle);cursor:zoom-in;overflow:hidden}
 .stage:hover:not(:disabled){background:#f1f0ec}
 .stage img{display:block;max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 1px 4px #2222221a}
-.stage .annotated-image{width:min(100%,calc((var(--stage-h) - 24px) * var(--image-ratio)));box-shadow:0 1px 4px #2222221a}
+.stage>.annotated-image{width:min(100%,calc((var(--stage-h) - 24px) * var(--image-ratio)));box-shadow:0 1px 4px #2222221a}
 .stage .annotated-image img{box-shadow:none}
+.crop{display:block;position:relative;overflow:hidden;background:#fff;box-shadow:0 1px 4px #2222221a}
+.crop>.annotated-image{position:absolute}
 .stage-note{font-size:.84rem;color:var(--muted);padding:10px 16px;border-top:1px solid var(--line)}
 .stage-note:empty{display:none}
 .annotated-image{display:block;position:relative}
 .annotated-image img{width:100%;height:auto;max-height:none}
-.receipt-region{position:absolute;outline:2px solid #08794e;background:#29b87924;pointer-events:none}
-.receipt-region.wrong{outline-color:#bb2638;background:#e74c5d24}
+.receipt-region{position:absolute;outline:2px solid #3f6b45;background:#3f6b4526;pointer-events:none;border-radius:2px}
+.receipt-region.wrong{outline-color:#c0392b;background:#c0392b26}
 .receipt-region.predicted{outline-color:#2166ac;background:#2166ac18}
 .receipt-heatmap{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .annotated-image:not([data-layer="boxes"]) .receipt-region,
 .annotated-image:not([data-layer="heatmap"]) .receipt-heatmap{display:none}
+.legend{display:inline-flex;align-items:center;gap:5px;margin-right:12px}
+.legend i{width:12px;height:12px;border-radius:2px;display:inline-block}
+.legend .truth{outline:2px solid #3f6b45;background:#3f6b4526}
+.legend .pred{outline:2px solid #c0392b;background:#c0392b26}
+
+/* Spotlight: the illustrated field, large */
+.spotlight{padding:16px;border-bottom:1px solid var(--line)}
+.spotlight-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.spotlight-head h4{margin:0;font-size:.82rem;font-weight:600;color:var(--muted)}
+.compare{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.compare>div{border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
+.compare span{display:block;font-size:.8rem;color:var(--muted);margin-bottom:4px}
+.compare code{display:block;font:600 1.3rem/1.35 var(--mono);overflow-wrap:anywhere;white-space:pre-wrap}
+.compare .pred-box.ok{background:var(--ok-soft);border-color:#d2e2d4}
+.compare .pred-box.bad{background:var(--bad-soft);border-color:#eccfca}
+.compare .pred-box.warn{background:var(--warn-soft);border-color:#eadcbd}
+mark{border-radius:3px;padding:0 1px}
+mark.del{background:#3f6b4533;color:var(--ok)}
+mark.ins{background:#c0392b33;color:var(--bad)}
+.spot-note{margin-top:10px;font-size:.86rem;color:var(--muted)}
 
 /* Results */
+.table-title{display:flex;justify-content:space-between;gap:8px;padding:12px 16px 8px;font-size:.84rem;color:var(--muted)}
+.table-title b{color:var(--text);font-weight:600}
 .fields-table{width:100%;border-collapse:collapse;font-size:.9rem}
-.fields-table th{font-weight:600;color:var(--muted);text-align:left;padding:8px 12px;background:var(--subtle);border-bottom:1px solid var(--line);font-size:.82rem}
+.fields-table th{font-weight:600;color:var(--muted);text-align:left;padding:8px 12px;background:var(--subtle);border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:.82rem}
 .fields-table td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
 .fields-table tbody tr:last-child td{border-bottom:0}
-.fields-table td.value{font-family:var(--mono);font-size:.88rem}
+.fields-table td.value{font-family:var(--mono);font-size:.88rem;overflow-wrap:break-word}
 .fields-table td.name{white-space:nowrap;width:1%;padding-right:18px}
 .fields-table .name small{display:block;color:var(--muted);font:.74rem var(--mono)}
-.fields-table td.state{width:1%;white-space:nowrap;text-align:right}
+.fields-table td.state{width:92px;text-align:right}
+.fields-table td.state .tag{text-align:center;line-height:1.3;padding:3px 8px}
 .fields-table tr.bad td.pred{color:var(--bad)}
 .fields-table tr.focus td{background:var(--subtle)}
 .fields-table tr.focus td.name{font-weight:600}
 .fields-table tr.focus .name small::after{content:' · trường minh họa';font-family:"Segoe UI",system-ui,sans-serif}
-.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.76rem;font-weight:600}
+.tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:.76rem;font-weight:600}
 .tag.ok{background:var(--ok-soft);color:var(--ok)}
 .tag.bad{background:var(--bad-soft);color:var(--bad)}
 .tag.warn{background:var(--warn-soft);color:var(--warn)}
@@ -161,6 +189,7 @@ button:disabled{opacity:.45;cursor:default}
 .image-scroll.zoomed .annotated-image{width:calc((160dvh - 32px) * var(--image-ratio))}
 body:has(.image-dialog[open]){overflow:hidden}
 
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media(max-width:1100px){:root{--stage-h:60vh}.workbench{grid-template-columns:1fr}}
 @media(max-width:820px){
   .app{grid-template-columns:1fr}
@@ -168,6 +197,7 @@ body:has(.image-dialog[open]){overflow:hidden}
   .tabs{padding:0 8px;gap:0}.tab{padding:12px 7px 10px;font-size:.86rem}
   .panel{padding:16px 12px 32px}
   .scores .cell{grid-template-columns:48px 40px}
+  .compare{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -222,16 +252,18 @@ body:has(.image-dialog[open]){overflow:hidden}
           <div class="card-head">
             <span class="meta" id="example-title"></span>
             <select id="example-layer" aria-label="Lớp hiển thị" hidden>
+              <option value="boxes">Vị trí giá trị</option>
               <option value="heatmap">Bản đồ nhiệt</option>
-              <option value="boxes">Vùng mô hình chọn</option>
               <option value="original">Ảnh gốc</option>
             </select>
           </div>
-          <button type="button" class="stage" id="example-stage" aria-haspopup="dialog" title="Bấm để phóng to"></button>
+          <button type="button" class="stage" id="example-stage" aria-haspopup="dialog" title="Bấm để xem toàn bộ ảnh"></button>
           <p class="stage-note" id="example-note"></p>
         </div>
         <div class="card">
           <div class="card-head"><h3>Kết quả trích xuất</h3><span class="status" id="example-source"></span></div>
+          <div class="spotlight" id="spotlight"></div>
+          <div class="table-title"><b>Tất cả trường của hóa đơn</b><span id="example-count"></span></div>
           <table class="fields-table" id="example-fields"></table>
           <div class="explain" id="example-explain"></div>
           <div class="actions">
@@ -332,9 +364,10 @@ const fieldNames = {
 };
 const fieldGroups = {menu:'Món hàng', sub_total:'Tạm tính và phụ phí', total:'Tổng tiền và thanh toán', void_menu:'Món đã hủy'};
 const maxBytes = 12 * 1024 * 1024;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const imageDialog = byId('image-dialog'), imageScroll = byId('image-scroll'), imageZoom = byId('image-zoom');
 let catalog, busy = false, tab = 'correct', previewUrl;
-// The example currently shown, and its (saved or freshly computed) predictions and annotation.
+// The example currently shown, and its (saved or freshly computed) predictions and server annotation.
 let current = null;
 let uploadResult = null;
 
@@ -346,9 +379,80 @@ function element(tag, text, className) {
 }
 const label = key => fieldNames[key] ?? key;
 const asList = value => value == null ? [] : Array.isArray(value) ? value : [value];
-const norm = values => asList(values).map(s => String(s).toLowerCase().trim().replace(/\s+/g, ' ')).filter(Boolean).sort();
-const same = (a, b) => JSON.stringify(norm(a)) === JSON.stringify(norm(b));
+// Same normalisation as utils.common.normalize_text, which the project's scorer uses.
+const normalize = text => String(text ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
 const pct = value => (value * 100).toFixed(2);
+const fadeIn = node => { if (!reduceMotion) { node.classList.remove('fade-in'); void node.offsetWidth; node.classList.add('fade-in'); } };
+
+// Mirrors utils.metrics.evaluate_field: one-to-one matching of normalised values.
+function matchField(truth, predicted) {
+  const gt = asList(truth).map(normalize).filter(Boolean);
+  const pred = asList(predicted).map(normalize).filter(Boolean);
+  const used = new Set();
+  let tp = 0;
+  for (const value of pred) {
+    const index = gt.findIndex((item, i) => !used.has(i) && item === value);
+    if (index >= 0) { used.add(index); tp += 1; }
+  }
+  return {tp, gt: gt.length, pred: pred.length};
+}
+function fieldState(truth, predicted) {
+  const {tp, gt, pred} = matchField(truth, predicted);
+  if (tp === gt && tp === pred && gt) return ['ok', 'Khớp'];
+  if (!pred) return ['bad', 'Bỏ sót'];
+  if (!gt) return ['warn', 'Thừa'];
+  if (tp === gt) return ['warn', 'Khớp, có giá trị thừa'];
+  if (tp > 0) return ['warn', 'Khớp ' + tp + '/' + gt];
+  const squash = values => asList(values).map(v => normalize(v).replace(/\s/g, '')).sort().join('|');
+  if (squash(truth) === squash(predicted)) return ['bad', 'Sai · khác khoảng trắng'];
+  return ['bad', 'Sai'];
+}
+
+// Character-level difference (case-insensitive LCS) used to highlight what differs.
+function diff(a, b) {
+  if (a.length > 160 || b.length > 160) return null;
+  const n = a.length, m = b.length, A = a.toLowerCase(), B = b.toLowerCase();
+  const dp = Array.from({length: n + 1}, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const keepA = new Array(n).fill(false), keepB = new Array(m).fill(false);
+  for (let i = 0, j = 0; i < n && j < m;) {
+    if (A[i] === B[j]) { keepA[i++] = true; keepB[j++] = true; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) i++; else j++;
+  }
+  return [keepA, keepB];
+}
+function marked(text, keep, className) {
+  const out = document.createDocumentFragment();
+  let i = 0;
+  while (i < text.length) {
+    let j = i;
+    while (j < text.length && keep[j] === keep[i]) j++;
+    const piece = text.slice(i, j);
+    out.append(keep[i] ? piece : element('mark', piece, className));
+    i = j;
+  }
+  return out;
+}
+
+// Finds where values appear on the receipt by matching runs of OCR words (spaces ignored).
+function locate(ocr, values) {
+  const words = (ocr ?? []).map(w => normalize(w.text).replace(/\s/g, ''));
+  const boxes = [];
+  for (const value of asList(values)) {
+    const target = normalize(value).replace(/\s/g, '');
+    if (!target) continue;
+    for (let i = 0; i < words.length; i++) {
+      let joined = '';
+      for (let j = i; j < words.length && j < i + 40; j++) {
+        joined += words[j];
+        if (!target.startsWith(joined)) break;
+        if (joined === target) { for (let k = i; k <= j; k++) boxes.push(ocr[k].box); break; }
+      }
+    }
+  }
+  return boxes;
+}
 
 function heatmapDescription(heatmap) {
   const name = label(heatmap.field);
@@ -390,7 +494,7 @@ function annotatedImage(image, annotation, layer) {
   if (annotation.heatmap) wrapper.append(heatmapLayer(annotation.heatmap));
   for (const region of annotation.regions ?? []) {
     const [left, top, right, bottom] = region.box;
-    const outline = element('span', null, 'receipt-region ' + region.kind);
+    const outline = element('span', null, 'receipt-region ' + (region.kind ?? ''));
     outline.setAttribute('aria-hidden', 'true');
     Object.assign(outline.style, {
       left: left / 10 + '%', top: top / 10 + '%',
@@ -401,23 +505,40 @@ function annotatedImage(image, annotation, layer) {
   return wrapper;
 }
 
+// Wraps an annotated image in a viewport that shows only `box` (0-1000 coordinates, padded).
+function cropped(wrapper, annotation, box) {
+  if (!box || !annotation?.size) return wrapper;
+  const pad = 45;  // OCR misses handwriting and logos near the edges, so keep a margin
+  const x0 = Math.max(0, box[0] - pad) / 1000, y0 = Math.max(0, box[1] - pad) / 1000;
+  const x1 = Math.min(1000, box[2] + pad) / 1000, y1 = Math.min(1000, box[3] + pad) / 1000;
+  const [w, h] = annotation.size;
+  const ratio = ((x1 - x0) * w) / ((y1 - y0) * h);
+  const view = element('span', null, 'crop');
+  view.style.aspectRatio = String(ratio);
+  view.style.width = 'min(100%, calc((var(--stage-h) - 24px) * ' + ratio + '))';
+  Object.assign(wrapper.style, {
+    width: 100 / (x1 - x0) + '%', left: -x0 / (x1 - x0) * 100 + '%', top: -y0 / (y1 - y0) * 100 + '%',
+  });
+  view.append(wrapper);
+  return view;
+}
+
 // Shows an image (with optional annotation layers) in a stage button and wires the layer selector.
-function renderStage(stage, layerSelect, note, src, alt, annotation) {
+function renderStage({stage, layerSelect, note, src, alt, annotation, crop, legend, preferred}) {
   const image = element('img');
   image.src = src;
   image.alt = alt;
-  const hasLayers = !!(annotation?.heatmap || annotation?.regions?.length);
-  layerSelect.hidden = !hasLayers;
-  if (hasLayers) {
-    layerSelect.querySelector('option[value="heatmap"]').hidden = !annotation.heatmap;
-    layerSelect.querySelector('option[value="boxes"]').hidden = !annotation.regions?.length;
-    layerSelect.value = annotation.heatmap ? 'heatmap' : 'boxes';
-  }
+  const hasHeat = !!annotation?.heatmap, hasBoxes = !!annotation?.regions?.length;
+  layerSelect.hidden = !(hasHeat || hasBoxes);
+  layerSelect.querySelector('option[value="heatmap"]').hidden = !hasHeat;
+  layerSelect.querySelector('option[value="boxes"]').hidden = !hasBoxes;
+  layerSelect.value = preferred === 'heatmap' && hasHeat ? 'heatmap' : hasBoxes ? 'boxes' : hasHeat ? 'heatmap' : 'original';
   const draw = () => {
-    stage.replaceChildren(annotatedImage(image, annotation, layerSelect.value));
-    note.textContent = !annotation ? ''
-      : layerSelect.value === 'heatmap' && annotation.heatmap ? heatmapDescription(annotation.heatmap)
-      : layerSelect.value === 'boxes' ? annotation.legend ?? '' : '';
+    stage.replaceChildren(cropped(annotatedImage(image, annotation, layerSelect.value), annotation, crop));
+    note.replaceChildren();
+    if (!annotation) return;
+    if (layerSelect.value === 'heatmap' && hasHeat) note.textContent = heatmapDescription(annotation.heatmap);
+    else if (layerSelect.value === 'boxes') legend ? note.append(legend()) : note.append(annotation.legend ?? '');
   };
   layerSelect.onchange = draw;
   stage.onclick = () => openLargeImage(image, annotation, layerSelect.value);
@@ -443,7 +564,9 @@ imageDialog.addEventListener('close', () => imageScroll.replaceChildren());
 function bar(value) {
   const track = element('span', null, 'bar');
   const fill = element('span');
-  fill.style.width = Math.max(0, Math.min(100, value * 100)) + '%';
+  const width = Math.max(0, Math.min(100, value * 100)) + '%';
+  fill.style.width = reduceMotion ? width : '0%';
+  if (!reduceMotion) requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = width; }));
   track.append(fill);
   return track;
 }
@@ -498,7 +621,7 @@ function loadExample() {
   byId('load-status').textContent = '';
   byId('example-view').hidden = false;
   byId('example-status').textContent = '';
-  renderExample();
+  renderExample('boxes');
 }
 
 function fieldOrder(truth, predicted, focus) {
@@ -517,52 +640,92 @@ function valueCell(values, className) {
   return cell;
 }
 
-function fieldState(truth, predicted) {
-  if (same(truth, predicted)) return ['ok', 'Khớp'];
-  if (!asList(predicted).length) return ['bad', 'Bỏ sót'];
-  if (!asList(truth).length) return ['warn', 'Thừa'];
-  return ['bad', 'Sai'];
-}
-
 function nameCell(key) {
   const cell = element('td', label(key), 'name');
   if (label(key) !== key) cell.append(element('small', key));
   return cell;
 }
 
-function renderExample() {
-  const {example, row, fields, annotation} = current;
+function renderSpotlight(key, truth, predicted) {
+  const [kind, text] = fieldState(truth, predicted);
+  const spot = byId('spotlight');
+  const head = element('div', null, 'spotlight-head');
+  head.append(element('h4', 'Trường minh họa: ' + label(key)), element('span', text, 'tag ' + kind));
+  const a = asList(truth).map(v => String(v).replace(/\s+/g, ' ').trim()).join(' · ');
+  const b = asList(predicted).map(v => String(v).replace(/\s+/g, ' ').trim()).join(' · ');
+  const marks = kind === 'ok' || !a || !b ? null : diff(a, b);
+  const truthBox = element('div');
+  const truthCode = element('code');
+  truthCode.append(marks ? marked(a, marks[0], 'del') : (a || '—'));
+  truthBox.append(element('span', 'Nhãn chuẩn'), truthCode);
+  const predBox = element('div', null, 'pred-box ' + kind);
+  const predCode = element('code');
+  predCode.append(marks ? marked(b, marks[1], 'ins') : (b || 'Bỏ sót'));
+  predBox.append(element('span', 'Mô hình dự đoán'), predCode);
+  const compare = element('div', null, 'compare');
+  compare.append(truthBox, predBox);
+  const note = element('p', kind === 'ok' ? 'Khớp nhãn chuẩn sau khi chuẩn hóa chữ hoa/thường và khoảng trắng, đúng như cách chấm Micro-F1.'
+    : text === 'Sai · khác khoảng trắng' ? 'Chỉ khác khoảng trắng, nhưng cách chấm của đề tài so khớp chính xác nên vẫn tính là sai.'
+    : marks ? 'Phần tô màu là chỗ khác nhau giữa nhãn chuẩn và dự đoán.' : '', 'spot-note');
+  spot.replaceChildren(head, compare, ...(note.textContent ? [note] : []));
+  return [kind, text];
+}
+
+function renderExample(preferredLayer) {
+  const {example, row, fields} = current;
   const truth = row.gt ?? {};
-  const focusOk = same(truth[example.field], fields[example.field]);
-  byId('example-heading').textContent = (tab === 'error' ? 'Ví dụ sai' : 'Ví dụ đúng') + ' · ' + label(example.field);
+  const key = example.field;
+  const [focusKind, focusText] = renderSpotlight(key, truth[key], fields[key]);
+  byId('example-heading').textContent = (tab === 'error' ? 'Ví dụ sai' : 'Ví dụ đúng') + ' · ' + label(key);
   byId('example-sub').textContent = catalog.models[model.value] + ' trên ' + titles[dataset.value] + ', tập kiểm thử';
+  const chip = byId('example-summary');
+  chip.textContent = label(key) + ': ' + (focusKind === 'ok' ? 'khớp nhãn chuẩn' : focusText.toLowerCase());
+  chip.className = 'chip ' + focusKind;
   byId('example-title').textContent = row.id + ' · ' + row.boxes + ' vùng chữ';
   byId('example-source').textContent = current.live ? 'Kết quả vừa chạy' : 'Kết quả đã lưu';
-  renderStage(byId('example-stage'), byId('example-layer'), byId('example-note'),
-              '/image/' + example.case_index, 'Hóa đơn ' + row.id, annotation);
+
+  // Value locations: green where the ground truth appears, red where a different prediction appears.
+  const truthBoxes = locate(row.ocr, truth[key]);
+  const predBoxes = focusKind === 'ok' ? [] : locate(row.ocr, fields[key]);
+  const truthSet = new Set(truthBoxes.map(String));
+  const regions = [...truthBoxes.map(box => ({box, kind: ''})),
+                   ...predBoxes.filter(box => !truthSet.has(String(box))).map(box => ({box, kind: 'wrong'}))];
+  const annotation = {...(current.annotation ?? {}), size: current.annotation?.size ?? row.size, regions};
+  const legend = () => {
+    const frag = document.createDocumentFragment();
+    if (!regions.length) { frag.append('Không tìm thấy giá trị này trong chữ OCR của ảnh.'); return frag; }
+    const item = (cls, text) => { const span = element('span', null, 'legend'); span.append(element('i', null, cls), text); return span; };
+    frag.append(item('truth', 'Nhãn chuẩn'));
+    if (predBoxes.length) frag.append(item('pred', 'Giá trị mô hình đoán'));
+    frag.append(' Vị trí tìm theo chữ OCR.');
+    return frag;
+  };
+  renderStage({stage: byId('example-stage'), layerSelect: byId('example-layer'), note: byId('example-note'),
+               src: '/image/' + example.case_index, alt: 'Hóa đơn ' + row.id, annotation,
+               crop: row.content_box, legend, preferred: preferredLayer});
+
   const table = byId('example-fields');
   table.replaceChildren();
   const head = table.createTHead().insertRow();
   for (const text of ['Trường', 'Nhãn chuẩn', 'Dự đoán', '']) head.append(element('th', text));
   const body = table.createTBody();
   let matched = 0, total = 0;
-  for (const key of fieldOrder(truth, fields, example.field)) {
-    const [kind, text] = fieldState(truth[key], fields[key]);
+  for (const name of fieldOrder(truth, fields, key)) {
+    const [kind, text] = fieldState(truth[name], fields[name]);
     total += 1; matched += kind === 'ok';
     const tr = body.insertRow();
-    tr.className = kind + (key === example.field ? ' focus' : '');
+    tr.className = kind + (name === key ? ' focus' : '');
     const state = element('td', null, 'state');
     state.append(element('span', text, 'tag ' + kind));
-    tr.append(nameCell(key), valueCell(truth[key], 'truth'), valueCell(fields[key], 'pred'), state);
+    tr.append(nameCell(name), valueCell(truth[name], 'truth'), valueCell(fields[name], 'pred'), state);
   }
-  const summary = byId('example-summary');
-  summary.textContent = matched + '/' + total + ' trường khớp nhãn chuẩn';
-  summary.className = 'chip ' + (matched === total ? 'ok' : 'bad');
+  byId('example-count').textContent = matched + '/' + total + ' trường khớp';
   byId('example-explain').replaceChildren(element('b', 'Giải thích: '),
-    current.live ? (focusOk ? 'Lần chạy lại cho giá trị ' + label(example.field).toLowerCase() + ' khớp nhãn chuẩn.'
-      : !asList(fields[example.field]).length ? 'Lần chạy lại bỏ sót trường ' + label(example.field).toLowerCase() + '.'
-      : 'Lần chạy lại cho giá trị ' + label(example.field).toLowerCase() + ' khác nhãn chuẩn.') : example.explanation);
+    current.live ? (focusKind === 'ok' ? 'Lần chạy lại cho giá trị ' + label(key).toLowerCase() + ' khớp nhãn chuẩn.'
+      : !asList(fields[key]).length ? 'Lần chạy lại bỏ sót trường ' + label(key).toLowerCase() + '.'
+      : 'Lần chạy lại cho giá trị ' + label(key).toLowerCase() + ' khác nhãn chuẩn.') : example.explanation);
   byId('heatmap-run').hidden = !catalog.vision_models.includes(model.value);
+  fadeIn(byId('example-view'));
 }
 
 async function runExample(heatmap) {
@@ -580,7 +743,7 @@ async function runExample(heatmap) {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error);
     current = {...current, fields: result.fields, annotation: result.annotation, live: true};
-    renderExample();
+    renderExample(heatmap ? 'heatmap' : 'boxes');
     byId('example-status').textContent = result.annotation?.heatmap?.cached ? 'Bản đồ nhiệt đã tính trước đó' : 'Xong · ' + result.seconds + ' giây';
   } catch (error) {
     byId('example-status').textContent = error.message;
@@ -605,7 +768,8 @@ function showUploadPreview() {
   byId('prediction').replaceChildren(element('p', valid ? 'Bấm Trích xuất để chạy ' + catalog.models[model.value] + ' trên ảnh này.'
     : 'Chọn một ảnh, sau đó bấm Trích xuất.', 'empty'));
   byId('upload-status').textContent = file && !valid ? 'Ảnh phải lớn hơn 0 và tối đa 12 MB.' : '';
-  if (previewUrl) renderStage(byId('upload-stage'), byId('upload-layer'), byId('upload-note'), previewUrl, file.name, null);
+  if (previewUrl) renderStage({stage: byId('upload-stage'), layerSelect: byId('upload-layer'), note: byId('upload-note'),
+                               src: previewUrl, alt: file.name, annotation: null});
   else { byId('upload-layer').hidden = true; byId('upload-note').textContent = ''; }
   updateRunButton();
 }
@@ -640,7 +804,8 @@ run.addEventListener('click', async () => {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error);
     uploadResult = result;
-    renderStage(byId('upload-stage'), byId('upload-layer'), byId('upload-note'), previewUrl, file.name, result.annotation);
+    renderStage({stage: byId('upload-stage'), layerSelect: byId('upload-layer'), note: byId('upload-note'),
+                 src: previewUrl, alt: file.name, annotation: result.annotation, preferred: 'heatmap'});
     const entries = Object.entries(result.fields ?? {});
     if (!entries.length) {
       byId('prediction').replaceChildren(element('p', 'Mô hình chưa tìm thấy trường nào trên ảnh này.', 'empty'));
@@ -651,6 +816,7 @@ run.addEventListener('click', async () => {
       const body = table.createTBody();
       for (const [key, value] of entries) body.insertRow().append(nameCell(key), valueCell(value, 'pred-plain'));
       byId('prediction').replaceChildren(table);
+      fadeIn(table);
     }
     byId('upload-status').textContent = result.annotation?.heatmap?.cached ? 'Bản đồ nhiệt đã tính trước đó' : 'Xong · ' + result.seconds + ' giây';
   } catch (error) {
@@ -704,6 +870,7 @@ function selectTab(name) {
   byId('panel-upload').hidden = name !== 'upload';
   byId('panel-scores').hidden = name !== 'scores';
   if (name === 'correct' || name === 'error') loadExample();
+  if (name === 'scores') showScores();
 }
 for (const button of document.querySelectorAll('.tab')) button.addEventListener('click', () => selectTab(button.dataset.tab));
 

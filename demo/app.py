@@ -11,6 +11,8 @@ from urllib.parse import parse_qs, urlsplit
 from urllib.request import urlopen
 import webbrowser
 
+from PIL import Image
+
 from demo.assets import DATA, DATASETS, MODELS, NAMES, checkpoint, labels, manifest, samples, sample_image
 from demo.heatmap import VISION_MODELS, predict_with_heatmap
 from demo.inference import predict, read_image_text
@@ -47,10 +49,18 @@ def init_catalog(server):
                 key = dataset, name, example["id"]
                 if key not in indices:
                     indices[key] = len(server.cases)
+                    image = sample_image(dataset, sample)
+                    with Image.open(image) as opened:
+                        size = list(opened.size)
+                    boxes = [word["box"] for word in sample["ocr"]]
                     server.cases.append({
                         "dataset": dataset, "model": name, "id": example["id"],
                         "gt": sample["gt"], "boxes": len(sample["ocr"]),
-                        "image": sample_image(dataset, sample),
+                        # Lets the page crop to the text area and locate field values on the receipt.
+                        "size": size, "ocr": sample["ocr"],
+                        "content_box": [min(b[0] for b in boxes), min(b[1] for b in boxes),
+                                        max(b[2] for b in boxes), max(b[3] for b in boxes)] if boxes else None,
+                        "image": image,
                     })
                 server.examples[dataset][name][kind] = dict(example, case_index=indices[key])
 
