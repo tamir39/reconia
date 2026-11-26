@@ -257,6 +257,20 @@
       }
     }
   },
+  "reference_models": {
+    "qwen_vl": {
+      "name": "Qwen2.5-VL",
+      "source": "https://www.kaggle.com/code/vhngthnh/qwen-vl-model",
+      "versions": {"sroie": 1, "cord_v2": 3, "wildreceipt": 5},
+      "note": "Test-set scores only; the demo does not run Qwen inference.",
+      "metric": "Micro-F1",
+      "datasets": {
+        "sroie": {"precision": 0.7859725234996384, "recall": 0.7831412103746398, "f1": 0.7845543125225549},
+        "cord_v2": {"precision": 0.8325396825396826, "recall": 0.8063028439661799, "f1": 0.8192112456071848},
+        "wildreceipt": {"precision": 0.7632247143461701, "recall": 0.7269246271664651, "f1": 0.7446325350949627}
+      }
+    }
+  },
   "inference_runtime": {
     "device_default": "cpu",
     "roberta_prefix_space": "set on tokenizer construction",

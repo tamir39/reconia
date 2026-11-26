@@ -95,6 +95,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({
                 "api_version": API_VERSION, "datasets": DATASETS, "models": NAMES,
                 "scores": {m: [metadata["models"][m]["datasets"][d]["metrics"]["f1"] for d in DATASETS] for m in MODELS},
+                "reference_scores": {m: {"name": r["name"], "source": r["source"],
+                                         "scores": [r["datasets"][d]["f1"] for d in DATASETS]}
+                                     for m, r in metadata.get("reference_models", {}).items()},
                 "sources": metadata, "metric": "Micro-F1",
                 "dataset_fields": {d: sorted({s[2:] for s in labels(d) if s.startswith("B-")}) for d in DATASETS},
                 "supports_image_upload": True, "vision_models": sorted(VISION_MODELS),
