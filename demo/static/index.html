@@ -65,10 +65,6 @@ details.fields-list code{font:.76rem var(--mono);color:var(--side-muted)}
 .page-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:16px}
 .page-head h2{font-size:1.3rem}
 .page-head .sub{color:var(--muted);font-size:.88rem;margin-top:2px}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:.86rem;font-weight:600;white-space:nowrap}
-.chip.ok{background:var(--ok-soft);color:var(--ok)}
-.chip.bad{background:var(--bad-soft);color:var(--bad)}
-.chip.warn{background:var(--warn-soft);color:var(--warn)}
 .workbench{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);min-width:0}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);min-height:54px}
@@ -88,6 +84,15 @@ details.fields-list code{font:.76rem var(--mono);color:var(--side-muted)}
 .crop>.annotated-image{position:absolute}
 .stage-note{font-size:.84rem;color:var(--muted);padding:10px 16px;border-top:1px solid var(--line)}
 .stage-note:empty{display:none}
+.stage.top{border-radius:10px 10px 0 0}
+.stage-foot{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--line);min-height:50px}
+.stage-foot .stage-note{padding:0;border:0}
+.stage-foot .stage-note:empty{display:block}
+.stage-foot select{width:auto}
+.others{border-top:1px solid var(--line)}
+.others summary{cursor:pointer;padding:12px 16px;font-size:.9rem;color:var(--muted)}
+.others summary b{color:var(--text);font-weight:600}
+.others[open] summary{border-bottom:1px solid var(--line)}
 .annotated-image{display:block;position:relative}
 .annotated-image img{width:100%;height:auto;max-height:none}
 .receipt-region{position:absolute;outline:2px solid #3f6b45;background:#3f6b4526;pointer-events:none;border-radius:2px}
@@ -102,9 +107,7 @@ details.fields-list code{font:.76rem var(--mono);color:var(--side-muted)}
 .legend .pred{outline:2px solid #c0392b;background:#c0392b26}
 
 /* Spotlight: the illustrated field, large */
-.spotlight{padding:16px;border-bottom:1px solid var(--line)}
-.spotlight-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.spotlight-head h4{margin:0;font-size:.82rem;font-weight:600;color:var(--muted)}
+.spotlight{padding:16px}
 .compare{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .compare>div{border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
 .compare span{display:block;font-size:.8rem;color:var(--muted);margin-bottom:4px}
@@ -115,13 +118,11 @@ details.fields-list code{font:.76rem var(--mono);color:var(--side-muted)}
 mark{border-radius:3px;padding:0 1px}
 mark.del{background:#3f6b4533;color:var(--ok)}
 mark.ins{background:#c0392b33;color:var(--bad)}
-.spot-note{margin-top:10px;font-size:.86rem;color:var(--muted)}
+.spot-note{margin-top:12px;font-size:.9rem;color:var(--text)}
 
 /* Results */
-.table-title{display:flex;justify-content:space-between;gap:8px;padding:12px 16px 8px;font-size:.84rem;color:var(--muted)}
-.table-title b{color:var(--text);font-weight:600}
 .fields-table{width:100%;border-collapse:collapse;font-size:.9rem}
-.fields-table th{font-weight:600;color:var(--muted);text-align:left;padding:8px 12px;background:var(--subtle);border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:.82rem}
+.fields-table th{font-weight:600;color:var(--muted);text-align:left;padding:8px 12px;background:var(--subtle);border-bottom:1px solid var(--line);font-size:.82rem}
 .fields-table td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
 .fields-table tbody tr:last-child td{border-bottom:0}
 .fields-table td.value{font-family:var(--mono);font-size:.88rem;overflow-wrap:break-word}
@@ -130,16 +131,11 @@ mark.ins{background:#c0392b33;color:var(--bad)}
 .fields-table td.state{width:92px;text-align:right}
 .fields-table td.state .tag{text-align:center;line-height:1.3;padding:3px 8px}
 .fields-table tr.bad td.pred{color:var(--bad)}
-.fields-table tr.focus td{background:var(--subtle)}
-.fields-table tr.focus td.name{font-weight:600}
-.fields-table tr.focus .name small::after{content:' · trường minh họa';font-family:"Segoe UI",system-ui,sans-serif}
 .tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:.76rem;font-weight:600}
 .tag.ok{background:var(--ok-soft);color:var(--ok)}
 .tag.bad{background:var(--bad-soft);color:var(--bad)}
 .tag.warn{background:var(--warn-soft);color:var(--warn)}
 .missing{color:var(--muted);font-style:italic;font-family:"Segoe UI",system-ui,sans-serif}
-.explain{margin:16px;padding:12px 14px;border-radius:8px;background:var(--subtle);border:1px solid var(--line);font-size:.88rem}
-.explain b{font-weight:600}
 .actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:14px 16px;border-top:1px solid var(--line)}
 .status{font-size:.86rem;color:var(--muted)}
 .status:empty{display:none}
@@ -245,27 +241,25 @@ body:has(.image-dialog[open]){overflow:hidden}
     <div id="example-view" hidden>
       <div class="page-head">
         <div><h2 id="example-heading"></h2><p class="sub" id="example-sub"></p></div>
-        <span class="chip" id="example-summary"></span>
       </div>
       <div class="workbench">
         <div class="card">
-          <div class="card-head">
-            <span class="meta" id="example-title"></span>
+          <button type="button" class="stage top" id="example-stage" aria-haspopup="dialog" title="Bấm để xem toàn bộ ảnh"></button>
+          <div class="stage-foot">
+            <p class="stage-note" id="example-note"></p>
             <select id="example-layer" aria-label="Lớp hiển thị" hidden>
               <option value="boxes">Vị trí giá trị</option>
               <option value="heatmap">Bản đồ nhiệt</option>
               <option value="original">Ảnh gốc</option>
             </select>
           </div>
-          <button type="button" class="stage" id="example-stage" aria-haspopup="dialog" title="Bấm để xem toàn bộ ảnh"></button>
-          <p class="stage-note" id="example-note"></p>
         </div>
         <div class="card">
-          <div class="card-head"><h3>Kết quả trích xuất</h3><span class="status" id="example-source"></span></div>
           <div class="spotlight" id="spotlight"></div>
-          <div class="table-title"><b>Tất cả trường của hóa đơn</b><span id="example-count"></span></div>
-          <table class="fields-table" id="example-fields"></table>
-          <div class="explain" id="example-explain"></div>
+          <details class="others" id="others">
+            <summary id="others-summary"></summary>
+            <table class="fields-table" id="example-fields"></table>
+          </details>
           <div class="actions">
             <button type="button" id="rerun">Chạy lại mô hình</button>
             <button type="button" class="secondary" id="heatmap-run" hidden>Xem bản đồ nhiệt</button>
@@ -529,7 +523,7 @@ function renderStage({stage, layerSelect, note, src, alt, annotation, crop, lege
   image.src = src;
   image.alt = alt;
   const hasHeat = !!annotation?.heatmap, hasBoxes = !!annotation?.regions?.length;
-  layerSelect.hidden = !(hasHeat || hasBoxes);
+  layerSelect.hidden = !hasHeat;  // without a heatmap there is nothing to switch between
   layerSelect.querySelector('option[value="heatmap"]').hidden = !hasHeat;
   layerSelect.querySelector('option[value="boxes"]').hidden = !hasBoxes;
   layerSelect.value = preferred === 'heatmap' && hasHeat ? 'heatmap' : hasBoxes ? 'boxes' : hasHeat ? 'heatmap' : 'original';
@@ -646,11 +640,9 @@ function nameCell(key) {
   return cell;
 }
 
-function renderSpotlight(key, truth, predicted) {
+function renderSpotlight(truth, predicted, explanation) {
   const [kind, text] = fieldState(truth, predicted);
   const spot = byId('spotlight');
-  const head = element('div', null, 'spotlight-head');
-  head.append(element('h4', 'Trường minh họa: ' + label(key)), element('span', text, 'tag ' + kind));
   const a = asList(truth).map(v => String(v).replace(/\s+/g, ' ').trim()).join(' · ');
   const b = asList(predicted).map(v => String(v).replace(/\s+/g, ' ').trim()).join(' · ');
   const marks = kind === 'ok' || !a || !b ? null : diff(a, b);
@@ -664,10 +656,9 @@ function renderSpotlight(key, truth, predicted) {
   predBox.append(element('span', 'Mô hình dự đoán'), predCode);
   const compare = element('div', null, 'compare');
   compare.append(truthBox, predBox);
-  const note = element('p', kind === 'ok' ? 'Khớp nhãn chuẩn sau khi chuẩn hóa chữ hoa/thường và khoảng trắng, đúng như cách chấm Micro-F1.'
-    : text === 'Sai · khác khoảng trắng' ? 'Chỉ khác khoảng trắng, nhưng cách chấm của đề tài so khớp chính xác nên vẫn tính là sai.'
-    : marks ? 'Phần tô màu là chỗ khác nhau giữa nhãn chuẩn và dự đoán.' : '', 'spot-note');
-  spot.replaceChildren(head, compare, ...(note.textContent ? [note] : []));
+  const note = element('p', explanation + (text === 'Sai · khác khoảng trắng'
+    ? ' Hai giá trị chỉ khác khoảng trắng, nhưng cách chấm so khớp chính xác nên vẫn tính là sai.' : ''), 'spot-note');
+  spot.replaceChildren(compare, note);
   return [kind, text];
 }
 
@@ -675,14 +666,13 @@ function renderExample(preferredLayer) {
   const {example, row, fields} = current;
   const truth = row.gt ?? {};
   const key = example.field;
-  const [focusKind, focusText] = renderSpotlight(key, truth[key], fields[key]);
+  const focusOk = fieldState(truth[key], fields[key])[0] === 'ok';
+  const explanation = !current.live ? example.explanation
+    : focusOk ? 'Lần chạy lại cho giá trị khớp nhãn chuẩn.'
+    : !asList(fields[key]).length ? 'Lần chạy lại bỏ sót trường này.' : 'Lần chạy lại cho giá trị khác nhãn chuẩn.';
+  const [focusKind] = renderSpotlight(truth[key], fields[key], explanation);
   byId('example-heading').textContent = (tab === 'error' ? 'Ví dụ sai' : 'Ví dụ đúng') + ' · ' + label(key);
-  byId('example-sub').textContent = catalog.models[model.value] + ' trên ' + titles[dataset.value] + ', tập kiểm thử';
-  const chip = byId('example-summary');
-  chip.textContent = label(key) + ': ' + (focusKind === 'ok' ? 'khớp nhãn chuẩn' : focusText.toLowerCase());
-  chip.className = 'chip ' + focusKind;
-  byId('example-title').textContent = row.id + ' · ' + row.boxes + ' vùng chữ';
-  byId('example-source').textContent = current.live ? 'Kết quả vừa chạy' : 'Kết quả đã lưu';
+  byId('example-sub').textContent = catalog.models[model.value] + ' trên ' + titles[dataset.value] + ' · mẫu ' + row.id;
 
   // Value locations: green where the ground truth appears, red where a different prediction appears.
   const truthBoxes = locate(row.ocr, truth[key]);
@@ -695,9 +685,8 @@ function renderExample(preferredLayer) {
     const frag = document.createDocumentFragment();
     if (!regions.length) { frag.append('Không tìm thấy giá trị này trong chữ OCR của ảnh.'); return frag; }
     const item = (cls, text) => { const span = element('span', null, 'legend'); span.append(element('i', null, cls), text); return span; };
-    frag.append(item('truth', 'Nhãn chuẩn'));
-    if (predBoxes.length) frag.append(item('pred', 'Giá trị mô hình đoán'));
-    frag.append(' Vị trí tìm theo chữ OCR.');
+    frag.append(item('truth', focusKind === 'ok' ? 'Nhãn chuẩn = dự đoán' : 'Nhãn chuẩn'));
+    if (predBoxes.length) frag.append(item('pred', 'Mô hình đoán'));
     return frag;
   };
   renderStage({stage: byId('example-stage'), layerSelect: byId('example-layer'), note: byId('example-note'),
@@ -710,20 +699,18 @@ function renderExample(preferredLayer) {
   for (const text of ['Trường', 'Nhãn chuẩn', 'Dự đoán', '']) head.append(element('th', text));
   const body = table.createTBody();
   let matched = 0, total = 0;
-  for (const name of fieldOrder(truth, fields, key)) {
+  for (const name of fieldOrder(truth, fields, null).filter(name => name !== key)) {
     const [kind, text] = fieldState(truth[name], fields[name]);
     total += 1; matched += kind === 'ok';
     const tr = body.insertRow();
-    tr.className = kind + (name === key ? ' focus' : '');
+    tr.className = kind;
     const state = element('td', null, 'state');
     state.append(element('span', text, 'tag ' + kind));
     tr.append(nameCell(name), valueCell(truth[name], 'truth'), valueCell(fields[name], 'pred'), state);
   }
-  byId('example-count').textContent = matched + '/' + total + ' trường khớp';
-  byId('example-explain').replaceChildren(element('b', 'Giải thích: '),
-    current.live ? (focusKind === 'ok' ? 'Lần chạy lại cho giá trị ' + label(key).toLowerCase() + ' khớp nhãn chuẩn.'
-      : !asList(fields[key]).length ? 'Lần chạy lại bỏ sót trường ' + label(key).toLowerCase() + '.'
-      : 'Lần chạy lại cho giá trị ' + label(key).toLowerCase() + ' khác nhãn chuẩn.') : example.explanation);
+  const summary = byId('others-summary');
+  summary.replaceChildren(element('b', 'Các trường khác'), ' · ' + matched + '/' + total + ' khớp nhãn chuẩn');
+  byId('others').hidden = !total;
   byId('heatmap-run').hidden = !catalog.vision_models.includes(model.value);
   fadeIn(byId('example-view'));
 }
