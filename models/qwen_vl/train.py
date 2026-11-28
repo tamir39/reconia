@@ -330,7 +330,7 @@ def train_model(
             r=16,
             lora_alpha=32,
             lora_dropout=0.05,
-            target_modules=r".*layers\.\d+\.(self_attn|mlp)\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)",
+            target_modules="all-linear",
         )
         model = get_peft_model(model, lora_config)
 
